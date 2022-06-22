@@ -61,7 +61,7 @@ const App = () => {
 
   return (
     <div id="canvas-container">
-      <Canvas orthographic camera={{ zoom: 100, position: [0, 0, 100] }}>
+      <Canvas orthographic camera={{ zoom: 100, position: [-100, 100, 100] }}>
         <OrbitControls />
         {imagesArr.map((img, index) => {
           console.log(calcPosition(index));
