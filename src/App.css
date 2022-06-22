@@ -33,6 +33,7 @@
   background-color: #f5f5f5;
   border-radius: 4px;
   padding-bottom: 5px;
+  width: 250px;
 }
 
 .layers-item {
@@ -41,4 +42,13 @@
   border: 1px solid lightgrey;
   border-radius: 4px;
   margin-bottom: 10px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+}
+
+#canvas-view-changer {
+  position: absolute;
+  left: 10px;
+  top: 10px;
 }
