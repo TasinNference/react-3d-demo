@@ -9,6 +9,7 @@ import {
 } from "@react-three/drei";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import { GoSettings } from "react-icons/go";
+import {AiFillEyeInvisible, AiFillEye} from "react-icons/ai"
 
 const X_INCREMENT = 0.1;
 const Y_INCREMENT = 0.1;
@@ -85,6 +86,8 @@ const App = () => {
     },
   ]);
 
+  const filteredImages = imagesArr.filter((img) => !img.hidden)
+
   const handleSpacingIncrease = () => {
     setSpacing(spacing + 0.5);
   };
@@ -94,7 +97,7 @@ const App = () => {
   };
 
   const calcPosition = (index) => {
-    return -1 * (index - (imagesArr.length - 1) / 2) * spacing;
+    return -1 * (index - (filteredImages.length - 1) / 2) * spacing;
   };
 
   const handleDragEnd = (result) => {
@@ -130,7 +133,7 @@ const App = () => {
 
   const resetImages = () => {
     setImagesArr((prevArray) =>
-      prevArray.map(({ transformX, transformY, opacity, rotation, ...rest }) => ({ ...rest }))
+      prevArray.map(({ hidden, transformX, transformY, opacity, rotation, ...rest }) => ({ ...rest }))
     );
   };
 
@@ -158,6 +161,14 @@ const App = () => {
   const toBackView = () => {
     setCameraView("back");
   };
+
+  const toggleImageVisibility = (index) => {
+    setImagesArr([
+      ...imagesArr.slice(0, index),
+      { ...imagesArr[index], hidden: !imagesArr[index].hidden },
+      ...imagesArr.slice(index + 1),
+    ]);
+  }
 
   const moveX = (index, opposite = false) => {
     setImagesArr([
@@ -192,7 +203,7 @@ const App = () => {
           }}
         />
         <group rotation={[Math.PI / 2, 0, 0]}>
-          {imagesArr.map((img, index) => {
+          {filteredImages.map((img, index) => {
             return (
               <Suspense key={index} fallback={null}>
                 <Image
@@ -230,10 +241,15 @@ const App = () => {
                         className="layers-item"
                       >
                         <div>{img.name}</div>
-                        <GoSettings
+                        <div style={{display: 'flex', columnGap: '10px'}}>
+                          <div style={{cursor: "pointer"}} onClick={() => toggleImageVisibility(index)}>
+                          {img.hidden ? <AiFillEyeInvisible /> : <AiFillEye />}
+                          </div>
+                          <GoSettings
                           onClick={() => handleConfigureImage(img.id, index)}
                           style={{ cursor: "pointer" }}
-                        />
+                          />
+                        </div>
                         {img.open && (
                           <div>
                             <div>
