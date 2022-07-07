@@ -1,21 +1,146 @@
-import React, { Suspense, useEffect, useState } from "react";
-import { Canvas, useThree } from "@react-three/fiber";
+import React, { Suspense, useState } from "react";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import "./App.css";
 import * as THREE from "three";
 import {
   OrbitControls,
   OrthographicCamera,
-  useTexture,
 } from "@react-three/drei";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import { GoSettings } from "react-icons/go";
-import {AiFillEyeInvisible, AiFillEye} from "react-icons/ai"
+import { AiFillEyeInvisible, AiFillEye } from "react-icons/ai";
+import randomColor from "randomcolor";
 
-const X_INCREMENT = 0.1;
-const Y_INCREMENT = 0.1;
+const X_INCREMENT = 1;
+const Y_INCREMENT = 1;
+const SPACING = 50;
 
-function Image({ position, rotation, opacity, url }) {
-  const texture = useTexture(`${url}`);
+// const imgData = {
+//   request: {
+//     reference_slide_info: {
+//       slide_id: "H01BBB24P-6639",
+//       grid_id: "grid_merged",
+//       grids: [
+//         {
+//           id: "62a1a0ce0ca2c83b4d1efd60",
+//           boundingBox: {
+//             end_x: 590.0729166666666,
+//             end_y: 711.659477124183,
+//             start_x: 66.92708333333334,
+//             start_y: 204.340522875817,
+//           },
+//         },
+//         {
+//           id: "62a1a0ce0ca2c83b4d1efd61",
+//           boundingBox: {
+//             end_x: 549.0729166666666,
+//             end_y: 1224,
+//             start_x: 24.927083333333343,
+//             start_y: 736.340522875817,
+//           },
+//         },
+//       ],
+//       stainColor: "red-pink",
+//     },
+//     register_slide_info: [
+//       {
+//         slide_id: "H01BBB24P-6638",
+//         grid_id: "grid_merged",
+//         grids: [
+//           {
+//             id: "62a1a0ac0ca2c83b4d1efd5d",
+//             boundingBox: {
+//               end_x: 597.0729166666666,
+//               end_y: 1021.659477124183,
+//               start_x: 72.92708333333334,
+//               start_y: 500.340522875817,
+//             },
+//           },
+//         ],
+//         stainColor: "red-pink",
+//       },
+//     ],
+//   },
+//   response: {
+//     status: true,
+//     reference_slide_info: {
+//       slide_id: "H01BBB24P-6639",
+//       grid_id: "grid_merged",
+//     },
+//     register_slide_info: [
+//       {
+//         slide_id: "H01BBB24P-6638",
+//         grid_id: "grid_merged",
+//         tilt: 98.56557776856678,
+//         x_disp: 1017.9208399401064,
+//         y_disp: 117.50423590224302,
+//         x_scale: 0.9801446591539287,
+//         y_scale: 0.9850595270811353,
+//         x_skew: 0.020011303049138344,
+//         y_skew: 0,
+//       },
+//     ],
+//   },
+// };
+
+const imgData = [
+  {
+    id: 1,
+    url: "/images/H01BBB24P-6638.jpeg",
+    name: "Image 1",
+    start_x: 72.92708333333334,
+    start_y: 500.340522875817,
+    end_x: 597.0729166666666,
+    end_y: 1021.659477124183,
+    rotation: 98.56557776856678,
+    borderColor: randomColor()
+  },
+  {
+    id: 2,
+    url: "/images/H01BBB24P-6639.jpeg",
+    name: "Image 2",
+    end_x: 590.0729166666666,
+    end_y: 711.659477124183,
+    start_x: 66.92708333333334,
+    start_y: 204.340522875817,
+    borderColor: randomColor()
+  },
+];
+
+function ImageElement({ position, rotation, opacity, url, img, showBorder }) {
+  const width = img.end_x - img.start_x;
+  const height = img.end_y - img.start_y;
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d");
+  const imgObj = new Image();
+  imgObj.onload = function() {
+    ctx.drawImage(
+      imgObj,
+      img.start_x,
+      img.start_y,
+      width,
+      height,
+      0,
+      0,
+      width,
+      height
+    );
+    if(showBorder) {
+      ctx.strokeStyle = img.borderColor
+      ctx.lineWidth = 15;
+      ctx.strokeRect(0, 0, canvas.width, canvas.height);
+    }
+  }
+  imgObj.src = url;
+  const texture = new THREE.CanvasTexture(canvas)
+  texture.needsUpdate = true;
+
+  useFrame(() => {
+    texture.needsUpdate = true;
+  })
+
   return (
     <group
       rotation={
@@ -24,7 +149,7 @@ function Image({ position, rotation, opacity, url }) {
       position={position}
     >
       <mesh rotation={[-Math.PI / 2, 0, 0]}>
-        <planeBufferGeometry attach="geometry" args={[3, 3]} />
+        <planeBufferGeometry attach="geometry" args={[width, height]} />
         <meshBasicMaterial
           attach="material"
           map={texture}
@@ -60,40 +185,31 @@ const CameraElement = ({ cameraView }) => {
   }
 
   return (
-    <OrthographicCamera makeDefault zoom={100} position={[-100, 100, 100]} />
+    <OrthographicCamera
+      makeDefault
+      zoom={1}
+      position={[-100, 100, 100]}
+      near={-1000}
+      far={1000}
+    />
   );
 };
 
 const App = () => {
   const [cameraView, setCameraView] = useState("iso");
   const [opacity, setOpacity] = useState(50);
-  const [spacing, setSpacing] = useState(0.5);
-  const [imagesArr, setImagesArr] = useState([
-    {
-      id: 1,
-      url: "https://media.istockphoto.com/photos/stratified-squamous-epithelium-picture-id865398980?k=20&m=865398980&s=612x612&w=0&h=4App3rfAYGX6AR618AQHpd_wiktr3sYFD1KBAjOiMdA=",
-      name: "Image 1",
-    },
-    {
-      id: 2,
-      url: "/images/skin-tissue-1.jpg",
-      name: "Image 2",
-    },
-    {
-      id: 3,
-      url: "https://cdn.proactiveinvestors.com/eyJidWNrZXQiOiJwYS1jZG4iLCJrZXkiOiJ1cGxvYWRcL0FydGljbGVcL0ltYWdlXC8yMDE3XzA0XC9za2luLmpwZyIsImVkaXRzIjp7InJlc2l6ZSI6eyJ3aWR0aCI6MTIwMCwiaGVpZ2h0Ijo3NDAsImZpdCI6ImNvdmVyIn19fQ==",
-      name: "Image 3",
-    },
-  ]);
+  const [spacing, setSpacing] = useState(50);
+  const [imagesArr, setImagesArr] = useState(imgData);
+  const [showBorder, setShowBorder] = useState(true);
 
-  const filteredImages = imagesArr.filter((img) => !img.hidden)
+  const filteredImages = imagesArr.filter((img) => !img.hidden);
 
   const handleSpacingIncrease = () => {
-    setSpacing(spacing + 0.5);
+    setSpacing(spacing + SPACING);
   };
 
   const handleSpacingDecrease = () => {
-    if (spacing > 0.5) setSpacing(spacing - 0.5);
+    if (spacing > SPACING) setSpacing(spacing - SPACING);
   };
 
   const calcPosition = (index) => {
@@ -132,9 +248,7 @@ const App = () => {
   };
 
   const resetImages = () => {
-    setImagesArr((prevArray) =>
-      prevArray.map(({ hidden, transformX, transformY, opacity, rotation, ...rest }) => ({ ...rest }))
-    );
+    setImagesArr(imgData);
   };
 
   const mainOpacityChange = (e) => {
@@ -168,7 +282,7 @@ const App = () => {
       { ...imagesArr[index], hidden: !imagesArr[index].hidden },
       ...imagesArr.slice(index + 1),
     ]);
-  }
+  };
 
   const moveX = (index, opposite = false) => {
     setImagesArr([
@@ -186,18 +300,26 @@ const App = () => {
   const moveY = (index, opposite = false) => {
     setImagesArr([
       ...imagesArr.slice(0, index),
-      { ...imagesArr[index], transformY:
-        (imagesArr[index].transformY ? imagesArr[index].transformY : 0) +
-        (opposite ? -1 : 1) * Y_INCREMENT, },
+      {
+        ...imagesArr[index],
+        transformY:
+          (imagesArr[index].transformY ? imagesArr[index].transformY : 0) +
+          (opposite ? -1 : 1) * Y_INCREMENT,
+      },
       ...imagesArr.slice(index + 1),
     ]);
   };
+
+  const toggleShowBorder = () => {
+    setShowBorder((prevBorder) => !showBorder)
+  }
 
   return (
     <div id="canvas-container">
       <Canvas>
         <CameraElement cameraView={cameraView} />
         <OrbitControls
+          enablePan={false}
           onStart={() => {
             setCameraView("free");
           }}
@@ -206,11 +328,17 @@ const App = () => {
           {filteredImages.map((img, index) => {
             return (
               <Suspense key={index} fallback={null}>
-                <Image
-                  position={[img.transformX ? img.transformX : 0, calcPosition(index), img.transformY ? img.transformY : 0]}
+                <ImageElement
+                  position={[
+                    img.transformX ? img.transformX : 0,
+                    calcPosition(index),
+                    img.transformY ? img.transformY : 0,
+                  ]}
+                  img={img}
                   rotation={img.rotation}
                   url={img.url}
                   opacity={img.opacity ? img.opacity : opacity}
+                  showBorder={showBorder}
                 />
               </Suspense>
             );
@@ -218,7 +346,10 @@ const App = () => {
         </group>
       </Canvas>
       <div id="canvas-layers">
+        <div>
         <button onClick={resetImages}>Reset</button>
+        <button onClick={toggleShowBorder}>Toggle Border</button>
+        </div>
         <DragDropContext onDragEnd={handleDragEnd}>
           <Droppable droppableId="droppable">
             {(provided) => (
@@ -241,13 +372,20 @@ const App = () => {
                         className="layers-item"
                       >
                         <div>{img.name}</div>
-                        <div style={{display: 'flex', columnGap: '10px'}}>
-                          <div style={{cursor: "pointer"}} onClick={() => toggleImageVisibility(index)}>
-                          {img.hidden ? <AiFillEyeInvisible /> : <AiFillEye />}
+                        <div style={{ display: "flex", columnGap: "10px" }}>
+                          <div
+                            style={{ cursor: "pointer" }}
+                            onClick={() => toggleImageVisibility(index)}
+                          >
+                            {img.hidden ? (
+                              <AiFillEyeInvisible />
+                            ) : (
+                              <AiFillEye />
+                            )}
                           </div>
                           <GoSettings
-                          onClick={() => handleConfigureImage(img.id, index)}
-                          style={{ cursor: "pointer" }}
+                            onClick={() => handleConfigureImage(img.id, index)}
+                            style={{ cursor: "pointer" }}
                           />
                         </div>
                         {img.open && (
@@ -259,7 +397,10 @@ const App = () => {
                               X <button onClick={() => moveX(index)}>+</button>
                             </div>
                             <div>
-                              <button onClick={() => moveY(index)}>-</button> Y <button onClick={() => moveY(index, true)}>+</button>
+                              <button onClick={() => moveY(index)}>-</button> Y{" "}
+                              <button onClick={() => moveY(index, true)}>
+                                +
+                              </button>
                             </div>
                             <div>
                               <div>
