@@ -1,11 +1,8 @@
-import React, { Suspense, useState } from "react";
+import React, { Suspense, useEffect, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import "./App.css";
 import * as THREE from "three";
-import {
-  OrbitControls,
-  OrthographicCamera,
-} from "@react-three/drei";
+import { OrbitControls, OrthographicCamera } from "@react-three/drei";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import { GoSettings } from "react-icons/go";
 import { AiFillEyeInvisible, AiFillEye } from "react-icons/ai";
@@ -83,29 +80,157 @@ const SPACING = 50;
 //   },
 // };
 
-const imgData = [
-  {
-    id: 1,
-    url: "/images/H01BBB24P-6638.jpeg",
-    name: "Image 1",
-    start_x: 72.92708333333334,
-    start_y: 500.340522875817,
-    end_x: 597.0729166666666,
-    end_y: 1021.659477124183,
-    rotation: 98.56557776856678,
-    borderColor: randomColor()
+const registerData = {
+  request: {
+    reference_slide_info: {
+      slide_id: "H01BBB24P-6636",
+      grid_id: "grid_merged",
+      grids: [
+        {
+          id: "62a1a0760ca2c83b4d1efd56",
+          boundingBox: {
+            end_x: 588.0729166666666,
+            end_y: 1049.659477124183,
+            start_x: 32.92708333333334,
+            start_y: 206.340522875817,
+          },
+        },
+      ],
+      stainColor: "red-pink",
+    },
+    register_slide_info: [
+      {
+        slide_id: "H01BBB24P-6635",
+        grid_id: "grid_merged",
+        grids: [
+          {
+            id: "62a1a05c0ca2c83b4d1efd53",
+            boundingBox: {
+              end_x: 607.0729166666666,
+              end_y: 1103.659477124183,
+              start_x: 6.927083333333343,
+              start_y: 288.340522875817,
+            },
+          },
+        ],
+        stainColor: "red-pink",
+      },
+      {
+        slide_id: "H01BBB24P-6637",
+        grid_id: "grid_merged",
+        grids: [
+          {
+            id: "62a1a0920ca2c83b4d1efd59",
+            boundingBox: {
+              end_x: 596.0729166666666,
+              end_y: 1224,
+              start_x: 16.92708333333333,
+              start_y: 372.340522875817,
+            },
+          },
+          {
+            id: "62a1a0920ca2c83b4d1efd5a",
+            boundingBox: {
+              end_x: 546.0729166666666,
+              end_y: 318.659477124183,
+              start_x: 260.9270833333333,
+              start_y: 104.34052287581699,
+            },
+          },
+        ],
+        stainColor: "cyan",
+      },
+    ],
   },
-  {
-    id: 2,
-    url: "/images/H01BBB24P-6639.jpeg",
-    name: "Image 2",
-    end_x: 590.0729166666666,
-    end_y: 711.659477124183,
-    start_x: 66.92708333333334,
-    start_y: 204.340522875817,
-    borderColor: randomColor()
+  response: {
+    status: true,
+    reference_slide_info: {
+      slide_id: "H01BBB24P-6636",
+      grid_id: "grid_merged",
+    },
+    register_slide_info: [
+      {
+        slide_id: "H01BBB24P-6635",
+        grid_id: "grid_merged",
+        tilt: 0.930132519249635,
+        x_disp: 7.7257975320275385,
+        y_disp: -60.64126411821617,
+        x_scale: 0.9932316080455453,
+        y_scale: 0.9961912835987787,
+        x_skew: 0.006646505876389043,
+        y_skew: 0,
+      },
+      {
+        slide_id: "H01BBB24P-6637",
+        grid_id: "grid_merged",
+        tilt: 171.52440438387183,
+        x_disp: 693.2506683300645,
+        y_disp: 1230.1780663414054,
+        x_scale: 0.9955137468889019,
+        y_scale: 1.117638255636144,
+        x_skew: -0.05524755652754538,
+        y_skew: 0,
+      },
+    ],
   },
-];
+};
+
+function getImgData() {
+  const reference = registerData.request.reference_slide_info;
+  const registerRequest = registerData.request.register_slide_info;
+  const registerResponse = registerData.response.register_slide_info;
+  const registerArr = registerRequest.map((itm) => {
+    const foundItem = registerResponse.find(
+      (item) => itm.slide_id === item.slide_id && item
+    );
+    return {
+      ...foundItem,
+      rotation: foundItem.tilt,
+      id: itm.slide_id,
+      ...itm.grids[0].boundingBox,
+      url: `/images/${itm.slide_id}.jpeg`,
+      borderColor: randomColor(),
+      name: itm.slide_id,
+    };
+  });
+  let arr = [];
+  arr.push({
+    id: reference.slide_id,
+    name: reference.slide_id,
+    url: `/images/${reference.slide_id}.jpeg`,
+    borderColor: randomColor(),
+    ...reference.grids[0].boundingBox,
+  });
+  arr = [...arr, ...registerArr];
+  console.log(arr);
+  return arr;
+}
+
+const imgData = getImgData();
+
+// const imgData = [
+//   {
+//     id: 1,
+//     url: "/images/H01BBB24P-6638.jpeg",
+//     name: "Image 1",
+//     start_x: 72.92708333333334,
+//     start_y: 500.340522875817,
+//     end_x: 597.0729166666666,
+//     end_y: 1021.659477124183,
+//     rotation: 98.56557776856678,
+//     borderColor: randomColor(),
+//   },
+//   {
+//     id: 2,
+//     url: "/images/H01BBB24P-6639.jpeg",
+//     name: "Image 2",
+//     end_x: 590.0729166666666,
+//     end_y: 711.659477124183,
+//     start_x: 66.92708333333334,
+//     start_y: 204.340522875817,
+//     borderColor: randomColor(),
+//   },
+// ];
 
 function ImageElement({ position, rotation, opacity, url, img, showBorder }) {
   const width = img.end_x - img.start_x;
@@ -115,7 +240,7 @@ function ImageElement({ position, rotation, opacity, url, img, showBorder }) {
   canvas.height = height;
   const ctx = canvas.getContext("2d");
   const imgObj = new Image();
-  imgObj.onload = function() {
+  imgObj.onload = function () {
     ctx.drawImage(
       imgObj,
       img.start_x,
@@ -127,19 +252,19 @@ function ImageElement({ position, rotation, opacity, url, img, showBorder }) {
       width,
       height
     );
-    if(showBorder) {
-      ctx.strokeStyle = img.borderColor
+    if (showBorder) {
+      ctx.strokeStyle = img.borderColor;
       ctx.lineWidth = 15;
       ctx.strokeRect(0, 0, canvas.width, canvas.height);
     }
-  }
+  };
   imgObj.src = url;
-  const texture = new THREE.CanvasTexture(canvas)
+  const texture = new THREE.CanvasTexture(canvas);
   texture.needsUpdate = true;
 
   useFrame(() => {
     texture.needsUpdate = true;
-  })
+  });
 
   return (
     <group
@@ -196,9 +321,10 @@ const CameraElement = ({ cameraView }) => {
 };
 
 const App = () => {
+  const mounted = useRef(true);
   const [cameraView, setCameraView] = useState("iso");
   const [opacity, setOpacity] = useState(50);
-  const [spacing, setSpacing] = useState(50);
+  const [spacing, setSpacing] = useState(200);
   const [imagesArr, setImagesArr] = useState(imgData);
   const [showBorder, setShowBorder] = useState(true);
 
@@ -311,8 +437,12 @@ const App = () => {
   };
 
   const toggleShowBorder = () => {
-    setShowBorder((prevBorder) => !showBorder)
-  }
+    setShowBorder((prevBorder) => !showBorder);
+  };
+
+  useEffect(() => {
+    mounted.current = false;
+  }, []);
 
   return (
     <div id="canvas-container">
@@ -347,8 +477,8 @@ const App = () => {
       </Canvas>
       <div id="canvas-layers">
         <div>
-        <button onClick={resetImages}>Reset</button>
-        <button onClick={toggleShowBorder}>Toggle Border</button>
+          <button onClick={resetImages}>Reset</button>
+          <button onClick={toggleShowBorder}>Toggle Border</button>
         </div>
         <DragDropContext onDragEnd={handleDragEnd}>
           <Droppable droppableId="droppable">
@@ -364,76 +494,126 @@ const App = () => {
                     draggableId={`${img.id}`}
                     index={index}
                   >
-                    {(provided) => (
-                      <div
-                        {...provided.draggableProps}
-                        {...provided.dragHandleProps}
-                        ref={provided.innerRef}
-                        className="layers-item"
-                      >
-                        <div>{img.name}</div>
-                        <div style={{ display: "flex", columnGap: "10px" }}>
-                          <div
-                            style={{ cursor: "pointer" }}
-                            onClick={() => toggleImageVisibility(index)}
-                          >
-                            {img.hidden ? (
-                              <AiFillEyeInvisible />
-                            ) : (
-                              <AiFillEye />
+                    {(provided) => {
+                      if (mounted.current) {
+                        const width = img.end_x - img.start_x;
+                        const height = img.end_y - img.start_y;
+                        const canvas = document.createElement("canvas");
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext("2d");
+                        const imgObj = new Image();
+                        imgObj.onload = function () {
+                          ctx.drawImage(
+                            imgObj,
+                            img.start_x,
+                            img.start_y,
+                            width,
+                            height,
+                            0,
+                            0,
+                            width,
+                            height
+                          );
+                          const layersItem = document.getElementById(
+                            `layers-item-canvas-${img.id}`
+                          );
+                          const imgSrc = canvas.toDataURL();
+                          const newImg = new Image();
+                          newImg.src = imgSrc;
+                          newImg.style.width = "100%";
+                          newImg.style.border = `3px solid ${img.borderColor}`;
+                          newImg.classList.add("layers-item-canvas");
+                          layersItem.appendChild(newImg);
+                        };
+                        imgObj.src = img.url;
+                      }
+
+                      return (
+                        <div
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}
+                          ref={provided.innerRef}
+                          className="layers-item-data"
+                        >
+                          <div className="layers-item-img">
+                            <div id={`layers-item-canvas-${img.id}`}></div>
+                          </div>
+                          <div className="layers-item">
+                            <div>{img.name}</div>
+                            <div style={{ display: "flex", columnGap: "10px" }}>
+                              <div
+                                style={{ cursor: "pointer" }}
+                                onClick={() => toggleImageVisibility(index)}
+                              >
+                                {img.hidden ? (
+                                  <AiFillEyeInvisible />
+                                ) : (
+                                  <AiFillEye />
+                                )}
+                              </div>
+                              <GoSettings
+                                onClick={() =>
+                                  handleConfigureImage(img.id, index)
+                                }
+                                style={{ cursor: "pointer" }}
+                              />
+                            </div>
+                            {img.open && (
+                              <div>
+                                <div>
+                                  <button onClick={() => moveX(index, true)}>
+                                    -
+                                  </button>{" "}
+                                  X{" "}
+                                  <button onClick={() => moveX(index)}>
+                                    +
+                                  </button>
+                                </div>
+                                <div>
+                                  <button onClick={() => moveY(index)}>
+                                    -
+                                  </button>{" "}
+                                  Y{" "}
+                                  <button onClick={() => moveY(index, true)}>
+                                    +
+                                  </button>
+                                </div>
+                                <div>
+                                  <div>
+                                    Opacity{" "}
+                                    {img.opacity ? img.opacity : opacity}%
+                                  </div>
+                                  <input
+                                    id="target-image-opacity"
+                                    type="range"
+                                    value={img.opacity ? img.opacity : opacity}
+                                    onChange={(e) =>
+                                      targetImageOpacityChange(e, index)
+                                    }
+                                    min={1}
+                                    max={100}
+                                  />
+                                </div>
+                                <div>
+                                  <div>
+                                    Rotation {img.rotation ? img.rotation : 0}
+                                  </div>
+                                  <input
+                                    id="target-image-opacity"
+                                    type="range"
+                                    value={img.rotation ? img.rotation : 0}
+                                    onChange={(e) => rotationHandler(e, index)}
+                                    min={-180}
+                                    max={180}
+                                  />
+                                </div>
+                              </div>
                             )}
                           </div>
-                          <GoSettings
-                            onClick={() => handleConfigureImage(img.id, index)}
-                            style={{ cursor: "pointer" }}
-                          />
                         </div>
-                        {img.open && (
-                          <div>
-                            <div>
-                              <button onClick={() => moveX(index, true)}>
-                                -
-                              </button>{" "}
-                              X <button onClick={() => moveX(index)}>+</button>
-                            </div>
-                            <div>
-                              <button onClick={() => moveY(index)}>-</button> Y{" "}
-                              <button onClick={() => moveY(index, true)}>
-                                +
-                              </button>
-                            </div>
-                            <div>
-                              <div>
-                                Opacity {img.opacity ? img.opacity : opacity}%
-                              </div>
-                              <input
-                                id="target-image-opacity"
-                                type="range"
-                                value={img.opacity ? img.opacity : opacity}
-                                onChange={(e) =>
-                                  targetImageOpacityChange(e, index)
-                                }
-                                min={1}
-                                max={100}
-                              />
-                            </div>
-                            <div>
-                              <div>
-                                Rotation {img.rotation ? img.rotation : 0}
-                              </div>
-                              <input
-                                id="target-image-opacity"
-                                type="range"
-                                value={img.rotation ? img.rotation : 0}
-                                onChange={(e) => rotationHandler(e, index)}
-                                min={-180}
-                                max={180}
-                              />
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
+                      );
+                    }}
                   </Draggable>
                 ))}
                 {provided.placeholder}
