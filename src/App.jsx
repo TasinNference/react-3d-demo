@@ -10,6 +10,8 @@ import randomColor from "randomcolor";
 
 const X_INCREMENT = 1;
 const Y_INCREMENT = 1;
+const X_SCALE_INCREMENT = 0.1;
+const Y_SCALE_INCREMENT = 0.1;
 const SPACING = 50;
 
 // const imgData = {
@@ -191,6 +193,8 @@ function getImgData() {
       url: `/images/${itm.slide_id}.jpeg`,
       borderColor: randomColor(),
       name: itm.slide_id,
+      scaleX: foundItem.x_scale,
+      scaleY: foundItem.y_scale
     };
   });
   let arr = [];
@@ -241,6 +245,8 @@ function ImageElement({ position, rotation, opacity, url, img, showBorder }) {
   const ctx = canvas.getContext("2d");
   const imgObj = new Image();
   imgObj.onload = function () {
+    ctx.save()
+    ctx.globalAlpha = opacity/100;
     ctx.drawImage(
       imgObj,
       img.start_x,
@@ -252,6 +258,7 @@ function ImageElement({ position, rotation, opacity, url, img, showBorder }) {
       width,
       height
     );
+    ctx.restore();
     if (showBorder) {
       ctx.strokeStyle = img.borderColor;
       ctx.lineWidth = 15;
@@ -268,6 +275,7 @@ function ImageElement({ position, rotation, opacity, url, img, showBorder }) {
 
   return (
     <group
+      scale={new THREE.Vector3(img.scaleX ? img.scaleX : 1, 1, img.scaleY ? img.scaleY : 1)}
       rotation={
         rotation ? [0, THREE.MathUtils.degToRad(-rotation), 0] : [0, 0, 0]
       }
@@ -280,7 +288,6 @@ function ImageElement({ position, rotation, opacity, url, img, showBorder }) {
           map={texture}
           side={THREE.DoubleSide}
           transparent={true}
-          opacity={opacity / 100}
         />
       </mesh>
     </group>
@@ -297,10 +304,6 @@ const CameraElement = ({ cameraView }) => {
       camera.position.set(0, 0, 100);
       break;
 
-    case "back":
-      camera.position.set(0, 0, -100);
-      break;
-
     case "iso":
       camera.position.set(-100, 100, 100);
       break;
@@ -312,10 +315,10 @@ const CameraElement = ({ cameraView }) => {
   return (
     <OrthographicCamera
       makeDefault
-      zoom={1}
+      zoom={0.5}
       position={[-100, 100, 100]}
-      near={-1000}
-      far={1000}
+      near={-10000}
+      far={10000}
     />
   );
 };
@@ -398,10 +401,6 @@ const App = () => {
     setCameraView("iso");
   };
 
-  const toBackView = () => {
-    setCameraView("back");
-  };
-
   const toggleImageVisibility = (index) => {
     setImagesArr([
       ...imagesArr.slice(0, index),
@@ -436,6 +435,28 @@ const App = () => {
     ]);
   };
 
+  const scaleX = (e, index) => {
+    setImagesArr([
+      ...imagesArr.slice(0, index),
+      {
+        ...imagesArr[index],
+        scaleX: e.target.value,
+      },
+      ...imagesArr.slice(index + 1),
+    ]);
+  };
+
+  const scaleY = (e, index) => {
+    setImagesArr([
+      ...imagesArr.slice(0, index),
+      {
+        ...imagesArr[index],
+        scaleY: e.target.value,
+      },
+      ...imagesArr.slice(index + 1),
+    ]);
+  };
+
   const toggleShowBorder = () => {
     setShowBorder((prevBorder) => !showBorder);
   };
@@ -449,10 +470,14 @@ const App = () => {
       <Canvas>
         <CameraElement cameraView={cameraView} />
         <OrbitControls
-          enablePan={false}
           onStart={() => {
             setCameraView("free");
           }}
+          // minPolarAngle={-Math.PI/2}
+          // maxPolarAngle={Math.PI/2}
+          maxAzimuthAngle={Math.PI/2}
+          minAzimuthAngle={-Math.PI/2}
+          keys={{LEFT: 'ArrowLeft', RIGHT: 'ArrowRight', UP: 'ArrowUp', BOTTOM: 'ArrowDown'}}
         />
         <group rotation={[Math.PI / 2, 0, 0]}>
           {filteredImages.map((img, index) => {
@@ -608,6 +633,40 @@ const App = () => {
                                     max={180}
                                   />
                                 </div>
+                                <div>
+                                  <div>
+                                    Scale X: {" "}
+                                    {img.scaleX ? img.scaleX : 1}
+                                  </div>
+                                  <input
+                                    id="target-image-scaleX"
+                                    type="range"
+                                    value={img.scaleX ? img.scaleX : 1}
+                                    onChange={(e) =>
+                                      scaleX(e, index)
+                                    }
+                                    step={X_SCALE_INCREMENT}
+                                    min={0.5}
+                                    max={2}
+                                  />
+                                </div>
+                                <div>
+                                  <div>
+                                    Scale Y: {" "}
+                                    {img.scaleY ? img.scaleY : 1}
+                                  </div>
+                                  <input
+                                    id="target-image-scaleY"
+                                    type="range"
+                                    value={img.scaleY ? img.scaleY : 1}
+                                    onChange={(e) =>
+                                      scaleY(e, index)
+                                    }
+                                    step={Y_SCALE_INCREMENT}
+                                    min={0.5}
+                                    max={2}
+                                  />
+                                </div>
                               </div>
                             )}
                           </div>
@@ -624,7 +683,6 @@ const App = () => {
       </div>
       <div id="canvas-view-changer">
         <button onClick={toFrontView}>Front</button>
-        <button onClick={toBackView}>Back</button>
         <button onClick={toIsoView}>Isometric</button>
       </div>
       <div id="canvas-controls">
