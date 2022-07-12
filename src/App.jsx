@@ -1,12 +1,20 @@
-import React, { Suspense, useEffect, useRef, useState } from "react";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import React, { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { Canvas, createPortal, useFrame, useThree } from "@react-three/fiber";
 import "./App.css";
 import * as THREE from "three";
-import { OrbitControls, OrthographicCamera } from "@react-three/drei";
+import {
+  OrbitControls,
+  OrthographicCamera,
+  useCamera,
+} from "@react-three/drei";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import { GoSettings } from "react-icons/go";
 import { AiFillEyeInvisible, AiFillEye } from "react-icons/ai";
 import randomColor from "randomcolor";
+import { Matrix4, Scene } from "three";
+import { CameraControls } from "./CameraControls";
+import * as holdEvent from "hold-event";
+import { ButtonBase, IconButton } from "@mui/material";
 
 const X_INCREMENT = 1;
 const Y_INCREMENT = 1;
@@ -177,6 +185,56 @@ const registerData = {
   },
 };
 
+function Viewcube() {
+  const { gl, scene, camera, size } = useThree();
+  const virtualScene = useMemo(() => new Scene(), []);
+  const virtualCam = useRef();
+  const ref = useRef();
+  const [hover, set] = useState(null);
+  const matrix = new Matrix4();
+
+  useFrame(() => {
+    matrix.copy(camera.matrix).invert();
+    ref.current.quaternion.setFromRotationMatrix(matrix);
+    gl.autoClear = true;
+    gl.render(scene, camera);
+    gl.autoClear = false;
+    gl.clearDepth();
+    gl.render(virtualScene, virtualCam.current);
+  }, 1);
+
+  return createPortal(
+    <>
+      <OrthographicCamera
+        ref={virtualCam}
+        makeDefault={false}
+        position={[0, 0, 100]}
+      />
+      <mesh
+        ref={ref}
+        raycast={useCamera(virtualCam)}
+        position={[size.width / 2 - 80, size.height / 2 - 80, 0]}
+        onPointerOut={(e) => set(null)}
+        onPointerMove={(e) => set(Math.floor(e.faceIndex / 2))}
+      >
+        {[...Array(6)].map((_, index) => {
+          return (
+            <meshLambertMaterial
+              attachArray="material"
+              key={index}
+              color={index === hover ? "hotpink" : "white"}
+            />
+          );
+        })}
+        <boxGeometry args={[60, 60, 60]} />
+      </mesh>
+      <ambientLight intensity={0.5} />
+      <pointLight position={[10, 10, 10]} intensity={0.5} />
+    </>,
+    virtualScene
+  );
+}
+
 function getImgData() {
   const reference = registerData.request.reference_slide_info;
   const registerRequest = registerData.request.register_slide_info;
@@ -194,7 +252,7 @@ function getImgData() {
       borderColor: randomColor(),
       name: itm.slide_id,
       scaleX: foundItem.x_scale,
-      scaleY: foundItem.y_scale
+      scaleY: foundItem.y_scale,
     };
   });
   let arr = [];
@@ -245,8 +303,8 @@ function ImageElement({ position, rotation, opacity, url, img, showBorder }) {
   const ctx = canvas.getContext("2d");
   const imgObj = new Image();
   imgObj.onload = function () {
-    ctx.save()
-    ctx.globalAlpha = opacity/100;
+    ctx.save();
+    ctx.globalAlpha = opacity / 100;
     ctx.drawImage(
       imgObj,
       img.start_x,
@@ -275,7 +333,13 @@ function ImageElement({ position, rotation, opacity, url, img, showBorder }) {
 
   return (
     <group
-      scale={new THREE.Vector3(img.scaleX ? img.scaleX : 1, 1, img.scaleY ? img.scaleY : 1)}
+      scale={
+        new THREE.Vector3(
+          img.scaleX ? img.scaleX : 1,
+          1,
+          img.scaleY ? img.scaleY : 1
+        )
+      }
       rotation={
         rotation ? [0, THREE.MathUtils.degToRad(-rotation), 0] : [0, 0, 0]
       }
@@ -295,25 +359,16 @@ function ImageElement({ position, rotation, opacity, url, img, showBorder }) {
 }
 
 const CameraElement = ({ cameraView }) => {
-  const { camera } = useThree();
+  const ref = useRef();
+  const set = useThree((state) => state.set);
 
-  console.log(cameraView);
-
-  switch (cameraView) {
-    case "front":
-      camera.position.set(0, 0, 100);
-      break;
-
-    case "iso":
-      camera.position.set(-100, 100, 100);
-      break;
-
-    default:
-      break;
-  }
+  useEffect(() => {
+    void set(ref.current);
+  }, []);
 
   return (
     <OrthographicCamera
+      ref={ref}
       makeDefault
       zoom={0.5}
       position={[-100, 100, 100]}
@@ -324,6 +379,7 @@ const CameraElement = ({ cameraView }) => {
 };
 
 const App = () => {
+  const mesh = useRef();
   const mounted = useRef(true);
   const [cameraView, setCameraView] = useState("iso");
   const [opacity, setOpacity] = useState(50);
@@ -378,6 +434,7 @@ const App = () => {
 
   const resetImages = () => {
     setImagesArr(imgData);
+    switchToView('front')
   };
 
   const mainOpacityChange = (e) => {
@@ -465,21 +522,116 @@ const App = () => {
     mounted.current = false;
   }, []);
 
+  const [cameraControls, setCameraControls] = useState(null);
+
+  const DEG90 = Math.PI / 2;
+  const DEG45 = Math.PI / 4;
+  const DEG180 = Math.PI;
+
+  const switchToView = (view) => {
+    if (!cameraControls) return;
+
+    switch (view) {
+      case "front":
+        cameraControls.rotateTo(0, THREE.MathUtils.DEG2RAD * 90, true);
+        break;
+
+      case "iso":
+        cameraControls.rotateTo(0, THREE.MathUtils.DEG2RAD * 45, true);
+        break;
+
+      default:
+        break;
+    }
+    fitToMesh();
+  };
+
+  useEffect(() => {
+    if (cameraControls) {
+      cameraControls.addEventListener("rest", () => {
+        console.log("done");
+        cameraControls.setOrbitPoint(0, 0, 0);
+      });
+
+      const KEYCODE = {
+        W: 87,
+        A: 65,
+        S: 83,
+        D: 68,
+        ARROW_LEFT: 37,
+        ARROW_UP: 38,
+        ARROW_RIGHT: 39,
+        ARROW_DOWN: 40,
+      };
+
+      const wKey = new holdEvent.KeyboardKeyHold(KEYCODE.W, 16.666);
+      const aKey = new holdEvent.KeyboardKeyHold(KEYCODE.A, 16.666);
+      const sKey = new holdEvent.KeyboardKeyHold(KEYCODE.S, 16.666);
+      const dKey = new holdEvent.KeyboardKeyHold(KEYCODE.D, 16.666);
+      aKey.addEventListener("holding", function (event) {
+        cameraControls.truck(0.1 * event.deltaTime, 0, false);
+      });
+      dKey.addEventListener("holding", function (event) {
+        cameraControls.truck(-0.1 * event.deltaTime, 0, false);
+      });
+      wKey.addEventListener("holding", function (event) {
+        cameraControls.truck(0, 0.1 * event.deltaTime, false);
+      });
+      sKey.addEventListener("holding", function (event) {
+        cameraControls.truck(0, -0.1 * event.deltaTime, false);
+      });
+
+      const leftKey = new holdEvent.KeyboardKeyHold(KEYCODE.ARROW_LEFT, 100);
+      const rightKey = new holdEvent.KeyboardKeyHold(KEYCODE.ARROW_RIGHT, 100);
+      const upKey = new holdEvent.KeyboardKeyHold(KEYCODE.ARROW_UP, 100);
+      const downKey = new holdEvent.KeyboardKeyHold(KEYCODE.ARROW_DOWN, 100);
+      leftKey.addEventListener("holding", function (event) {
+        cameraControls.rotate(
+          0.05 * THREE.MathUtils.DEG2RAD * event.deltaTime,
+          0,
+          true
+        );
+      });
+      rightKey.addEventListener("holding", function (event) {
+        cameraControls.rotate(
+          -0.05 * THREE.MathUtils.DEG2RAD * event.deltaTime,
+          0,
+          true
+        );
+      });
+      upKey.addEventListener("holding", function (event) {
+        cameraControls.rotate(
+          0,
+          0.05 * THREE.MathUtils.DEG2RAD * event.deltaTime,
+          true
+        );
+      });
+      downKey.addEventListener("holding", function (event) {
+        cameraControls.rotate(
+          0,
+          -0.05 * THREE.MathUtils.DEG2RAD * event.deltaTime,
+          true
+        );
+      });
+    }
+  }, [cameraControls]);
+
+  function fitToMesh() {
+    cameraControls.fitToBox(mesh.current, true, {
+      paddingTop: 50,
+      paddingBottom: 50,
+      paddingRight: 50,
+      paddingLeft: 50,
+    });
+  }
+
   return (
-    <div id="canvas-container">
+    <div fontFamily="sans-serif" id="canvas-container">
       <Canvas>
-        <CameraElement cameraView={cameraView} />
-        <OrbitControls
-          onStart={() => {
-            setCameraView("free");
-          }}
-          // minPolarAngle={-Math.PI/2}
-          // maxPolarAngle={Math.PI/2}
-          maxAzimuthAngle={Math.PI/2}
-          minAzimuthAngle={-Math.PI/2}
-          keys={{LEFT: 'ArrowLeft', RIGHT: 'ArrowRight', UP: 'ArrowUp', BOTTOM: 'ArrowDown'}}
-        />
-        <group rotation={[Math.PI / 2, 0, 0]}>
+        <CameraElement />
+        <CameraControls ref={setCameraControls} />
+        <Viewcube />
+        <group ref={mesh} rotation={[Math.PI / 2, 0, 0]}>
           {filteredImages.map((img, index) => {
             return (
               <Suspense key={index} fallback={null}>
@@ -565,24 +717,29 @@ const App = () => {
                             <div id={`layers-item-canvas-${img.id}`}></div>
                           </div>
                           <div className="layers-item">
-                            <div>{img.name}</div>
-                            <div style={{ display: "flex", columnGap: "10px" }}>
-                              <div
-                                style={{ cursor: "pointer" }}
-                                onClick={() => toggleImageVisibility(index)}
-                              >
-                                {img.hidden ? (
-                                  <AiFillEyeInvisible />
-                                ) : (
-                                  <AiFillEye />
-                                )}
+                            <div className="layers-info">
+                              <div>{img.name}</div>
+                              <div style={{ display: "flex" }}>
+                                <IconButton
+                                  size="small"
+                                  style={{ cursor: "pointer" }}
+                                  onClick={() => toggleImageVisibility(index)}
+                                >
+                                  {img.hidden ? (
+                                    <AiFillEyeInvisible />
+                                  ) : (
+                                    <AiFillEye />
+                                  )}
+                                </IconButton>
+                                <IconButton
+                                  size="small"
+                                  onClick={() =>
+                                    handleConfigureImage(img.id, index)
+                                  }
+                                >
+                                  <GoSettings style={{ cursor: "pointer" }} />
+                                </IconButton>
                               </div>
-                              <GoSettings
-                                onClick={() =>
-                                  handleConfigureImage(img.id, index)
-                                }
-                                style={{ cursor: "pointer" }}
-                              />
                             </div>
                             {img.open && (
                               <div>
@@ -635,16 +792,13 @@ const App = () => {
                                 </div>
                                 <div>
                                   <div>
-                                    Scale X: {" "}
-                                    {img.scaleX ? img.scaleX : 1}
+                                    Scale X: {img.scaleX ? img.scaleX : 1}
                                   </div>
                                   <input
                                     id="target-image-scaleX"
                                     type="range"
                                     value={img.scaleX ? img.scaleX : 1}
-                                    onChange={(e) =>
-                                      scaleX(e, index)
-                                    }
+                                    onChange={(e) => scaleX(e, index)}
                                     step={X_SCALE_INCREMENT}
                                     min={0.5}
                                     max={2}
@@ -652,16 +806,13 @@ const App = () => {
                                 </div>
                                 <div>
                                   <div>
-                                    Scale Y: {" "}
-                                    {img.scaleY ? img.scaleY : 1}
+                                    Scale Y: {img.scaleY ? img.scaleY : 1}
                                   </div>
                                   <input
                                     id="target-image-scaleY"
                                     type="range"
                                     value={img.scaleY ? img.scaleY : 1}
-                                    onChange={(e) =>
-                                      scaleY(e, index)
-                                    }
+                                    onChange={(e) => scaleY(e, index)}
                                     step={Y_SCALE_INCREMENT}
                                     min={0.5}
                                     max={2}
@@ -682,8 +833,8 @@ const App = () => {
         </DragDropContext>
       </div>
       <div id="canvas-view-changer">
-        <button onClick={toFrontView}>Front</button>
-        <button onClick={toIsoView}>Isometric</button>
+        <button onClick={() => switchToView("front")}>Front</button>
+        <button onClick={() => switchToView("iso")}>Isometric</button>
       </div>
       <div id="canvas-controls">
         <div className="input-group">
