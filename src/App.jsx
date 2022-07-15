@@ -323,7 +323,15 @@ const imgData = getImgData();
 //   },
 // ];
 
-function ImageElement({ position, rotation, opacity, url, img, showBorder }) {
+function ImageElement({
+  position,
+  globalRotation,
+  rotation,
+  opacity,
+  url,
+  img,
+  showBorder,
+}) {
   const [imgLoaded, setImgLoaded] = useState(false);
   const texture = useRef();
   const width = useRef();
@@ -361,7 +369,6 @@ function ImageElement({ position, rotation, opacity, url, img, showBorder }) {
       canvas.height = height.current;
       ctx.save();
       ctx.globalAlpha = opacity / 100;
-      // console.log(imgObj)
       ctx.drawImage(imgObj.current, 0, 0);
       texture.current = new THREE.CanvasTexture(canvas);
       texture.current.needsUpdate = true;
@@ -391,7 +398,9 @@ function ImageElement({ position, rotation, opacity, url, img, showBorder }) {
           )
         }
         rotation={
-          rotation ? [0, THREE.MathUtils.degToRad(-rotation), 0] : [0, 0, 0]
+          rotation
+            ? [0, THREE.MathUtils.degToRad(-rotation - globalRotation), 0]
+            : [0, THREE.MathUtils.degToRad(-globalRotation), 0]
         }
         position={position}
       >
@@ -433,6 +442,7 @@ const CameraElement = ({ cameraView }) => {
 };
 
 const App = () => {
+  const [globalRotation, setGlobalRotation] = useState(0);
   const mesh = useRef();
   const mounted = useRef(true);
   const [cameraView, setCameraView] = useState("iso");
@@ -443,6 +453,10 @@ const App = () => {
   const [currentTab, setCurrentTab] = useState(0);
 
   const filteredImages = imagesArr.filter((img) => !img.hidden);
+
+  useEffect(() => {
+    console.log(imagesArr);
+  }, [globalRotation]);
 
   const handleSpacingIncrease = () => {
     setSpacing(spacing + SPACING);
@@ -490,6 +504,9 @@ const App = () => {
   const resetImages = () => {
     setImagesArr(imgData);
     switchToView("front");
+    setGlobalRotation(0);
+    setSpacing(200);
+    setOpacity(50);
   };
 
   const mainOpacityChange = (e) => {
@@ -687,10 +704,10 @@ const App = () => {
         <Viewcube />
         <group ref={mesh} rotation={[Math.PI / 2, 0, 0]}>
           {filteredImages.map((img, index) => {
-            console.log(img.img, index);
             return (
               <Suspense key={index} fallback={null}>
                 <ImageElement
+                  globalRotation={globalRotation}
                   position={[
                     img.transformX ? img.transformX : 0,
                     calcPosition(index),
@@ -746,7 +763,7 @@ const App = () => {
             height: "100%",
             overflowY: "auto",
             backgroundColor: "#f5f5f5",
-            padding: "15px"
+            padding: "15px",
           }}
         >
           <div
@@ -787,7 +804,9 @@ const App = () => {
                               />
                               <div className="layers-item">
                                 <div className="layers-info">
-                                  <Typography variant="subtitle2">{img.name}</Typography>
+                                  <Typography variant="subtitle2">
+                                    {img.name}
+                                  </Typography>
                                   <div style={{ display: "flex" }}>
                                     <IconButton
                                       size="small"
@@ -824,7 +843,7 @@ const App = () => {
                                     }}
                                   >
                                     <TextField
-                                      defaultValue={
+                                      value={
                                         img.transformX
                                           ? roundNum(img.transformX)
                                           : 0
@@ -844,7 +863,7 @@ const App = () => {
                                       }
                                     />
                                     <TextField
-                                      defaultValue={
+                                      value={
                                         roundNum(img.transformY)
                                           ? img.transformY
                                           : 0
@@ -864,7 +883,7 @@ const App = () => {
                                       }
                                     />
                                     <TextField
-                                      defaultValue={
+                                      value={
                                         img.scaleX ? roundNum(img.scaleX) : 1
                                       }
                                       fullWidth
@@ -880,7 +899,7 @@ const App = () => {
                                       onChange={(e) => scaleX(e, index)}
                                     />
                                     <TextField
-                                      defaultValue={
+                                      value={
                                         img.scaleY ? roundNum(img.scaleY) : 1
                                       }
                                       fullWidth
@@ -896,14 +915,14 @@ const App = () => {
                                       onChange={(e) => scaleY(e, index)}
                                     />
                                     <TextField
-                                      defaultValue={
+                                      value={
                                         img.opacity
                                           ? roundNum(img.opacity)
                                           : roundNum(opacity)
                                       }
                                       fullWidth
                                       size="small"
-                                      label="Opacity"
+                                      label="Opacity (Percent)"
                                       type="number"
                                       inputProps={{
                                         step: "1",
@@ -918,14 +937,14 @@ const App = () => {
                                       }
                                     />
                                     <TextField
-                                      defaultValue={
+                                      value={
                                         img.rotation
                                           ? roundNum(img.rotation)
                                           : roundNum(0)
                                       }
                                       fullWidth
                                       size="small"
-                                      label="Rotation"
+                                      label="Rotation (Degrees)"
                                       type="number"
                                       inputProps={{
                                         step: "1",
@@ -952,10 +971,75 @@ const App = () => {
             </DragDropContext>
           </div>
           <div style={{ display: currentTab === 1 ? "block" : "none" }}>
-            Item two
+            Camera controls
           </div>
-          <div style={{ display: currentTab === 2 ? "block" : "none" }}>
-            <Button onClick={resetImages} fullWidth size='small' variant='contained'>Reset All</Button>
+          <div
+            style={{
+              display: currentTab === 2 ? "grid" : "none",
+              rowGap: "10px",
+            }}
+          >
+            <TextField
+              value={spacing}
+              fullWidth
+              size="small"
+              label="Image Spacing"
+              type="number"
+              inputProps={{
+                step: "50",
+              }}
+              InputLabelProps={{
+                shrink: true,
+              }}
+              onChange={(e) => setSpacing(e.target.value)}
+            />
+            <TextField
+              value={opacity}
+              fullWidth
+              size="small"
+              label="Global Opacity (Percent)"
+              type="number"
+              inputProps={{
+                step: "1",
+                max: 100,
+                min: 1,
+              }}
+              InputLabelProps={{
+                shrink: true,
+              }}
+              onChange={(e) => mainOpacityChange(e)}
+            />
+            <TextField
+              value={globalRotation}
+              fullWidth
+              size="small"
+              label="Global Rotation"
+              type="number"
+              inputProps={{
+                step: "1",
+              }}
+              InputLabelProps={{
+                shrink: true,
+              }}
+              onChange={(e) => setGlobalRotation(e.target.value)}
+            />
+            <Button
+              onClick={() => setShowBorder(!showBorder)}
+              fullWidth
+              size="small"
+              variant="contained"
+            >
+              Toggle Borders
+            </Button>
+            <Button
+              onClick={resetImages}
+              fullWidth
+              size="small"
+              variant="contained"
+              color="warning"
+            >
+              Reset All
+            </Button>
           </div>
         </div>
       </div>
