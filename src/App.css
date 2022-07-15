@@ -15,6 +15,7 @@
   position: absolute;
   right: 10px;
   bottom: 10px;
+  display: none;
 }
 
 .input-group {
@@ -28,12 +29,12 @@
   bottom: 10px;
   box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
   background-color: white;
+  display: grid;
+  grid-template-rows: auto 1fr;
 }
 
 .layers-container {
-  padding: 15px;
   border-radius: 4px;
-  padding-bottom: 5px;
   overflow-y: scroll;
   max-height: 100%;
 }
@@ -47,7 +48,6 @@
 .layers-item-data {
   padding: 8px;
   background-color: white;
-  border: 1px solid lightgrey;
   border-radius: 4px;
   margin-bottom: 10px;
   display: grid;

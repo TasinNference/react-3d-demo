@@ -16,10 +16,15 @@ import { CameraControls } from "./CameraControls";
 import * as holdEvent from "hold-event";
 import {
   Box,
+  Button,
   ButtonBase,
+  Card,
   IconButton,
+  InputAdornment,
   Tab,
   Tabs,
+  TextField,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import LayersIcon from "@mui/icons-material/Layers";
@@ -101,6 +106,11 @@ const API_URL = "https://14.140.231.202";
 //     ],
 //   },
 // };
+
+function CloneProps(props) {
+  const { children, ...other } = props;
+  return children(other);
+}
 
 const registerData = {
   request: {
@@ -250,6 +260,10 @@ function Viewcube() {
   );
 }
 
+function roundNum(num) {
+  return Math.round((num + Number.EPSILON) * 100) / 100;
+}
+
 function getImgData() {
   const reference = registerData.request.reference_slide_info;
   const registerRequest = registerData.request.register_slide_info;
@@ -280,7 +294,6 @@ function getImgData() {
     ...reference.grids[0].boundingBox,
   });
   arr = [...arr, ...registerArr];
-  console.log(arr);
   return arr;
 }
 
@@ -317,28 +330,49 @@ function ImageElement({ position, rotation, opacity, url, img, showBorder }) {
   const height = useRef();
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
-  const imgObj = new Image();
-  imgObj.onload = function () {
-    width.current = this.width;
-    height.current = this.height;
-    canvas.width = width.current;
-    canvas.height = height.current;
-    ctx.save();
-    ctx.globalAlpha = opacity / 100;
-    ctx.drawImage(this, 0, 0);
-    texture.current = new THREE.CanvasTexture(canvas);
-    texture.current.needsUpdate = true;
-    ctx.restore();
-    if (showBorder) {
-      ctx.strokeStyle = img.borderColor;
-      ctx.lineWidth = 15;
-      ctx.strokeRect(0, 0, canvas.width, canvas.height);
+  const imgObj = useRef(new Image());
+
+  useEffect(() => {
+    imgObj.current.onload = function () {
+      width.current = this.width;
+      height.current = this.height;
+      canvas.width = width.current;
+      canvas.height = height.current;
+      ctx.save();
+      ctx.globalAlpha = opacity / 100;
+      ctx.drawImage(this, 0, 0);
+      texture.current = new THREE.CanvasTexture(canvas);
+      texture.current.needsUpdate = true;
+      ctx.restore();
+      if (showBorder) {
+        ctx.strokeStyle = img.borderColor;
+        ctx.lineWidth = 15;
+        ctx.strokeRect(0, 0, canvas.width, canvas.height);
+      }
+      setImgLoaded(true);
+    };
+    imgObj.current.crossOrigin = "anonymus";
+    imgObj.current.src = `${API_URL}${img.img}`;
+  }, []);
+
+  useEffect(() => {
+    if (imgLoaded) {
+      canvas.width = width.current;
+      canvas.height = height.current;
+      ctx.save();
+      ctx.globalAlpha = opacity / 100;
+      // console.log(imgObj)
+      ctx.drawImage(imgObj.current, 0, 0);
+      texture.current = new THREE.CanvasTexture(canvas);
+      texture.current.needsUpdate = true;
+      ctx.restore();
+      if (showBorder) {
+        ctx.strokeStyle = img.borderColor;
+        ctx.lineWidth = 15;
+        ctx.strokeRect(0, 0, canvas.width, canvas.height);
+      }
     }
-    setImgLoaded(true);
-  };
-  imgObj.crossOrigin = 'anonymus'
-  imgObj.src = `${API_URL}${img.img}`;
-  console.log(img.img)
+  }, [opacity, showBorder]);
 
   useFrame(() => {
     if (texture.current) {
@@ -406,7 +440,7 @@ const App = () => {
   const [spacing, setSpacing] = useState(200);
   const [imagesArr, setImagesArr] = useState(imgData);
   const [showBorder, setShowBorder] = useState(true);
-  const [currentTab, setCurrentTab] = useState(1);
+  const [currentTab, setCurrentTab] = useState(0);
 
   const filteredImages = imagesArr.filter((img) => !img.hidden);
 
@@ -487,27 +521,23 @@ const App = () => {
     ]);
   };
 
-  const moveX = (index, opposite = false) => {
+  const moveX = (index, value) => {
     setImagesArr([
       ...imagesArr.slice(0, index),
       {
         ...imagesArr[index],
-        transformX:
-          (imagesArr[index].transformX ? imagesArr[index].transformX : 0) +
-          (opposite ? -1 : 1) * X_INCREMENT,
+        transformX: value,
       },
       ...imagesArr.slice(index + 1),
     ]);
   };
 
-  const moveY = (index, opposite = false) => {
+  const moveY = (index, value) => {
     setImagesArr([
       ...imagesArr.slice(0, index),
       {
         ...imagesArr[index],
-        transformY:
-          (imagesArr[index].transformY ? imagesArr[index].transformY : 0) +
-          (opposite ? -1 : 1) * Y_INCREMENT,
+        transformY: value,
       },
       ...imagesArr.slice(index + 1),
     ]);
@@ -570,7 +600,6 @@ const App = () => {
   useEffect(() => {
     if (cameraControls) {
       cameraControls.addEventListener("rest", () => {
-        console.log("done");
         cameraControls.setOrbitPoint(0, 0, 0);
       });
 
@@ -658,14 +687,14 @@ const App = () => {
         <Viewcube />
         <group ref={mesh} rotation={[Math.PI / 2, 0, 0]}>
           {filteredImages.map((img, index) => {
-            console.log(img.img)
+            console.log(img.img, index);
             return (
               <Suspense key={index} fallback={null}>
                 <ImageElement
                   position={[
                     img.transformX ? img.transformX : 0,
                     calcPosition(index),
-                    img.transformY ? img.transformY : 0,
+                    img.transformY ? -img.transformY : 0,
                   ]}
                   img={img}
                   rotation={img.rotation}
@@ -684,164 +713,250 @@ const App = () => {
           onChange={handleTabChange}
           style={{ borderBottom: "1px solid #e5e5e5" }}
         >
-          <Tab icon={<LayersIcon />} value={1} />
-          <Tab icon={<ControlCameraIcon />} value={2} />
-          <Tab icon={<SettingsIcon />} value={3} />
+          <CloneProps>
+            {(tabProps) => (
+              <Tooltip title="Layers">
+                <div>
+                  <Tab {...tabProps} icon={<LayersIcon />} />
+                </div>
+              </Tooltip>
+            )}
+          </CloneProps>
+          <CloneProps>
+            {(tabProps) => (
+              <Tooltip title="Camera Controls">
+                <div>
+                  <Tab {...tabProps} icon={<ControlCameraIcon />} />
+                </div>
+              </Tooltip>
+            )}
+          </CloneProps>
+          <CloneProps>
+            {(tabProps) => (
+              <Tooltip title="Global Settings">
+                <div>
+                  <Tab {...tabProps} icon={<SettingsIcon />} />
+                </div>
+              </Tooltip>
+            )}
+          </CloneProps>
         </Tabs>
-        <div style={{display: currentTab === 1 ? "block" : 'none'}}>
-          <DragDropContext onDragEnd={handleDragEnd}>
-            <Droppable droppableId="droppable">
-              {(provided) => (
-                <div
-                  {...provided.droppableProps}
-                  ref={provided.innerRef}
-                  className="layers-container"
-                >
-                  {imagesArr.map((img, index) => (
-                    <Draggable
-                      key={img.id}
-                      draggableId={`${img.id}`}
-                      index={index}
-                    >
-                      {(provided) => {
-                        return (
-                          <div
-                            {...provided.draggableProps}
-                            {...provided.dragHandleProps}
-                            ref={provided.innerRef}
-                            className="layers-item-data"
-                          >
-                            <img
-                              style={{ border: `3px solid ${img.borderColor}` }}
-                              className="layers-item-img"
-                              src={`${API_URL}${img.img}`}
-                              alt=""
-                            />
-                            <div className="layers-item">
-                              <div className="layers-info">
-                                <div>{img.name}</div>
-                                <div style={{ display: "flex" }}>
-                                  <IconButton
-                                    size="small"
-                                    style={{ cursor: "pointer" }}
-                                    onClick={() => toggleImageVisibility(index)}
-                                  >
-                                    {img.hidden ? (
-                                      <AiFillEyeInvisible />
-                                    ) : (
-                                      <AiFillEye />
-                                    )}
-                                  </IconButton>
-                                  <IconButton
-                                    size="small"
-                                    onClick={() =>
-                                      handleConfigureImage(img.id, index)
-                                    }
-                                  >
-                                    <GoSettings style={{ cursor: "pointer" }} />
-                                  </IconButton>
-                                </div>
-                              </div>
-                              {img.open && (
-                                <div>
-                                  <div>
-                                    <button onClick={() => moveX(index, true)}>
-                                      -
-                                    </button>{" "}
-                                    X{" "}
-                                    <button onClick={() => moveX(index)}>
-                                      +
-                                    </button>
-                                  </div>
-                                  <div>
-                                    <button onClick={() => moveY(index)}>
-                                      -
-                                    </button>{" "}
-                                    Y{" "}
-                                    <button onClick={() => moveY(index, true)}>
-                                      +
-                                    </button>
-                                  </div>
-                                  <div>
-                                    <div>
-                                      Opacity{" "}
-                                      {img.opacity ? img.opacity : opacity}%
-                                    </div>
-                                    <input
-                                      id="target-image-opacity"
-                                      type="range"
-                                      value={
-                                        img.opacity ? img.opacity : opacity
+        <div
+          style={{
+            height: "100%",
+            overflowY: "auto",
+            backgroundColor: "#f5f5f5",
+            padding: "15px"
+          }}
+        >
+          <div
+            style={{
+              display: currentTab === 0 ? "block" : "none",
+            }}
+          >
+            <DragDropContext onDragEnd={handleDragEnd}>
+              <Droppable droppableId="droppable">
+                {(provided) => (
+                  <div
+                    {...provided.droppableProps}
+                    ref={provided.innerRef}
+                    className="layers-container"
+                  >
+                    {imagesArr.map((img, index) => (
+                      <Draggable
+                        key={img.id}
+                        draggableId={`${img.id}`}
+                        index={index}
+                      >
+                        {(provided) => {
+                          return (
+                            <Card
+                              variant="outlined"
+                              {...provided.draggableProps}
+                              {...provided.dragHandleProps}
+                              ref={provided.innerRef}
+                              className="layers-item-data"
+                            >
+                              <img
+                                style={{
+                                  border: `3px solid ${img.borderColor}`,
+                                }}
+                                className="layers-item-img"
+                                src={`${API_URL}${img.img}`}
+                                alt=""
+                              />
+                              <div className="layers-item">
+                                <div className="layers-info">
+                                  <Typography variant="subtitle2">{img.name}</Typography>
+                                  <div style={{ display: "flex" }}>
+                                    <IconButton
+                                      size="small"
+                                      style={{ cursor: "pointer" }}
+                                      onClick={() =>
+                                        toggleImageVisibility(index)
                                       }
+                                    >
+                                      {img.hidden ? (
+                                        <AiFillEyeInvisible />
+                                      ) : (
+                                        <AiFillEye />
+                                      )}
+                                    </IconButton>
+                                    <IconButton
+                                      size="small"
+                                      onClick={() =>
+                                        handleConfigureImage(img.id, index)
+                                      }
+                                    >
+                                      <GoSettings
+                                        style={{ cursor: "pointer" }}
+                                      />
+                                    </IconButton>
+                                  </div>
+                                </div>
+                                {img.open && (
+                                  <div
+                                    style={{
+                                      padding: "10px",
+                                      display: "grid",
+                                      rowGap: "15px",
+                                      marginTop: "10px",
+                                    }}
+                                  >
+                                    <TextField
+                                      defaultValue={
+                                        img.transformX
+                                          ? roundNum(img.transformX)
+                                          : 0
+                                      }
+                                      fullWidth
+                                      size="small"
+                                      label="X Displacement"
+                                      type="number"
+                                      InputLabelProps={{
+                                        shrink: true,
+                                      }}
+                                      inputProps={{
+                                        step: "5",
+                                      }}
+                                      onChange={(e) =>
+                                        moveX(index, e.target.value)
+                                      }
+                                    />
+                                    <TextField
+                                      defaultValue={
+                                        roundNum(img.transformY)
+                                          ? img.transformY
+                                          : 0
+                                      }
+                                      fullWidth
+                                      size="small"
+                                      label="Y Displacement"
+                                      type="number"
+                                      inputProps={{
+                                        step: "5",
+                                      }}
+                                      InputLabelProps={{
+                                        shrink: true,
+                                      }}
+                                      onChange={(e) =>
+                                        moveY(index, e.target.value)
+                                      }
+                                    />
+                                    <TextField
+                                      defaultValue={
+                                        img.scaleX ? roundNum(img.scaleX) : 1
+                                      }
+                                      fullWidth
+                                      size="small"
+                                      label="Scale X"
+                                      type="number"
+                                      inputProps={{
+                                        step: "0.1",
+                                      }}
+                                      InputLabelProps={{
+                                        shrink: true,
+                                      }}
+                                      onChange={(e) => scaleX(e, index)}
+                                    />
+                                    <TextField
+                                      defaultValue={
+                                        img.scaleY ? roundNum(img.scaleY) : 1
+                                      }
+                                      fullWidth
+                                      size="small"
+                                      label="Scale Y"
+                                      type="number"
+                                      inputProps={{
+                                        step: "0.1",
+                                      }}
+                                      InputLabelProps={{
+                                        shrink: true,
+                                      }}
+                                      onChange={(e) => scaleY(e, index)}
+                                    />
+                                    <TextField
+                                      defaultValue={
+                                        img.opacity
+                                          ? roundNum(img.opacity)
+                                          : roundNum(opacity)
+                                      }
+                                      fullWidth
+                                      size="small"
+                                      label="Opacity"
+                                      type="number"
+                                      inputProps={{
+                                        step: "1",
+                                        max: 100,
+                                        min: 1,
+                                      }}
+                                      InputLabelProps={{
+                                        shrink: true,
+                                      }}
                                       onChange={(e) =>
                                         targetImageOpacityChange(e, index)
                                       }
-                                      min={1}
-                                      max={100}
                                     />
-                                  </div>
-                                  <div>
-                                    <div>
-                                      Rotation {img.rotation ? img.rotation : 0}
-                                    </div>
-                                    <input
-                                      id="target-image-opacity"
-                                      type="range"
-                                      value={img.rotation ? img.rotation : 0}
+                                    <TextField
+                                      defaultValue={
+                                        img.rotation
+                                          ? roundNum(img.rotation)
+                                          : roundNum(0)
+                                      }
+                                      fullWidth
+                                      size="small"
+                                      label="Rotation"
+                                      type="number"
+                                      inputProps={{
+                                        step: "1",
+                                      }}
+                                      InputLabelProps={{
+                                        shrink: true,
+                                      }}
                                       onChange={(e) =>
                                         rotationHandler(e, index)
                                       }
-                                      min={-180}
-                                      max={180}
                                     />
                                   </div>
-                                  <div>
-                                    <div>
-                                      Scale X: {img.scaleX ? img.scaleX : 1}
-                                    </div>
-                                    <input
-                                      id="target-image-scaleX"
-                                      type="range"
-                                      value={img.scaleX ? img.scaleX : 1}
-                                      onChange={(e) => scaleX(e, index)}
-                                      step={X_SCALE_INCREMENT}
-                                      min={0.5}
-                                      max={2}
-                                    />
-                                  </div>
-                                  <div>
-                                    <div>
-                                      Scale Y: {img.scaleY ? img.scaleY : 1}
-                                    </div>
-                                    <input
-                                      id="target-image-scaleY"
-                                      type="range"
-                                      value={img.scaleY ? img.scaleY : 1}
-                                      onChange={(e) => scaleY(e, index)}
-                                      step={Y_SCALE_INCREMENT}
-                                      min={0.5}
-                                      max={2}
-                                    />
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        );
-                      }}
-                    </Draggable>
-                  ))}
-                  {provided.placeholder}
-                </div>
-              )}
-            </Droppable>
-          </DragDropContext>
-        </div>
-        <div style={{display: currentTab === 2 ? "block" : 'none'}}>
-          Item two
-        </div>
-        <div style={{display: currentTab === 3 ? "block" : 'none'}}>
-          Item three
+                                )}
+                              </div>
+                            </Card>
+                          );
+                        }}
+                      </Draggable>
+                    ))}
+                    {provided.placeholder}
+                  </div>
+                )}
+              </Droppable>
+            </DragDropContext>
+          </div>
+          <div style={{ display: currentTab === 1 ? "block" : "none" }}>
+            Item two
+          </div>
+          <div style={{ display: currentTab === 2 ? "block" : "none" }}>
+            <Button onClick={resetImages} fullWidth size='small' variant='contained'>Reset All</Button>
+          </div>
         </div>
       </div>
       <div id="canvas-view-changer">
