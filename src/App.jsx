@@ -19,8 +19,12 @@ import {
   Button,
   ButtonBase,
   Card,
+  Checkbox,
+  FormControlLabel,
+  FormGroup,
   IconButton,
   InputAdornment,
+  Radio,
   Tab,
   Tabs,
   TextField,
@@ -339,7 +343,7 @@ function ImageElement({
   const ctx = canvas.getContext("2d");
   const imgObj = useRef(new Image());
 
-  useEffect(() => {
+  function loadImg() {
     imgObj.current.onload = function () {
       width.current = this.width;
       height.current = this.height;
@@ -360,7 +364,15 @@ function ImageElement({
     };
     imgObj.current.crossOrigin = "anonymus";
     imgObj.current.src = `${API_URL}${img.img}`;
+  }
+
+  useEffect(() => {
+    loadImg();
   }, []);
+
+  useEffect(() => {
+    loadImg();
+  }, [img.img]);
 
   useEffect(() => {
     if (imgLoaded) {
@@ -452,6 +464,7 @@ const App = () => {
   const [imagesArr, setImagesArr] = useState(imgData);
   const [showBorder, setShowBorder] = useState(true);
   const [currentTab, setCurrentTab] = useState(0);
+  const [groupImages, setGroupImages] = useState(true);
 
   const filteredImages = imagesArr.filter((img) => !img.hidden);
 
@@ -824,16 +837,18 @@ const App = () => {
                                         <AiFillEye />
                                       )}
                                     </IconButton>
-                                    <IconButton
-                                      size="small"
-                                      onClick={() =>
-                                        handleConfigureImage(img.id, index)
-                                      }
-                                    >
-                                      <GoSettings
-                                        style={{ cursor: "pointer" }}
-                                      />
-                                    </IconButton>
+                                    {!groupImages && (
+                                      <IconButton
+                                        size="small"
+                                        onClick={() =>
+                                          handleConfigureImage(img.id, index)
+                                        }
+                                      >
+                                        <GoSettings
+                                          style={{ cursor: "pointer" }}
+                                        />
+                                      </IconButton>
+                                    )}
                                   </div>
                                 </div>
                                 {img.open && (
@@ -846,7 +861,7 @@ const App = () => {
                                     }}
                                   >
                                     <TextField
-                                      value={
+                                      defaultValue={
                                         img.transformX
                                           ? roundNum(img.transformX)
                                           : 0
@@ -982,6 +997,26 @@ const App = () => {
               rowGap: "10px",
             }}
           >
+            <FormGroup>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={showBorder}
+                    onChange={(e) => setShowBorder(e.target.checked)}
+                  />
+                }
+                label="Show Borders"
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={groupImages}
+                    onChange={(e) => setGroupImages(e.target.checked)}
+                  />
+                }
+                label="Group Images"
+              />
+            </FormGroup>
             <TextField
               value={spacing}
               fullWidth
@@ -1011,6 +1046,7 @@ const App = () => {
                 shrink: true,
               }}
               onChange={(e) => mainOpacityChange(e)}
+              disabled={!groupImages}
             />
             <TextField
               value={globalRotation}
@@ -1025,15 +1061,8 @@ const App = () => {
                 shrink: true,
               }}
               onChange={(e) => setGlobalRotation(e.target.value)}
+              disabled={!groupImages}
             />
-            <Button
-              onClick={() => setShowBorder(!showBorder)}
-              fullWidth
-              size="small"
-              variant="contained"
-            >
-              Toggle Borders
-            </Button>
             <Button
               onClick={resetImages}
               fullWidth
