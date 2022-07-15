@@ -328,7 +328,6 @@ function ImageElement({
   globalRotation,
   rotation,
   opacity,
-  url,
   img,
   showBorder,
 }) {
@@ -349,14 +348,14 @@ function ImageElement({
       ctx.save();
       ctx.globalAlpha = opacity / 100;
       ctx.drawImage(this, 0, 0);
-      texture.current = new THREE.CanvasTexture(canvas);
-      texture.current.needsUpdate = true;
-      ctx.restore();
       if (showBorder) {
         ctx.strokeStyle = img.borderColor;
         ctx.lineWidth = 15;
         ctx.strokeRect(0, 0, canvas.width, canvas.height);
       }
+      texture.current = new THREE.CanvasTexture(canvas);
+      texture.current.needsUpdate = true;
+      ctx.restore();
       setImgLoaded(true);
     };
     imgObj.current.crossOrigin = "anonymus";
@@ -365,19 +364,21 @@ function ImageElement({
 
   useEffect(() => {
     if (imgLoaded) {
+      console.log("loaded");
       canvas.width = width.current;
       canvas.height = height.current;
       ctx.save();
       ctx.globalAlpha = opacity / 100;
       ctx.drawImage(imgObj.current, 0, 0);
-      texture.current = new THREE.CanvasTexture(canvas);
-      texture.current.needsUpdate = true;
-      ctx.restore();
       if (showBorder) {
+        console.log("show");
         ctx.strokeStyle = img.borderColor;
         ctx.lineWidth = 15;
         ctx.strokeRect(0, 0, canvas.width, canvas.height);
       }
+      texture.current = new THREE.CanvasTexture(canvas);
+      texture.current.needsUpdate = true;
+      ctx.restore();
     }
   }, [opacity, showBorder]);
 
@@ -433,7 +434,7 @@ const CameraElement = ({ cameraView }) => {
     <OrthographicCamera
       ref={ref}
       makeDefault
-      zoom={0.25}
+      zoom={0.5}
       position={[-100, 100, 100]}
       near={-10000}
       far={10000}
@@ -703,23 +704,25 @@ const App = () => {
         <CameraControls ref={setCameraControls} />
         <Viewcube />
         <group ref={mesh} rotation={[Math.PI / 2, 0, 0]}>
-          {filteredImages.map((img, index) => {
+          {imagesArr.map((img, index) => {
             return (
-              <Suspense key={index} fallback={null}>
-                <ImageElement
-                  globalRotation={globalRotation}
-                  position={[
-                    img.transformX ? img.transformX : 0,
-                    calcPosition(index),
-                    img.transformY ? -img.transformY : 0,
-                  ]}
-                  img={img}
-                  rotation={img.rotation}
-                  url={img.url}
-                  opacity={img.opacity ? img.opacity : opacity}
-                  showBorder={showBorder}
-                />
-              </Suspense>
+              !img.hidden && (
+                <Suspense key={index} fallback={null}>
+                  <ImageElement
+                    globalRotation={globalRotation}
+                    position={[
+                      img.transformX ? img.transformX : 0,
+                      calcPosition(index),
+                      img.transformY ? -img.transformY : 0,
+                    ]}
+                    img={img}
+                    rotation={img.rotation}
+                    url={img.url}
+                    opacity={img.opacity ? img.opacity : opacity}
+                    showBorder={showBorder}
+                  />
+                </Suspense>
+              )
             );
           })}
         </group>
@@ -863,7 +866,7 @@ const App = () => {
                                       }
                                     />
                                     <TextField
-                                      value={
+                                      defaultValue={
                                         roundNum(img.transformY)
                                           ? img.transformY
                                           : 0
@@ -883,7 +886,7 @@ const App = () => {
                                       }
                                     />
                                     <TextField
-                                      value={
+                                      defaultValue={
                                         img.scaleX ? roundNum(img.scaleX) : 1
                                       }
                                       fullWidth
@@ -899,7 +902,7 @@ const App = () => {
                                       onChange={(e) => scaleX(e, index)}
                                     />
                                     <TextField
-                                      value={
+                                      defaultValue={
                                         img.scaleY ? roundNum(img.scaleY) : 1
                                       }
                                       fullWidth
@@ -915,7 +918,7 @@ const App = () => {
                                       onChange={(e) => scaleY(e, index)}
                                     />
                                     <TextField
-                                      value={
+                                      defaultValue={
                                         img.opacity
                                           ? roundNum(img.opacity)
                                           : roundNum(opacity)
@@ -937,7 +940,7 @@ const App = () => {
                                       }
                                     />
                                     <TextField
-                                      value={
+                                      defaultValue={
                                         img.rotation
                                           ? roundNum(img.rotation)
                                           : roundNum(0)
