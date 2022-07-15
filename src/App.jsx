@@ -34,6 +34,7 @@ import {
 import LayersIcon from "@mui/icons-material/Layers";
 import SettingsIcon from "@mui/icons-material/Settings";
 import ControlCameraIcon from "@mui/icons-material/ControlCamera";
+import { useSearchParams } from "react-router-dom";
 
 const X_INCREMENT = 1;
 const Y_INCREMENT = 1;
@@ -117,68 +118,6 @@ function CloneProps(props) {
 }
 
 const registerData = {
-  request: {
-    reference_slide_info: {
-      slide_id: "H01BBB24P-6636",
-      grid_id: "grid_merged",
-      grids: [
-        {
-          id: "62a1a0760ca2c83b4d1efd56",
-          boundingBox: {
-            end_x: 588.0729166666666,
-            end_y: 1049.659477124183,
-            start_x: 32.92708333333334,
-            start_y: 206.340522875817,
-          },
-        },
-      ],
-      stainColor: "red-pink",
-    },
-    register_slide_info: [
-      {
-        slide_id: "H01BBB24P-6635",
-        grid_id: "grid_merged",
-        grids: [
-          {
-            id: "62a1a05c0ca2c83b4d1efd53",
-            boundingBox: {
-              end_x: 607.0729166666666,
-              end_y: 1103.659477124183,
-              start_x: 6.927083333333343,
-              start_y: 288.340522875817,
-            },
-          },
-        ],
-        stainColor: "red-pink",
-      },
-      {
-        slide_id: "H01BBB24P-6637",
-        grid_id: "grid_merged",
-        grids: [
-          {
-            id: "62a1a0920ca2c83b4d1efd59",
-            boundingBox: {
-              end_x: 596.0729166666666,
-              end_y: 1224,
-              start_x: 16.92708333333333,
-              start_y: 372.340522875817,
-            },
-          },
-          {
-            id: "62a1a0920ca2c83b4d1efd5a",
-            boundingBox: {
-              end_x: 546.0729166666666,
-              end_y: 318.659477124183,
-              start_x: 260.9270833333333,
-              start_y: 104.34052287581699,
-            },
-          },
-        ],
-        stainColor: "cyan",
-      },
-    ],
-  },
-  response: {
     status: true,
     reference_slide_info: {
       slide_id: "H01BBB24P-6636",
@@ -211,7 +150,6 @@ const registerData = {
         img: "/hdd_drive/registration_outcome/H01BBB24P-6637/H01BBB24P-6637_panorama.jpeg",
       },
     ],
-  },
 };
 
 function Viewcube() {
@@ -268,24 +206,20 @@ function roundNum(num) {
   return Math.round((num + Number.EPSILON) * 100) / 100;
 }
 
-function getImgData() {
-  const reference = registerData.request.reference_slide_info;
-  const registerRequest = registerData.request.register_slide_info;
-  const registerResponse = registerData.response.register_slide_info;
-  const registerArr = registerRequest.map((itm) => {
-    const foundItem = registerResponse.find(
-      (item) => itm.slide_id === item.slide_id && item
-    );
+function getImgData(data) {
+  const reference = data.reference_slide_info;
+  const registerResponse = data.register_slide_info;
+  const registerArr = registerResponse.map((itm) => {
     return {
-      ...foundItem,
-      rotation: foundItem.tilt,
+      ...itm,
+      rotation: itm.tilt,
       id: itm.slide_id,
-      ...itm.grids[0].boundingBox,
       url: `/images/${itm.slide_id}.jpeg`,
       borderColor: randomColor(),
       name: itm.slide_id,
-      scaleX: foundItem.x_scale,
-      scaleY: foundItem.y_scale,
+      scaleX: itm.x_scale,
+      scaleY: itm.y_scale,
+      img: `/hdd_drive/registration_outcome/${itm.slide_id}/${itm.slide_id}_panorama.jpeg`
     };
   });
   let arr = [];
@@ -294,14 +228,13 @@ function getImgData() {
     name: reference.slide_id,
     url: `/images/${reference.slide_id}.jpeg`,
     borderColor: randomColor(),
-    img: registerData.response.reference_slide_info.img,
-    ...reference.grids[0].boundingBox,
+    img: `/hdd_drive/registration_outcome/${reference.slide_id}/${reference.slide_id}_panorama.jpeg`
   });
   arr = [...arr, ...registerArr];
   return arr;
 }
 
-const imgData = getImgData();
+const imgData = getImgData(registerData);
 
 // const imgData = [
 //   {
@@ -461,16 +394,33 @@ const App = () => {
   const [cameraView, setCameraView] = useState("iso");
   const [opacity, setOpacity] = useState(50);
   const [spacing, setSpacing] = useState(200);
-  const [imagesArr, setImagesArr] = useState(imgData);
+  const [imagesArr, setImagesArr] = useState([]);
   const [showBorder, setShowBorder] = useState(true);
   const [currentTab, setCurrentTab] = useState(0);
   const [groupImages, setGroupImages] = useState(true);
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const filteredImages = imagesArr.filter((img) => !img.hidden);
 
   useEffect(() => {
-    console.log(imagesArr);
-  }, [globalRotation]);
+    const data = searchParams.get("data")
+    if(data) {
+      var actual = JSON.parse(atob(data))
+      setImagesArr(getImgData(actual))
+    } else {
+      setImagesArr(imgData)
+    }
+  }, [])
+
+  function closeAll() {
+    setImagesArr((prevArray) =>
+      prevArray.map(({ open, ...rest }) => ({ ...rest, open: false }))
+    );
+  }
+
+  useEffect(() => {
+    closeAll();
+  }, [groupImages]);
 
   const handleSpacingIncrease = () => {
     setSpacing(spacing + SPACING);
