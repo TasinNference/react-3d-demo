@@ -14,13 +14,25 @@ import randomColor from "randomcolor";
 import { Matrix4, Scene } from "three";
 import { CameraControls } from "./CameraControls";
 import * as holdEvent from "hold-event";
-import { ButtonBase, IconButton } from "@mui/material";
+import {
+  Box,
+  ButtonBase,
+  IconButton,
+  Tab,
+  Tabs,
+  Typography,
+} from "@mui/material";
+import LayersIcon from "@mui/icons-material/Layers";
+import SettingsIcon from "@mui/icons-material/Settings";
+import ControlCameraIcon from "@mui/icons-material/ControlCamera";
 
 const X_INCREMENT = 1;
 const Y_INCREMENT = 1;
 const X_SCALE_INCREMENT = 0.1;
 const Y_SCALE_INCREMENT = 0.1;
 const SPACING = 50;
+
+const API_URL = "https://14.140.231.202";
 
 // const imgData = {
 //   request: {
@@ -157,29 +169,32 @@ const registerData = {
     reference_slide_info: {
       slide_id: "H01BBB24P-6636",
       grid_id: "grid_merged",
+      img: "/hdd_drive/registration_outcome/H01BBB24P-6636/H01BBB24P-6636_panorama.jpeg",
     },
     register_slide_info: [
       {
         slide_id: "H01BBB24P-6635",
         grid_id: "grid_merged",
-        tilt: 0.930132519249635,
-        x_disp: 7.7257975320275385,
-        y_disp: -60.64126411821617,
-        x_scale: 0.9932316080455453,
-        y_scale: 0.9961912835987787,
-        x_skew: 0.006646505876389043,
+        tilt: 0.6755608193436402,
+        x_disp: -7.002938601508233,
+        y_disp: 21.5733004113515,
+        x_scale: 0.9985830846238507,
+        y_scale: 1.002959527647854,
+        x_skew: 0.0010078995117070938,
         y_skew: 0,
+        img: "/hdd_drive/registration_outcome/H01BBB24P-6635/H01BBB24P-6635_panorama.jpeg",
       },
       {
         slide_id: "H01BBB24P-6637",
         grid_id: "grid_merged",
-        tilt: 171.52440438387183,
-        x_disp: 693.2506683300645,
-        y_disp: 1230.1780663414054,
-        x_scale: 0.9955137468889019,
-        y_scale: 1.117638255636144,
-        x_skew: -0.05524755652754538,
+        tilt: 171.52841795158662,
+        x_disp: 756.4809090508966,
+        y_disp: 1013.6539416437139,
+        x_scale: 1.0134707342588396,
+        y_scale: 1.1562656607862223,
+        x_skew: -0.020939868868742294,
         y_skew: 0,
+        img: "/hdd_drive/registration_outcome/H01BBB24P-6637/H01BBB24P-6637_panorama.jpeg",
       },
     ],
   },
@@ -261,6 +276,7 @@ function getImgData() {
     name: reference.slide_id,
     url: `/images/${reference.slide_id}.jpeg`,
     borderColor: randomColor(),
+    img: registerData.response.reference_slide_info.img,
     ...reference.grids[0].boundingBox,
   });
   arr = [...arr, ...registerArr];
@@ -295,66 +311,70 @@ const imgData = getImgData();
 // ];
 
 function ImageElement({ position, rotation, opacity, url, img, showBorder }) {
-  const width = img.end_x - img.start_x;
-  const height = img.end_y - img.start_y;
+  const [imgLoaded, setImgLoaded] = useState(false);
+  const texture = useRef();
+  const width = useRef();
+  const height = useRef();
   const canvas = document.createElement("canvas");
-  canvas.width = width;
-  canvas.height = height;
   const ctx = canvas.getContext("2d");
   const imgObj = new Image();
   imgObj.onload = function () {
+    width.current = this.width;
+    height.current = this.height;
+    canvas.width = width.current;
+    canvas.height = height.current;
     ctx.save();
     ctx.globalAlpha = opacity / 100;
-    ctx.drawImage(
-      imgObj,
-      img.start_x,
-      img.start_y,
-      width,
-      height,
-      0,
-      0,
-      width,
-      height
-    );
+    ctx.drawImage(this, 0, 0);
+    texture.current = new THREE.CanvasTexture(canvas);
+    texture.current.needsUpdate = true;
     ctx.restore();
     if (showBorder) {
       ctx.strokeStyle = img.borderColor;
       ctx.lineWidth = 15;
       ctx.strokeRect(0, 0, canvas.width, canvas.height);
     }
+    setImgLoaded(true);
   };
-  imgObj.src = url;
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.needsUpdate = true;
+  imgObj.crossOrigin = 'anonymus'
+  imgObj.src = `${API_URL}${img.img}`;
+  console.log(img.img)
 
   useFrame(() => {
-    texture.needsUpdate = true;
+    if (texture.current) {
+      texture.current.needsUpdate = true;
+    }
   });
 
   return (
-    <group
-      scale={
-        new THREE.Vector3(
-          img.scaleX ? img.scaleX : 1,
-          1,
-          img.scaleY ? img.scaleY : 1
-        )
-      }
-      rotation={
-        rotation ? [0, THREE.MathUtils.degToRad(-rotation), 0] : [0, 0, 0]
-      }
-      position={position}
-    >
-      <mesh rotation={[-Math.PI / 2, 0, 0]}>
-        <planeBufferGeometry attach="geometry" args={[width, height]} />
-        <meshBasicMaterial
-          attach="material"
-          map={texture}
-          side={THREE.DoubleSide}
-          transparent={true}
-        />
-      </mesh>
-    </group>
+    imgLoaded && (
+      <group
+        scale={
+          new THREE.Vector3(
+            img.scaleX ? img.scaleX : 1,
+            1,
+            img.scaleY ? img.scaleY : 1
+          )
+        }
+        rotation={
+          rotation ? [0, THREE.MathUtils.degToRad(-rotation), 0] : [0, 0, 0]
+        }
+        position={position}
+      >
+        <mesh rotation={[-Math.PI / 2, 0, 0]}>
+          <planeBufferGeometry
+            attach="geometry"
+            args={[width.current, height.current]}
+          />
+          <meshBasicMaterial
+            attach="material"
+            map={texture.current}
+            side={THREE.DoubleSide}
+            transparent={true}
+          />
+        </mesh>
+      </group>
+    )
   );
 }
 
@@ -370,7 +390,7 @@ const CameraElement = ({ cameraView }) => {
     <OrthographicCamera
       ref={ref}
       makeDefault
-      zoom={0.5}
+      zoom={0.25}
       position={[-100, 100, 100]}
       near={-10000}
       far={10000}
@@ -386,6 +406,7 @@ const App = () => {
   const [spacing, setSpacing] = useState(200);
   const [imagesArr, setImagesArr] = useState(imgData);
   const [showBorder, setShowBorder] = useState(true);
+  const [currentTab, setCurrentTab] = useState(1);
 
   const filteredImages = imagesArr.filter((img) => !img.hidden);
 
@@ -434,7 +455,7 @@ const App = () => {
 
   const resetImages = () => {
     setImagesArr(imgData);
-    switchToView('front')
+    switchToView("front");
   };
 
   const mainOpacityChange = (e) => {
@@ -625,6 +646,10 @@ const App = () => {
     });
   }
 
+  const handleTabChange = (event, index) => {
+    setCurrentTab(index);
+  };
+
   return (
     <div fontFamily="sans-serif" id="canvas-container">
       <Canvas>
@@ -633,6 +658,7 @@ const App = () => {
         <Viewcube />
         <group ref={mesh} rotation={[Math.PI / 2, 0, 0]}>
           {filteredImages.map((img, index) => {
+            console.log(img.img)
             return (
               <Suspense key={index} fallback={null}>
                 <ImageElement
@@ -653,188 +679,174 @@ const App = () => {
         </group>
       </Canvas>
       <div id="canvas-layers">
-        <div>
-          <button onClick={resetImages}>Reset</button>
-          <button onClick={toggleShowBorder}>Toggle Border</button>
-        </div>
-        <DragDropContext onDragEnd={handleDragEnd}>
-          <Droppable droppableId="droppable">
-            {(provided) => (
-              <div
-                {...provided.droppableProps}
-                ref={provided.innerRef}
-                className="layers-container"
-              >
-                {imagesArr.map((img, index) => (
-                  <Draggable
-                    key={img.id}
-                    draggableId={`${img.id}`}
-                    index={index}
-                  >
-                    {(provided) => {
-                      if (mounted.current) {
-                        const width = img.end_x - img.start_x;
-                        const height = img.end_y - img.start_y;
-                        const canvas = document.createElement("canvas");
-                        canvas.width = width;
-                        canvas.height = height;
-                        const ctx = canvas.getContext("2d");
-                        const imgObj = new Image();
-                        imgObj.onload = function () {
-                          ctx.drawImage(
-                            imgObj,
-                            img.start_x,
-                            img.start_y,
-                            width,
-                            height,
-                            0,
-                            0,
-                            width,
-                            height
-                          );
-                          const layersItem = document.getElementById(
-                            `layers-item-canvas-${img.id}`
-                          );
-                          const imgSrc = canvas.toDataURL();
-                          const newImg = new Image();
-                          newImg.src = imgSrc;
-                          newImg.style.width = "100%";
-                          newImg.style.border = `3px solid ${img.borderColor}`;
-                          newImg.classList.add("layers-item-canvas");
-                          layersItem.appendChild(newImg);
-                        };
-                        imgObj.src = img.url;
-                      }
-
-                      return (
-                        <div
-                          {...provided.draggableProps}
-                          {...provided.dragHandleProps}
-                          ref={provided.innerRef}
-                          className="layers-item-data"
-                        >
-                          <div className="layers-item-img">
-                            <div id={`layers-item-canvas-${img.id}`}></div>
-                          </div>
-                          <div className="layers-item">
-                            <div className="layers-info">
-                              <div>{img.name}</div>
-                              <div style={{ display: "flex" }}>
-                                <IconButton
-                                  size="small"
-                                  style={{ cursor: "pointer" }}
-                                  onClick={() => toggleImageVisibility(index)}
-                                >
-                                  {img.hidden ? (
-                                    <AiFillEyeInvisible />
-                                  ) : (
-                                    <AiFillEye />
-                                  )}
-                                </IconButton>
-                                <IconButton
-                                  size="small"
-                                  onClick={() =>
-                                    handleConfigureImage(img.id, index)
-                                  }
-                                >
-                                  <GoSettings style={{ cursor: "pointer" }} />
-                                </IconButton>
-                              </div>
-                            </div>
-                            {img.open && (
-                              <div>
-                                <div>
-                                  <button onClick={() => moveX(index, true)}>
-                                    -
-                                  </button>{" "}
-                                  X{" "}
-                                  <button onClick={() => moveX(index)}>
-                                    +
-                                  </button>
-                                </div>
-                                <div>
-                                  <button onClick={() => moveY(index)}>
-                                    -
-                                  </button>{" "}
-                                  Y{" "}
-                                  <button onClick={() => moveY(index, true)}>
-                                    +
-                                  </button>
-                                </div>
-                                <div>
-                                  <div>
-                                    Opacity{" "}
-                                    {img.opacity ? img.opacity : opacity}%
-                                  </div>
-                                  <input
-                                    id="target-image-opacity"
-                                    type="range"
-                                    value={img.opacity ? img.opacity : opacity}
-                                    onChange={(e) =>
-                                      targetImageOpacityChange(e, index)
+        <Tabs
+          value={currentTab}
+          onChange={handleTabChange}
+          style={{ borderBottom: "1px solid #e5e5e5" }}
+        >
+          <Tab icon={<LayersIcon />} value={1} />
+          <Tab icon={<ControlCameraIcon />} value={2} />
+          <Tab icon={<SettingsIcon />} value={3} />
+        </Tabs>
+        <div style={{display: currentTab === 1 ? "block" : 'none'}}>
+          <DragDropContext onDragEnd={handleDragEnd}>
+            <Droppable droppableId="droppable">
+              {(provided) => (
+                <div
+                  {...provided.droppableProps}
+                  ref={provided.innerRef}
+                  className="layers-container"
+                >
+                  {imagesArr.map((img, index) => (
+                    <Draggable
+                      key={img.id}
+                      draggableId={`${img.id}`}
+                      index={index}
+                    >
+                      {(provided) => {
+                        return (
+                          <div
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                            ref={provided.innerRef}
+                            className="layers-item-data"
+                          >
+                            <img
+                              style={{ border: `3px solid ${img.borderColor}` }}
+                              className="layers-item-img"
+                              src={`${API_URL}${img.img}`}
+                              alt=""
+                            />
+                            <div className="layers-item">
+                              <div className="layers-info">
+                                <div>{img.name}</div>
+                                <div style={{ display: "flex" }}>
+                                  <IconButton
+                                    size="small"
+                                    style={{ cursor: "pointer" }}
+                                    onClick={() => toggleImageVisibility(index)}
+                                  >
+                                    {img.hidden ? (
+                                      <AiFillEyeInvisible />
+                                    ) : (
+                                      <AiFillEye />
+                                    )}
+                                  </IconButton>
+                                  <IconButton
+                                    size="small"
+                                    onClick={() =>
+                                      handleConfigureImage(img.id, index)
                                     }
-                                    min={1}
-                                    max={100}
-                                  />
-                                </div>
-                                <div>
-                                  <div>
-                                    Rotation {img.rotation ? img.rotation : 0}
-                                  </div>
-                                  <input
-                                    id="target-image-opacity"
-                                    type="range"
-                                    value={img.rotation ? img.rotation : 0}
-                                    onChange={(e) => rotationHandler(e, index)}
-                                    min={-180}
-                                    max={180}
-                                  />
-                                </div>
-                                <div>
-                                  <div>
-                                    Scale X: {img.scaleX ? img.scaleX : 1}
-                                  </div>
-                                  <input
-                                    id="target-image-scaleX"
-                                    type="range"
-                                    value={img.scaleX ? img.scaleX : 1}
-                                    onChange={(e) => scaleX(e, index)}
-                                    step={X_SCALE_INCREMENT}
-                                    min={0.5}
-                                    max={2}
-                                  />
-                                </div>
-                                <div>
-                                  <div>
-                                    Scale Y: {img.scaleY ? img.scaleY : 1}
-                                  </div>
-                                  <input
-                                    id="target-image-scaleY"
-                                    type="range"
-                                    value={img.scaleY ? img.scaleY : 1}
-                                    onChange={(e) => scaleY(e, index)}
-                                    step={Y_SCALE_INCREMENT}
-                                    min={0.5}
-                                    max={2}
-                                  />
+                                  >
+                                    <GoSettings style={{ cursor: "pointer" }} />
+                                  </IconButton>
                                 </div>
                               </div>
-                            )}
+                              {img.open && (
+                                <div>
+                                  <div>
+                                    <button onClick={() => moveX(index, true)}>
+                                      -
+                                    </button>{" "}
+                                    X{" "}
+                                    <button onClick={() => moveX(index)}>
+                                      +
+                                    </button>
+                                  </div>
+                                  <div>
+                                    <button onClick={() => moveY(index)}>
+                                      -
+                                    </button>{" "}
+                                    Y{" "}
+                                    <button onClick={() => moveY(index, true)}>
+                                      +
+                                    </button>
+                                  </div>
+                                  <div>
+                                    <div>
+                                      Opacity{" "}
+                                      {img.opacity ? img.opacity : opacity}%
+                                    </div>
+                                    <input
+                                      id="target-image-opacity"
+                                      type="range"
+                                      value={
+                                        img.opacity ? img.opacity : opacity
+                                      }
+                                      onChange={(e) =>
+                                        targetImageOpacityChange(e, index)
+                                      }
+                                      min={1}
+                                      max={100}
+                                    />
+                                  </div>
+                                  <div>
+                                    <div>
+                                      Rotation {img.rotation ? img.rotation : 0}
+                                    </div>
+                                    <input
+                                      id="target-image-opacity"
+                                      type="range"
+                                      value={img.rotation ? img.rotation : 0}
+                                      onChange={(e) =>
+                                        rotationHandler(e, index)
+                                      }
+                                      min={-180}
+                                      max={180}
+                                    />
+                                  </div>
+                                  <div>
+                                    <div>
+                                      Scale X: {img.scaleX ? img.scaleX : 1}
+                                    </div>
+                                    <input
+                                      id="target-image-scaleX"
+                                      type="range"
+                                      value={img.scaleX ? img.scaleX : 1}
+                                      onChange={(e) => scaleX(e, index)}
+                                      step={X_SCALE_INCREMENT}
+                                      min={0.5}
+                                      max={2}
+                                    />
+                                  </div>
+                                  <div>
+                                    <div>
+                                      Scale Y: {img.scaleY ? img.scaleY : 1}
+                                    </div>
+                                    <input
+                                      id="target-image-scaleY"
+                                      type="range"
+                                      value={img.scaleY ? img.scaleY : 1}
+                                      onChange={(e) => scaleY(e, index)}
+                                      step={Y_SCALE_INCREMENT}
+                                      min={0.5}
+                                      max={2}
+                                    />
+                                  </div>
+                                </div>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      );
-                    }}
-                  </Draggable>
-                ))}
-                {provided.placeholder}
-              </div>
-            )}
-          </Droppable>
-        </DragDropContext>
+                        );
+                      }}
+                    </Draggable>
+                  ))}
+                  {provided.placeholder}
+                </div>
+              )}
+            </Droppable>
+          </DragDropContext>
+        </div>
+        <div style={{display: currentTab === 2 ? "block" : 'none'}}>
+          Item two
+        </div>
+        <div style={{display: currentTab === 3 ? "block" : 'none'}}>
+          Item three
+        </div>
       </div>
       <div id="canvas-view-changer">
-        <button onClick={() => switchToView("front")}>Front</button>
-        <button onClick={() => switchToView("iso")}>Isometric</button>
+        {/* <button onClick={() => switchToView("front")}>Front</button> */}
+        {/* <button onClick={() => switchToView("iso")}>Isometric</button> */}
       </div>
       <div id="canvas-controls">
         <div className="input-group">
