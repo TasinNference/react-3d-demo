@@ -35,6 +35,7 @@ import LayersIcon from "@mui/icons-material/Layers";
 import SettingsIcon from "@mui/icons-material/Settings";
 import ControlCameraIcon from "@mui/icons-material/ControlCamera";
 import { useSearchParams } from "react-router-dom";
+import {FaLock, FaUnlock} from "react-icons/fa"
 
 const X_INCREMENT = 1;
 const Y_INCREMENT = 1;
@@ -399,13 +400,14 @@ const App = () => {
   const [currentTab, setCurrentTab] = useState(0);
   const [groupImages, setGroupImages] = useState(true);
   const [searchParams, setSearchParams] = useSearchParams();
+  const data = useRef();
 
   const filteredImages = imagesArr.filter((img) => !img.hidden);
 
   useEffect(() => {
-    const data = searchParams.get("data")
-    if(data) {
-      var actual = JSON.parse(atob(data))
+    data.current = searchParams.get("data")
+    if(data.current) {
+      var actual = JSON.parse(atob(data.current))
       setImagesArr(getImgData(actual))
     } else {
       setImagesArr(imgData)
@@ -960,11 +962,13 @@ const App = () => {
               <FormControlLabel
                 control={
                   <Checkbox
+                    icon={<FaUnlock size="1.2em" />}
+                    checkedIcon={<FaLock size="1.2em" />}
                     checked={groupImages}
                     onChange={(e) => setGroupImages(e.target.checked)}
                   />
                 }
-                label="Group Images"
+                label={`${groupImages ? 'Ungroup' : 'Group'} Images`}
               />
             </FormGroup>
             <TextField
