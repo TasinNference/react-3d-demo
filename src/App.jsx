@@ -379,7 +379,7 @@ const CameraElement = ({ cameraView }) => {
     <OrthographicCamera
       ref={ref}
       makeDefault
-      zoom={0.5}
+      zoom={0.30}
       position={[-100, 100, 100]}
       near={-10000}
       far={10000}
@@ -665,7 +665,7 @@ const App = () => {
       <Canvas>
         <CameraElement />
         <CameraControls ref={setCameraControls} />
-        <Viewcube />
+        {/* <Viewcube /> */}
         <group ref={mesh} rotation={[Math.PI / 2, 0, 0]}>
           {imagesArr.map((img, index) => {
             return (
