@@ -35,7 +35,7 @@ import LayersIcon from "@mui/icons-material/Layers";
 import SettingsIcon from "@mui/icons-material/Settings";
 import ControlCameraIcon from "@mui/icons-material/ControlCamera";
 import { useSearchParams } from "react-router-dom";
-import {FaLock, FaUnlock} from "react-icons/fa"
+import { FaLock, FaUnlock } from "react-icons/fa";
 
 const X_INCREMENT = 1;
 const Y_INCREMENT = 1;
@@ -119,38 +119,38 @@ function CloneProps(props) {
 }
 
 const registerData = {
-    status: true,
-    reference_slide_info: {
-      slide_id: "H01BBB24P-6636",
+  status: true,
+  reference_slide_info: {
+    slide_id: "H01BBB24P-6636",
+    grid_id: "grid_merged",
+    img: "/hdd_drive/registration_outcome/H01BBB24P-6636/H01BBB24P-6636_panorama.jpeg",
+  },
+  register_slide_info: [
+    {
+      slide_id: "H01BBB24P-6635",
       grid_id: "grid_merged",
-      img: "/hdd_drive/registration_outcome/H01BBB24P-6636/H01BBB24P-6636_panorama.jpeg",
+      tilt: 0.6755608193436402,
+      x_disp: -7.002938601508233,
+      y_disp: 21.5733004113515,
+      x_scale: 0.9985830846238507,
+      y_scale: 1.002959527647854,
+      x_skew: 0.0010078995117070938,
+      y_skew: 0,
+      img: "/hdd_drive/registration_outcome/H01BBB24P-6635/H01BBB24P-6635_panorama.jpeg",
     },
-    register_slide_info: [
-      {
-        slide_id: "H01BBB24P-6635",
-        grid_id: "grid_merged",
-        tilt: 0.6755608193436402,
-        x_disp: -7.002938601508233,
-        y_disp: 21.5733004113515,
-        x_scale: 0.9985830846238507,
-        y_scale: 1.002959527647854,
-        x_skew: 0.0010078995117070938,
-        y_skew: 0,
-        img: "/hdd_drive/registration_outcome/H01BBB24P-6635/H01BBB24P-6635_panorama.jpeg",
-      },
-      {
-        slide_id: "H01BBB24P-6637",
-        grid_id: "grid_merged",
-        tilt: 171.52841795158662,
-        x_disp: 756.4809090508966,
-        y_disp: 1013.6539416437139,
-        x_scale: 1.0134707342588396,
-        y_scale: 1.1562656607862223,
-        x_skew: -0.020939868868742294,
-        y_skew: 0,
-        img: "/hdd_drive/registration_outcome/H01BBB24P-6637/H01BBB24P-6637_panorama.jpeg",
-      },
-    ],
+    {
+      slide_id: "H01BBB24P-6637",
+      grid_id: "grid_merged",
+      tilt: 171.52841795158662,
+      x_disp: 756.4809090508966,
+      y_disp: 1013.6539416437139,
+      x_scale: 1.0134707342588396,
+      y_scale: 1.1562656607862223,
+      x_skew: -0.020939868868742294,
+      y_skew: 0,
+      img: "/hdd_drive/registration_outcome/H01BBB24P-6637/H01BBB24P-6637_panorama.jpeg",
+    },
+  ],
 };
 
 function Viewcube() {
@@ -220,7 +220,7 @@ function getImgData(data) {
       name: itm.slide_id,
       scaleX: itm.x_scale,
       scaleY: itm.y_scale,
-      img: `/hdd_drive/registration_outcome/${itm.slide_id}/${itm.slide_id}_panorama.jpeg`
+      img: `/hdd_drive/registration_outcome/${itm.slide_id}/${itm.slide_id}_panorama.jpeg`,
     };
   });
   let arr = [];
@@ -229,7 +229,7 @@ function getImgData(data) {
     name: reference.slide_id,
     url: `/images/${reference.slide_id}.jpeg`,
     borderColor: randomColor(),
-    img: `/hdd_drive/registration_outcome/${reference.slide_id}/${reference.slide_id}_panorama.jpeg`
+    img: `/hdd_drive/registration_outcome/${reference.slide_id}/${reference.slide_id}_panorama.jpeg`,
   });
   arr = [...arr, ...registerArr];
   return arr;
@@ -269,16 +269,16 @@ function ImageElement({
   img,
   showBorder,
 }) {
-  const [imgLoaded, setImgLoaded] = useState(false);
-  const texture = useRef();
+  const [imgLoaded, setImgLoaded] = useState(0);
+  const canvas = document.createElement("canvas");
   const width = useRef();
   const height = useRef();
-  const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
-  const imgObj = useRef(new Image());
+  const imgObj = new Image();
+  const texture = useRef();
 
   function loadImg() {
-    imgObj.current.onload = function () {
+    imgObj.onload = function () {
       width.current = this.width;
       height.current = this.height;
       canvas.width = width.current;
@@ -286,18 +286,22 @@ function ImageElement({
       ctx.save();
       ctx.globalAlpha = opacity / 100;
       ctx.drawImage(this, 0, 0);
+      ctx.restore();
+      console.log(showBorder);
       if (showBorder) {
         ctx.strokeStyle = img.borderColor;
         ctx.lineWidth = 15;
         ctx.strokeRect(0, 0, canvas.width, canvas.height);
+      } else {
+        ctx.lineWidth = 0;
       }
+
       texture.current = new THREE.CanvasTexture(canvas);
       texture.current.needsUpdate = true;
-      ctx.restore();
-      setImgLoaded(true);
+      setImgLoaded(imgLoaded + 1);
     };
-    imgObj.current.crossOrigin = "anonymus";
-    imgObj.current.src = `${API_URL}${img.img}`;
+    imgObj.crossOrigin = "anonymus";
+    imgObj.src = `${API_URL}${img.img}`;
   }
 
   useEffect(() => {
@@ -306,27 +310,7 @@ function ImageElement({
 
   useEffect(() => {
     loadImg();
-  }, [img.img]);
-
-  useEffect(() => {
-    if (imgLoaded) {
-      console.log("loaded");
-      canvas.width = width.current;
-      canvas.height = height.current;
-      ctx.save();
-      ctx.globalAlpha = opacity / 100;
-      ctx.drawImage(imgObj.current, 0, 0);
-      if (showBorder) {
-        console.log("show");
-        ctx.strokeStyle = img.borderColor;
-        ctx.lineWidth = 15;
-        ctx.strokeRect(0, 0, canvas.width, canvas.height);
-      }
-      texture.current = new THREE.CanvasTexture(canvas);
-      texture.current.needsUpdate = true;
-      ctx.restore();
-    }
-  }, [opacity, showBorder]);
+  }, [showBorder, opacity, img.img]);
 
   useFrame(() => {
     if (texture.current) {
@@ -380,7 +364,7 @@ const CameraElement = ({ cameraView }) => {
     <OrthographicCamera
       ref={ref}
       makeDefault
-      zoom={0.30}
+      zoom={0.3}
       position={[-100, 100, 100]}
       near={-10000}
       far={10000}
@@ -401,18 +385,17 @@ const App = () => {
   const [groupImages, setGroupImages] = useState(true);
   const [searchParams, setSearchParams] = useSearchParams();
   const data = useRef();
+  const defaultData = useRef();
 
   const filteredImages = imagesArr.filter((img) => !img.hidden);
 
   useEffect(() => {
-    data.current = searchParams.get("data")
-    if(data.current) {
-      var actual = JSON.parse(atob(data.current))
-      setImagesArr(getImgData(actual))
-    } else {
-      setImagesArr(imgData)
-    }
-  }, [])
+    data.current = searchParams.get("data");
+    var actual = JSON.parse(atob(data.current));
+    const formattedData = getImgData(actual);
+    setImagesArr(formattedData);
+    defaultData.current = formattedData;
+  }, []);
 
   function closeAll() {
     setImagesArr((prevArray) =>
@@ -468,7 +451,7 @@ const App = () => {
   };
 
   const resetImages = () => {
-    setImagesArr(imgData);
+    setImagesArr(defaultData.current);
     switchToView("front");
     setGlobalRotation(0);
     setSpacing(200);
@@ -669,25 +652,23 @@ const App = () => {
         <CameraControls ref={setCameraControls} />
         {/* <Viewcube /> */}
         <group ref={mesh} rotation={[Math.PI / 2, 0, 0]}>
-          {imagesArr.map((img, index) => {
+          {filteredImages.map((img, index) => {
             return (
-              !img.hidden && (
-                <Suspense key={index} fallback={null}>
-                  <ImageElement
-                    globalRotation={globalRotation}
-                    position={[
-                      img.transformX ? img.transformX : 0,
-                      calcPosition(index),
-                      img.transformY ? -img.transformY : 0,
-                    ]}
-                    img={img}
-                    rotation={img.rotation}
-                    url={img.url}
-                    opacity={img.opacity ? img.opacity : opacity}
-                    showBorder={showBorder}
-                  />
-                </Suspense>
-              )
+              <Suspense key={index} fallback={null}>
+                <ImageElement
+                  globalRotation={globalRotation}
+                  position={[
+                    img.transformX ? img.transformX : 0,
+                    calcPosition(index),
+                    img.transformY ? -img.transformY : 0,
+                  ]}
+                  img={img}
+                  rotation={img.rotation}
+                  url={img.url}
+                  opacity={img.opacity ? img.opacity : opacity}
+                  showBorder={showBorder}
+                />
+              </Suspense>
             );
           })}
         </group>
@@ -729,9 +710,7 @@ const App = () => {
         <div
           style={{
             height: "100%",
-            overflowY: "auto",
             backgroundColor: "#f5f5f5",
-            padding: "15px",
           }}
         >
           <div
@@ -968,7 +947,7 @@ const App = () => {
                     onChange={(e) => setGroupImages(e.target.checked)}
                   />
                 }
-                label={`${groupImages ? 'Ungroup' : 'Group'} Images`}
+                label={`${groupImages ? "Ungroup" : "Group"} Images`}
               />
             </FormGroup>
             <TextField
