@@ -34,8 +34,10 @@ import {
 import LayersIcon from "@mui/icons-material/Layers";
 import SettingsIcon from "@mui/icons-material/Settings";
 import ControlCameraIcon from "@mui/icons-material/ControlCamera";
+import RestartAlt from "@mui/icons-material/RestartAlt";
 import { useSearchParams } from "react-router-dom";
 import { FaLock, FaUnlock } from "react-icons/fa";
+import {GrPowerReset} from "react-icons/gr"
 
 const X_INCREMENT = 1;
 const Y_INCREMENT = 1;
@@ -397,16 +399,6 @@ const App = () => {
     defaultData.current = formattedData;
   }, []);
 
-  function closeAll() {
-    setImagesArr((prevArray) =>
-      prevArray.map(({ open, ...rest }) => ({ ...rest, open: false }))
-    );
-  }
-
-  useEffect(() => {
-    closeAll();
-  }, [groupImages]);
-
   const handleSpacingIncrease = () => {
     setSpacing(spacing + SPACING);
   };
@@ -674,39 +666,6 @@ const App = () => {
         </group>
       </Canvas>
       <div id="canvas-layers">
-        <Tabs
-          value={currentTab}
-          onChange={handleTabChange}
-          style={{ borderBottom: "1px solid #e5e5e5" }}
-        >
-          <CloneProps>
-            {(tabProps) => (
-              <Tooltip title="Layers">
-                <div>
-                  <Tab {...tabProps} icon={<LayersIcon />} />
-                </div>
-              </Tooltip>
-            )}
-          </CloneProps>
-          <CloneProps>
-            {(tabProps) => (
-              <Tooltip title="Camera Controls">
-                <div>
-                  <Tab {...tabProps} icon={<ControlCameraIcon />} />
-                </div>
-              </Tooltip>
-            )}
-          </CloneProps>
-          <CloneProps>
-            {(tabProps) => (
-              <Tooltip title="Global Settings">
-                <div>
-                  <Tab {...tabProps} icon={<SettingsIcon />} />
-                </div>
-              </Tooltip>
-            )}
-          </CloneProps>
-        </Tabs>
         <div
           style={{
             height: "100%",
@@ -768,7 +727,6 @@ const App = () => {
                                         <AiFillEye />
                                       )}
                                     </IconButton>
-                                    {!groupImages && (
                                       <IconButton
                                         size="small"
                                         onClick={() =>
@@ -779,7 +737,6 @@ const App = () => {
                                           style={{ cursor: "pointer" }}
                                         />
                                       </IconButton>
-                                    )}
                                   </div>
                                 </div>
                                 {img.open && (
@@ -791,7 +748,7 @@ const App = () => {
                                       marginTop: "10px",
                                     }}
                                   >
-                                    <TextField
+                                    {!groupImages && <TextField
                                       defaultValue={
                                         img.transformX
                                           ? roundNum(img.transformX)
@@ -810,8 +767,8 @@ const App = () => {
                                       onChange={(e) =>
                                         moveX(index, e.target.value)
                                       }
-                                    />
-                                    <TextField
+                                    />}
+                                    {!groupImages && <TextField
                                       defaultValue={
                                         roundNum(img.transformY)
                                           ? img.transformY
@@ -830,8 +787,8 @@ const App = () => {
                                       onChange={(e) =>
                                         moveY(index, e.target.value)
                                       }
-                                    />
-                                    <TextField
+                                    />}
+                                    {!groupImages && <TextField
                                       defaultValue={
                                         img.scaleX ? roundNum(img.scaleX) : 1
                                       }
@@ -846,8 +803,8 @@ const App = () => {
                                         shrink: true,
                                       }}
                                       onChange={(e) => scaleX(e, index)}
-                                    />
-                                    <TextField
+                                    />}
+                                    {!groupImages && <TextField
                                       defaultValue={
                                         img.scaleY ? roundNum(img.scaleY) : 1
                                       }
@@ -862,7 +819,7 @@ const App = () => {
                                         shrink: true,
                                       }}
                                       onChange={(e) => scaleY(e, index)}
-                                    />
+                                    />}
                                     <TextField
                                       defaultValue={
                                         img.opacity
@@ -885,7 +842,7 @@ const App = () => {
                                         targetImageOpacityChange(e, index)
                                       }
                                     />
-                                    <TextField
+                                    {!groupImages && <TextField
                                       defaultValue={
                                         img.rotation
                                           ? roundNum(img.rotation)
@@ -904,7 +861,7 @@ const App = () => {
                                       onChange={(e) =>
                                         rotationHandler(e, index)
                                       }
-                                    />
+                                    />}
                                   </div>
                                 )}
                               </div>
@@ -919,16 +876,14 @@ const App = () => {
               </Droppable>
             </DragDropContext>
           </div>
-          <div style={{ display: currentTab === 1 ? "block" : "none" }}>
-            Camera controls
-          </div>
-          <div
-            style={{
-              display: currentTab === 2 ? "grid" : "none",
-              rowGap: "10px",
-            }}
-          >
-            <FormGroup>
+        </div>
+      </div>
+      <div id="canvas-view-changer">
+        {/* <button onClick={() => switchToView("front")}>Front</button> */}
+        {/* <button onClick={() => switchToView("iso")}>Isometric</button> */}
+      </div>
+      <div id="canvas-controls">
+      <FormGroup>
               <FormControlLabel
                 control={
                   <Checkbox
@@ -937,17 +892,6 @@ const App = () => {
                   />
                 }
                 label="Show Borders"
-              />
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    icon={<FaUnlock size="1.2em" />}
-                    checkedIcon={<FaLock size="1.2em" />}
-                    checked={groupImages}
-                    onChange={(e) => setGroupImages(e.target.checked)}
-                  />
-                }
-                label={`${groupImages ? "Ungroup" : "Group"} Images`}
               />
             </FormGroup>
             <TextField
@@ -996,42 +940,13 @@ const App = () => {
               onChange={(e) => setGlobalRotation(e.target.value)}
               disabled={!groupImages}
             />
-            <Button
-              onClick={resetImages}
-              fullWidth
-              size="small"
-              variant="contained"
-              color="warning"
-            >
-              Reset All
-            </Button>
-          </div>
-        </div>
-      </div>
-      <div id="canvas-view-changer">
-        {/* <button onClick={() => switchToView("front")}>Front</button> */}
-        {/* <button onClick={() => switchToView("iso")}>Isometric</button> */}
-      </div>
-      <div id="canvas-controls">
-        <div className="input-group">
-          <label>Spacing</label>
-          <div>
-            <button onClick={handleSpacingDecrease}>-</button>
-            {spacing}
-            <button onClick={handleSpacingIncrease}>+</button>
-          </div>
-        </div>
-        <div className="input-group">
-          <label htmlFor="image-opacity">Opacity</label>
-          <input
-            id="image-opacity"
-            type="range"
-            value={opacity}
-            onChange={(e) => mainOpacityChange(e)}
-            min={1}
-            max={100}
-          />
-        </div>
+            <div style={{display: 'flex', alignItems: 'center', columnGap: '6px'}}>
+              <Typography>Registration</Typography>
+              <div style={{display: 'flex', columnGap: '4px'}}>
+                <div onClick={() => setGroupImages(!groupImages)} className="registration-icon">{groupImages ? <FaLock size="1em" /> : <FaUnlock size="1em" />}</div>
+                <div onClick={resetImages} className="registration-icon"><GrPowerReset/></div>
+              </div>
+            </div>
       </div>
     </div>
   );
