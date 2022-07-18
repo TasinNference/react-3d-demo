@@ -42,7 +42,7 @@ const X_SCALE_INCREMENT = 0.1;
 const Y_SCALE_INCREMENT = 0.1;
 const SPACING = 50;
 
-const API_URL = "https://14.140.231.202";
+const API_URL = `${window.location.origin}`;
 
 // const imgData = {
 //   request: {
@@ -122,7 +122,7 @@ const registerData = {
     reference_slide_info: {
       slide_id: "H01BBB24P-6636",
       grid_id: "grid_merged",
-      img: "/hdd_drive/registration_outcome/H01BBB24P-6636/H01BBB24P-6636_panorama.jpeg",
+      img: "/wsi_data/registration_outcome/H01BBB24P-6636/H01BBB24P-6636_panorama.jpeg",
     },
     register_slide_info: [
       {
@@ -135,7 +135,7 @@ const registerData = {
         y_scale: 1.002959527647854,
         x_skew: 0.0010078995117070938,
         y_skew: 0,
-        img: "/hdd_drive/registration_outcome/H01BBB24P-6635/H01BBB24P-6635_panorama.jpeg",
+        img: "/wsi_data/registration_outcome/H01BBB24P-6635/H01BBB24P-6635_panorama.jpeg",
       },
       {
         slide_id: "H01BBB24P-6637",
@@ -147,7 +147,7 @@ const registerData = {
         y_scale: 1.1562656607862223,
         x_skew: -0.020939868868742294,
         y_skew: 0,
-        img: "/hdd_drive/registration_outcome/H01BBB24P-6637/H01BBB24P-6637_panorama.jpeg",
+        img: "/wsi_data/registration_outcome/H01BBB24P-6637/H01BBB24P-6637_panorama.jpeg",
       },
     ],
 };
@@ -219,7 +219,7 @@ function getImgData(data) {
       name: itm.slide_id,
       scaleX: itm.x_scale,
       scaleY: itm.y_scale,
-      img: `/hdd_drive/registration_outcome/${itm.slide_id}/${itm.slide_id}_panorama.jpeg`
+      img: `/wsi_data/registration_outcome/${itm.slide_id}/${itm.slide_id}_panorama.jpeg`
     };
   });
   let arr = [];
@@ -228,7 +228,7 @@ function getImgData(data) {
     name: reference.slide_id,
     url: `/images/${reference.slide_id}.jpeg`,
     borderColor: randomColor(),
-    img: `/hdd_drive/registration_outcome/${reference.slide_id}/${reference.slide_id}_panorama.jpeg`
+    img: `/wsi_data/registration_outcome/${reference.slide_id}/${reference.slide_id}_panorama.jpeg`
   });
   arr = [...arr, ...registerArr];
   return arr;
