@@ -45,7 +45,7 @@ const X_SCALE_INCREMENT = 0.1;
 const Y_SCALE_INCREMENT = 0.1;
 const SPACING = 50;
 
-const API_URL = `${window.location.origin}`;
+const API_URL = "https://14.140.231.202";
 
 // const imgData = {
 //   request: {
@@ -222,7 +222,7 @@ function getImgData(data) {
       name: itm.slide_id,
       scaleX: itm.x_scale,
       scaleY: itm.y_scale,
-      img: `/wsi_data/registration_outcome/${itm.slide_id}/${itm.slide_id}_panorama.jpeg`,
+      img: `/hdd_drive/registration_outcome/${itm.slide_id}/${itm.slide_id}_panorama.jpeg`,
     };
   });
   let arr = [];
@@ -231,10 +231,28 @@ function getImgData(data) {
     name: reference.slide_id,
     url: `/images/${reference.slide_id}.jpeg`,
     borderColor: randomColor(),
-    img: `/wsi_data/registration_outcome/${reference.slide_id}/${reference.slide_id}_panorama.jpeg`,
+    img: `/hdd_drive/registration_outcome/${reference.slide_id}/${reference.slide_id}_panorama.jpeg`,
+    reference: true
   });
   arr = [...arr, ...registerArr];
   return arr;
+}
+
+function degToRad(deg) {
+  const pi = Math.PI;
+  return deg * (pi/180);
+}
+
+function getActualDisplacement({point, rotation, displacement, referenceCenter}) {
+  console.log(point, rotation)
+  const radRotation = degToRad(rotation)
+  const rotatedPoint = {x: point.x * Math.cos(radRotation) + point.y * Math.sin(radRotation), y: point.y*Math.cos(radRotation) - point.x*Math.sin(radRotation)}
+  console.log(rotatedPoint)
+  const translatedPoint = {x: rotatedPoint.x+displacement.x, y: rotatedPoint.y - displacement.y}
+  console.log(translatedPoint)
+  const newPoint = {x: referenceCenter.x - translatedPoint.x, y: referenceCenter.y + translatedPoint.y}
+
+  return newPoint
 }
 
 const imgData = getImgData(registerData);
@@ -270,6 +288,8 @@ function ImageElement({
   opacity,
   img,
   showBorder,
+  setReferenceCenter,
+  referenceCenter
 }) {
   const [imgLoaded, setImgLoaded] = useState(0);
   const canvas = document.createElement("canvas");
@@ -278,6 +298,8 @@ function ImageElement({
   const ctx = canvas.getContext("2d");
   const imgObj = new Image();
   const texture = useRef();
+  const [displacement, setDisplacement] = useState({x: 0, y: 0});
+  position = [-displacement.x, position[1], -displacement.y]
 
   function loadImg() {
     imgObj.onload = function () {
@@ -301,6 +323,18 @@ function ImageElement({
       texture.current = new THREE.CanvasTexture(canvas);
       texture.current.needsUpdate = true;
       setImgLoaded(imgLoaded + 1);
+      
+      if(img.reference) {
+        const center = {x: width.current/2, y: height.current/2}
+        setReferenceCenter(center)
+      } else {
+        const center = {x: width.current/2, y: height.current/2}
+        if(referenceCenter) {
+          const actualDisplacement = getActualDisplacement({point: {x: center.x*img.x_scale, y: -center.y*img.y_scale}, rotation: img.rotation, displacement: {x: img.x_disp, y: img.y_disp}, referenceCenter: {x: referenceCenter.x, y: referenceCenter.y}})
+          console.log(actualDisplacement, img)
+          setDisplacement(actualDisplacement)
+        }
+      }
     };
     imgObj.crossOrigin = "anonymus";
     imgObj.src = `${API_URL}${img.img}`;
@@ -385,6 +419,7 @@ const App = () => {
   const [showBorder, setShowBorder] = useState(true);
   const [currentTab, setCurrentTab] = useState(0);
   const [groupImages, setGroupImages] = useState(true);
+  const [referenceCenter, setReferenceCenter] = useState();
   const [searchParams, setSearchParams] = useSearchParams();
   const data = useRef();
   const defaultData = useRef();
@@ -659,6 +694,8 @@ const App = () => {
                   url={img.url}
                   opacity={img.opacity ? img.opacity : opacity}
                   showBorder={showBorder}
+                  setReferenceCenter={setReferenceCenter}
+                  referenceCenter={referenceCenter}
                 />
               </Suspense>
             );
