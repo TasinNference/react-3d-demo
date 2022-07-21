@@ -724,7 +724,7 @@ const App = () => {
         >
           <div
             style={{
-              display: currentTab === 0 ? "block" : "none",
+              display: currentTab === 0 ? "block" : "none", height: '100%'
             }}
           >
             <DragDropContext onDragEnd={handleDragEnd}>
