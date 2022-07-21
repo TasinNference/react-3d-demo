@@ -7,11 +7,12 @@ import {
   OrthographicCamera,
   useCamera,
 } from "@react-three/drei";
+import { OrbitControls as ThreeOrbitControls } from "three/examples/jsm/controls/OrbitControls"
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import { GoSettings } from "react-icons/go";
 import { AiFillEyeInvisible, AiFillEye } from "react-icons/ai";
 import randomColor from "randomcolor";
-import { Matrix4, Scene } from "three";
+import { AxesHelper, Matrix4, Scene } from "three";
 import { CameraControls } from "./CameraControls";
 import * as holdEvent from "hold-event";
 import {
@@ -37,7 +38,7 @@ import ControlCameraIcon from "@mui/icons-material/ControlCamera";
 import RestartAlt from "@mui/icons-material/RestartAlt";
 import { useSearchParams } from "react-router-dom";
 import { FaLock, FaUnlock } from "react-icons/fa";
-import {GrPowerReset} from "react-icons/gr"
+import { GrPowerReset } from "react-icons/gr"
 
 const X_INCREMENT = 1;
 const Y_INCREMENT = 1;
@@ -155,6 +156,17 @@ const registerData = {
   ],
 };
 
+const CameraController = () => {
+  const { camera, gl } = useThree();
+  useEffect(() => {
+    const controls = new ThreeOrbitControls(camera, gl.domElement);
+    return () => {
+      controls.dispose();
+    };
+  }, [camera, gl]);
+  return null;
+};
+
 function Viewcube() {
   const { gl, scene, camera, size } = useThree();
   const virtualScene = useMemo(() => new Scene(), []);
@@ -180,13 +192,15 @@ function Viewcube() {
         makeDefault={false}
         position={[0, 0, 100]}
       />
+      <ambientLight intensity={0.5} />
       <mesh
         ref={ref}
         raycast={useCamera(virtualCam)}
-        position={[size.width / 2 - 80, size.height / 2 - 80, 0]}
+        position={[- (size.width / 2) + 400, - (size.height / 2) + 110, 0]}
         onPointerOut={(e) => set(null)}
         onPointerMove={(e) => set(Math.floor(e.faceIndex / 2))}
       >
+        {/* <boxGeometry attach="geometry" args={[60, 60, 60]} />
         {[...Array(6)].map((_, index) => {
           return (
             <meshLambertMaterial
@@ -195,10 +209,9 @@ function Viewcube() {
               color={index === hover ? "hotpink" : "white"}
             />
           );
-        })}
-        <boxGeometry args={[60, 60, 60]} />
+        })} */}
+        <primitive object={new THREE.AxesHelper(100).setColors("red", "blue", "green")} />
       </mesh>
-      <ambientLight intensity={0.5} />
       <pointLight position={[10, 10, 10]} intensity={0.5} />
     </>,
     virtualScene
@@ -222,7 +235,7 @@ function getImgData(data) {
       name: itm.slide_id,
       scaleX: itm.x_scale,
       scaleY: itm.y_scale,
-      img: `/wsi_data/registration_outcome/${itm.slide_id}/${itm.slide_id}_panorama.jpeg`,
+      img: `/hdd_drive/registration_outcome/${itm.slide_id}/${itm.slide_id}_panorama.jpeg`,
     };
   });
   let arr = [];
@@ -231,7 +244,7 @@ function getImgData(data) {
     name: reference.slide_id,
     url: `/images/${reference.slide_id}.jpeg`,
     borderColor: randomColor(),
-    img: `/wsi_data/registration_outcome/${reference.slide_id}/${reference.slide_id}_panorama.jpeg`,
+    img: `/hdd_drive/registration_outcome/${reference.slide_id}/${reference.slide_id}_panorama.jpeg`,
   });
   arr = [...arr, ...registerArr];
   return arr;
@@ -642,7 +655,7 @@ const App = () => {
       <Canvas>
         <CameraElement />
         <CameraControls ref={setCameraControls} />
-        {/* <Viewcube /> */}
+        <Viewcube />
         <group ref={mesh} rotation={[Math.PI / 2, 0, 0]}>
           {filteredImages.map((img, index) => {
             return (
@@ -665,6 +678,15 @@ const App = () => {
           })}
         </group>
       </Canvas>
+      {/* <Canvas>
+        <CameraController />
+        <ambientLight />
+        <primitive object={new THREE.AxesHelper(10)} />
+        <mesh>
+          <boxGeometry attach="geometry" args={[5, 5, 5]} />
+          <meshBasicMaterial attach="material" color="lightblue" />
+        </mesh>
+      </Canvas> */}
       <div id="canvas-layers">
         <div
           style={{
@@ -727,16 +749,16 @@ const App = () => {
                                         <AiFillEye />
                                       )}
                                     </IconButton>
-                                      <IconButton
-                                        size="small"
-                                        onClick={() =>
-                                          handleConfigureImage(img.id, index)
-                                        }
-                                      >
-                                        <GoSettings
-                                          style={{ cursor: "pointer" }}
-                                        />
-                                      </IconButton>
+                                    <IconButton
+                                      size="small"
+                                      onClick={() =>
+                                        handleConfigureImage(img.id, index)
+                                      }
+                                    >
+                                      <GoSettings
+                                        style={{ cursor: "pointer" }}
+                                      />
+                                    </IconButton>
                                   </div>
                                 </div>
                                 {img.open && (
@@ -883,70 +905,70 @@ const App = () => {
         {/* <button onClick={() => switchToView("iso")}>Isometric</button> */}
       </div>
       <div id="canvas-controls">
-      <FormGroup>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={showBorder}
-                    onChange={(e) => setShowBorder(e.target.checked)}
-                  />
-                }
-                label="Show Borders"
+        <FormGroup>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={showBorder}
+                onChange={(e) => setShowBorder(e.target.checked)}
               />
-            </FormGroup>
-            <TextField
-              value={spacing}
-              fullWidth
-              size="small"
-              label="Image Spacing"
-              type="number"
-              inputProps={{
-                step: "50",
-              }}
-              InputLabelProps={{
-                shrink: true,
-              }}
-              onChange={(e) => setSpacing(e.target.value)}
-            />
-            <TextField
-              value={opacity}
-              fullWidth
-              size="small"
-              label="Global Opacity (Percent)"
-              type="number"
-              inputProps={{
-                step: "1",
-                max: 100,
-                min: 1,
-              }}
-              InputLabelProps={{
-                shrink: true,
-              }}
-              onChange={(e) => mainOpacityChange(e)}
-              disabled={!groupImages}
-            />
-            <TextField
-              value={globalRotation}
-              fullWidth
-              size="small"
-              label="Global Rotation"
-              type="number"
-              inputProps={{
-                step: "1",
-              }}
-              InputLabelProps={{
-                shrink: true,
-              }}
-              onChange={(e) => setGlobalRotation(e.target.value)}
-              disabled={!groupImages}
-            />
-            <div style={{display: 'flex', alignItems: 'center', columnGap: '6px'}}>
-              <Typography>Registration</Typography>
-              <div style={{display: 'flex', columnGap: '4px'}}>
-                <div onClick={() => setGroupImages(!groupImages)} className="registration-icon">{groupImages ? <FaLock size="1em" /> : <FaUnlock size="1em" />}</div>
-                <div onClick={resetImages} className="registration-icon"><GrPowerReset/></div>
-              </div>
-            </div>
+            }
+            label="Show Borders"
+          />
+        </FormGroup>
+        <TextField
+          value={spacing}
+          fullWidth
+          size="small"
+          label="Image Spacing"
+          type="number"
+          inputProps={{
+            step: "50",
+          }}
+          InputLabelProps={{
+            shrink: true,
+          }}
+          onChange={(e) => setSpacing(e.target.value)}
+        />
+        <TextField
+          value={opacity}
+          fullWidth
+          size="small"
+          label="Global Opacity (Percent)"
+          type="number"
+          inputProps={{
+            step: "1",
+            max: 100,
+            min: 1,
+          }}
+          InputLabelProps={{
+            shrink: true,
+          }}
+          onChange={(e) => mainOpacityChange(e)}
+          disabled={!groupImages}
+        />
+        <TextField
+          value={globalRotation}
+          fullWidth
+          size="small"
+          label="Global Rotation"
+          type="number"
+          inputProps={{
+            step: "1",
+          }}
+          InputLabelProps={{
+            shrink: true,
+          }}
+          onChange={(e) => setGlobalRotation(e.target.value)}
+          disabled={!groupImages}
+        />
+        <div style={{ display: 'flex', alignItems: 'center', columnGap: '6px' }}>
+          <Typography>Registration</Typography>
+          <div style={{ display: 'flex', columnGap: '4px' }}>
+            <div onClick={() => setGroupImages(!groupImages)} className="registration-icon">{groupImages ? <FaLock size="1em" /> : <FaUnlock size="1em" />}</div>
+            <div onClick={resetImages} className="registration-icon"><GrPowerReset /></div>
+          </div>
+        </div>
       </div>
     </div>
   );
