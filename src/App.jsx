@@ -38,7 +38,7 @@ import ControlCameraIcon from "@mui/icons-material/ControlCamera";
 import RestartAlt from "@mui/icons-material/RestartAlt";
 import { useSearchParams } from "react-router-dom";
 import { FaLock, FaUnlock } from "react-icons/fa";
-import { GrPowerReset } from "react-icons/gr"
+import { GrPowerReset } from "react-icons/gr";
 
 const X_INCREMENT = 1;
 const Y_INCREMENT = 1;
@@ -46,7 +46,7 @@ const X_SCALE_INCREMENT = 0.1;
 const Y_SCALE_INCREMENT = 0.1;
 const SPACING = 50;
 
-const API_URL = `${window.location.origin}`;
+const API_URL = "https://14.140.231.202";
 
 // const imgData = {
 //   request: {
@@ -245,9 +245,41 @@ function getImgData(data) {
     url: `/images/${reference.slide_id}.jpeg`,
     borderColor: randomColor(),
     img: `/hdd_drive/registration_outcome/${reference.slide_id}/${reference.slide_id}_panorama.jpeg`,
+    reference: true,
   });
   arr = [...arr, ...registerArr];
   return arr;
+}
+
+function degToRad(deg) {
+  const pi = Math.PI;
+  return deg * (pi / 180);
+}
+
+function getActualDisplacement({
+  point,
+  rotation,
+  displacement,
+  referenceCenter,
+}) {
+  console.log(point, rotation);
+  const radRotation = degToRad(rotation);
+  const rotatedPoint = {
+    x: point.x * Math.cos(radRotation) + point.y * Math.sin(radRotation),
+    y: point.y * Math.cos(radRotation) - point.x * Math.sin(radRotation),
+  };
+  console.log(rotatedPoint);
+  const translatedPoint = {
+    x: rotatedPoint.x + displacement.x,
+    y: rotatedPoint.y - displacement.y,
+  };
+  console.log(translatedPoint);
+  const newPoint = {
+    x: referenceCenter.x - translatedPoint.x,
+    y: referenceCenter.y + translatedPoint.y,
+  };
+
+  return newPoint;
 }
 
 const imgData = getImgData(registerData);
@@ -278,11 +310,12 @@ const imgData = getImgData(registerData);
 
 function ImageElement({
   position,
-  globalRotation,
   rotation,
   opacity,
   img,
   showBorder,
+  setReferenceCenter,
+  referenceCenter,
 }) {
   const [imgLoaded, setImgLoaded] = useState(0);
   const canvas = document.createElement("canvas");
@@ -291,6 +324,16 @@ function ImageElement({
   const ctx = canvas.getContext("2d");
   const imgObj = new Image();
   const texture = useRef();
+  const [displacement, setDisplacement] = useState({ x: 0, y: 0 });
+  position = img.reference
+    ? position
+    : [
+        -displacement.x + position[0],
+        position[1],
+        -displacement.y + position[2],
+      ];
+
+  console.log("position: ", -displacement.x,  position)
 
   function loadImg() {
     imgObj.onload = function () {
@@ -305,7 +348,7 @@ function ImageElement({
       console.log(showBorder);
       if (showBorder) {
         ctx.strokeStyle = img.borderColor;
-        ctx.lineWidth = 15;
+        ctx.lineWidth = 2;
         ctx.strokeRect(0, 0, canvas.width, canvas.height);
       } else {
         ctx.lineWidth = 0;
@@ -314,6 +357,24 @@ function ImageElement({
       texture.current = new THREE.CanvasTexture(canvas);
       texture.current.needsUpdate = true;
       setImgLoaded(imgLoaded + 1);
+
+      console.log("hello");
+      if (!referenceCenter && img.reference) {
+        const center = { x: width.current / 2, y: height.current / 2 };
+        setReferenceCenter(center);
+      } else if (!img.reference) {
+        const center = { x: width.current / 2, y: height.current / 2 };
+        if (referenceCenter) {
+          const actualDisplacement = getActualDisplacement({
+            point: { x: center.x * img.x_scale, y: -center.y * img.y_scale },
+            rotation: img.rotation,
+            displacement: { x: img.x_disp, y: img.y_disp },
+            referenceCenter: { x: referenceCenter.x, y: referenceCenter.y },
+          });
+          console.log(actualDisplacement, img);
+          setDisplacement(actualDisplacement);
+        }
+      }
     };
     imgObj.crossOrigin = "anonymus";
     imgObj.src = `${API_URL}${img.img}`;
@@ -325,7 +386,7 @@ function ImageElement({
 
   useEffect(() => {
     loadImg();
-  }, [showBorder, opacity, img.img]);
+  }, [showBorder, opacity, img.img, referenceCenter]);
 
   useFrame(() => {
     if (texture.current) {
@@ -344,9 +405,7 @@ function ImageElement({
           )
         }
         rotation={
-          rotation
-            ? [0, THREE.MathUtils.degToRad(-rotation - globalRotation), 0]
-            : [0, THREE.MathUtils.degToRad(-globalRotation), 0]
+          rotation ? [0, THREE.MathUtils.degToRad(-rotation), 0] : [0, 0, 0]
         }
         position={position}
       >
@@ -398,6 +457,7 @@ const App = () => {
   const [showBorder, setShowBorder] = useState(true);
   const [currentTab, setCurrentTab] = useState(0);
   const [groupImages, setGroupImages] = useState(true);
+  const [referenceCenter, setReferenceCenter] = useState();
   const [searchParams, setSearchParams] = useSearchParams();
   const data = useRef();
   const defaultData = useRef();
@@ -411,14 +471,6 @@ const App = () => {
     setImagesArr(formattedData);
     defaultData.current = formattedData;
   }, []);
-
-  const handleSpacingIncrease = () => {
-    setSpacing(spacing + SPACING);
-  };
-
-  const handleSpacingDecrease = () => {
-    if (spacing > SPACING) setSpacing(spacing - SPACING);
-  };
 
   const calcPosition = (index) => {
     return -1 * (index - (filteredImages.length - 1) / 2) * spacing;
@@ -444,7 +496,7 @@ const App = () => {
   const targetImageOpacityChange = (e, index) => {
     setImagesArr([
       ...imagesArr.slice(0, index),
-      { ...imagesArr[index], opacity: e.target.value },
+      { ...imagesArr[index], opacity: parseFloat(e.target.value) },
       ...imagesArr.slice(index + 1),
     ]);
   };
@@ -465,23 +517,15 @@ const App = () => {
 
   const mainOpacityChange = (e) => {
     resetOpacity();
-    setOpacity(e.target.value);
+    setOpacity(parseFloat(e.target.value));
   };
 
   const rotationHandler = (e, index) => {
     setImagesArr([
       ...imagesArr.slice(0, index),
-      { ...imagesArr[index], rotation: e.target.value },
+      { ...imagesArr[index], rotation: parseFloat(e.target.value) },
       ...imagesArr.slice(index + 1),
     ]);
-  };
-
-  const toFrontView = () => {
-    setCameraView("front");
-  };
-
-  const toIsoView = () => {
-    setCameraView("iso");
   };
 
   const toggleImageVisibility = (index) => {
@@ -497,18 +541,19 @@ const App = () => {
       ...imagesArr.slice(0, index),
       {
         ...imagesArr[index],
-        transformX: value,
+        transformX: parseFloat(value),
       },
       ...imagesArr.slice(index + 1),
     ]);
   };
 
   const moveY = (index, value) => {
+    console.log(value)
     setImagesArr([
       ...imagesArr.slice(0, index),
       {
         ...imagesArr[index],
-        transformY: value,
+        transformY: parseFloat(value),
       },
       ...imagesArr.slice(index + 1),
     ]);
@@ -519,7 +564,7 @@ const App = () => {
       ...imagesArr.slice(0, index),
       {
         ...imagesArr[index],
-        scaleX: e.target.value,
+        scaleX: parseFloat(e.target.value),
       },
       ...imagesArr.slice(index + 1),
     ]);
@@ -530,7 +575,7 @@ const App = () => {
       ...imagesArr.slice(0, index),
       {
         ...imagesArr[index],
-        scaleY: e.target.value,
+        scaleY: parseFloat(e.target.value),
       },
       ...imagesArr.slice(index + 1),
     ]);
@@ -656,12 +701,15 @@ const App = () => {
         <CameraElement />
         <CameraControls ref={setCameraControls} />
         <Viewcube />
-        <group ref={mesh} rotation={[Math.PI / 2, 0, 0]}>
+        <group
+          ref={mesh}
+          rotation={[Math.PI / 2, THREE.MathUtils.degToRad(-globalRotation), 0]}
+        >
           {filteredImages.map((img, index) => {
+            console.log("transX: ", img.transformX)
             return (
               <Suspense key={index} fallback={null}>
                 <ImageElement
-                  globalRotation={globalRotation}
                   position={[
                     img.transformX ? img.transformX : 0,
                     calcPosition(index),
@@ -672,6 +720,8 @@ const App = () => {
                   url={img.url}
                   opacity={img.opacity ? img.opacity : opacity}
                   showBorder={showBorder}
+                  setReferenceCenter={setReferenceCenter}
+                  referenceCenter={referenceCenter}
                 />
               </Suspense>
             );
@@ -696,7 +746,7 @@ const App = () => {
         >
           <div
             style={{
-              display: currentTab === 0 ? "block" : "none",
+              display: currentTab === 0 ? "block" : "none", height: '100%'
             }}
           >
             <DragDropContext onDragEnd={handleDragEnd}>
@@ -770,78 +820,86 @@ const App = () => {
                                       marginTop: "10px",
                                     }}
                                   >
-                                    {!groupImages && <TextField
-                                      defaultValue={
-                                        img.transformX
-                                          ? roundNum(img.transformX)
-                                          : 0
-                                      }
-                                      fullWidth
-                                      size="small"
-                                      label="X Displacement"
-                                      type="number"
-                                      InputLabelProps={{
-                                        shrink: true,
-                                      }}
-                                      inputProps={{
-                                        step: "5",
-                                      }}
-                                      onChange={(e) =>
-                                        moveX(index, e.target.value)
-                                      }
-                                    />}
-                                    {!groupImages && <TextField
-                                      defaultValue={
-                                        roundNum(img.transformY)
-                                          ? img.transformY
-                                          : 0
-                                      }
-                                      fullWidth
-                                      size="small"
-                                      label="Y Displacement"
-                                      type="number"
-                                      inputProps={{
-                                        step: "5",
-                                      }}
-                                      InputLabelProps={{
-                                        shrink: true,
-                                      }}
-                                      onChange={(e) =>
-                                        moveY(index, e.target.value)
-                                      }
-                                    />}
-                                    {!groupImages && <TextField
-                                      defaultValue={
-                                        img.scaleX ? roundNum(img.scaleX) : 1
-                                      }
-                                      fullWidth
-                                      size="small"
-                                      label="Scale X"
-                                      type="number"
-                                      inputProps={{
-                                        step: "0.1",
-                                      }}
-                                      InputLabelProps={{
-                                        shrink: true,
-                                      }}
-                                      onChange={(e) => scaleX(e, index)}
-                                    />}
-                                    {!groupImages && <TextField
-                                      defaultValue={
-                                        img.scaleY ? roundNum(img.scaleY) : 1
-                                      }
-                                      fullWidth
-                                      size="small"
-                                      label="Scale Y"
-                                      type="number"
-                                      inputProps={{
-                                        step: "0.1",
-                                      }}
-                                      InputLabelProps={{
-                                        shrink: true,
-                                      }}
-                                      onChange={(e) => scaleY(e, index)}
-                                    />}
+                                    {!groupImages && (
+                                      <TextField
+                                        defaultValue={
+                                          img.transformX
+                                            ? roundNum(img.transformX)
+                                            : 0
+                                        }
+                                        fullWidth
+                                        size="small"
+                                        label="X Displacement"
+                                        type="number"
+                                        InputLabelProps={{
+                                          shrink: true,
+                                        }}
+                                        inputProps={{
+                                          step: "5",
+                                        }}
+                                        onChange={(e) =>
+                                          moveX(index, e.target.value)
+                                        }
+                                      />
+                                    )}
+                                    {!groupImages && (
+                                      <TextField
+                                        defaultValue={
+                                          roundNum(img.transformY)
+                                            ? img.transformY
+                                            : 0
+                                        }
+                                        fullWidth
+                                        size="small"
+                                        label="Y Displacement"
+                                        type="number"
+                                        inputProps={{
+                                          step: "5",
+                                        }}
+                                        InputLabelProps={{
+                                          shrink: true,
+                                        }}
+                                        onChange={(e) =>
+                                          moveY(index, e.target.value)
+                                        }
+                                      />
+                                    )}
+                                    {!groupImages && (
+                                      <TextField
+                                        defaultValue={
+                                          img.scaleX ? roundNum(img.scaleX) : 1
+                                        }
+                                        fullWidth
+                                        size="small"
+                                        label="Scale X"
+                                        type="number"
+                                        inputProps={{
+                                          step: "0.1",
+                                        }}
+                                        InputLabelProps={{
+                                          shrink: true,
+                                        }}
+                                        onChange={(e) => scaleX(e, index)}
+                                      />
+                                    )}
+                                    {!groupImages && (
+                                      <TextField
+                                        defaultValue={
+                                          img.scaleY ? roundNum(img.scaleY) : 1
+                                        }
+                                        fullWidth
+                                        size="small"
+                                        label="Scale Y"
+                                        type="number"
+                                        inputProps={{
+                                          step: "0.1",
+                                        }}
+                                        InputLabelProps={{
+                                          shrink: true,
+                                        }}
+                                        onChange={(e) => scaleY(e, index)}
+                                      />
+                                    )}
                                     <TextField
                                       defaultValue={
                                         img.opacity
@@ -864,26 +922,28 @@ const App = () => {
                                         targetImageOpacityChange(e, index)
                                       }
                                     />
-                                    {!groupImages && <TextField
-                                      defaultValue={
-                                        img.rotation
-                                          ? roundNum(img.rotation)
-                                          : roundNum(0)
-                                      }
-                                      fullWidth
-                                      size="small"
-                                      label="Rotation (Degrees)"
-                                      type="number"
-                                      inputProps={{
-                                        step: "1",
-                                      }}
-                                      InputLabelProps={{
-                                        shrink: true,
-                                      }}
-                                      onChange={(e) =>
-                                        rotationHandler(e, index)
-                                      }
-                                    />}
+                                    {!groupImages && (
+                                      <TextField
+                                        defaultValue={
+                                          img.rotation
+                                            ? roundNum(img.rotation)
+                                            : roundNum(0)
+                                        }
+                                        fullWidth
+                                        size="small"
+                                        label="Rotation (Degrees)"
+                                        type="number"
+                                        inputProps={{
+                                          step: "1",
+                                        }}
+                                        InputLabelProps={{
+                                          shrink: true,
+                                        }}
+                                        onChange={(e) =>
+                                          rotationHandler(e, index)
+                                        }
+                                      />
+                                    )}
                                   </div>
                                 )}
                               </div>
@@ -962,11 +1022,20 @@ const App = () => {
           onChange={(e) => setGlobalRotation(e.target.value)}
           disabled={!groupImages}
         />
-        <div style={{ display: 'flex', alignItems: 'center', columnGap: '6px' }}>
+        <div
+          style={{ display: "flex", alignItems: "center", columnGap: "6px" }}
+        >
           <Typography>Registration</Typography>
-          <div style={{ display: 'flex', columnGap: '4px' }}>
-            <div onClick={() => setGroupImages(!groupImages)} className="registration-icon">{groupImages ? <FaLock size="1em" /> : <FaUnlock size="1em" />}</div>
-            <div onClick={resetImages} className="registration-icon"><GrPowerReset /></div>
+          <div style={{ display: "flex", columnGap: "4px" }}>
+            <div
+              onClick={() => setGroupImages(!groupImages)}
+              className="registration-icon"
+            >
+              {groupImages ? <FaLock size="1em" /> : <FaUnlock size="1em" />}
+            </div>
+            <div onClick={resetImages} className="registration-icon">
+              <GrPowerReset />
+            </div>
           </div>
         </div>
       </div>
