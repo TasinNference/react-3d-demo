@@ -37,7 +37,7 @@ import ControlCameraIcon from "@mui/icons-material/ControlCamera";
 import RestartAlt from "@mui/icons-material/RestartAlt";
 import { useSearchParams } from "react-router-dom";
 import { FaLock, FaUnlock } from "react-icons/fa";
-import {GrPowerReset} from "react-icons/gr"
+import { GrPowerReset } from "react-icons/gr";
 
 const X_INCREMENT = 1;
 const Y_INCREMENT = 1;
@@ -232,7 +232,7 @@ function getImgData(data) {
     url: `/images/${reference.slide_id}.jpeg`,
     borderColor: randomColor(),
     img: `/hdd_drive/registration_outcome/${reference.slide_id}/${reference.slide_id}_panorama.jpeg`,
-    reference: true
+    reference: true,
   });
   arr = [...arr, ...registerArr];
   return arr;
@@ -240,19 +240,33 @@ function getImgData(data) {
 
 function degToRad(deg) {
   const pi = Math.PI;
-  return deg * (pi/180);
+  return deg * (pi / 180);
 }
 
-function getActualDisplacement({point, rotation, displacement, referenceCenter}) {
-  console.log(point, rotation)
-  const radRotation = degToRad(rotation)
-  const rotatedPoint = {x: point.x * Math.cos(radRotation) + point.y * Math.sin(radRotation), y: point.y*Math.cos(radRotation) - point.x*Math.sin(radRotation)}
-  console.log(rotatedPoint)
-  const translatedPoint = {x: rotatedPoint.x+displacement.x, y: rotatedPoint.y - displacement.y}
-  console.log(translatedPoint)
-  const newPoint = {x: referenceCenter.x - translatedPoint.x, y: referenceCenter.y + translatedPoint.y}
+function getActualDisplacement({
+  point,
+  rotation,
+  displacement,
+  referenceCenter,
+}) {
+  console.log(point, rotation);
+  const radRotation = degToRad(rotation);
+  const rotatedPoint = {
+    x: point.x * Math.cos(radRotation) + point.y * Math.sin(radRotation),
+    y: point.y * Math.cos(radRotation) - point.x * Math.sin(radRotation),
+  };
+  console.log(rotatedPoint);
+  const translatedPoint = {
+    x: rotatedPoint.x + displacement.x,
+    y: rotatedPoint.y - displacement.y,
+  };
+  console.log(translatedPoint);
+  const newPoint = {
+    x: referenceCenter.x - translatedPoint.x,
+    y: referenceCenter.y + translatedPoint.y,
+  };
 
-  return newPoint
+  return newPoint;
 }
 
 const imgData = getImgData(registerData);
@@ -288,7 +302,7 @@ function ImageElement({
   img,
   showBorder,
   setReferenceCenter,
-  referenceCenter
+  referenceCenter,
 }) {
   const [imgLoaded, setImgLoaded] = useState(0);
   const canvas = document.createElement("canvas");
@@ -297,8 +311,14 @@ function ImageElement({
   const ctx = canvas.getContext("2d");
   const imgObj = new Image();
   const texture = useRef();
-  const [displacement, setDisplacement] = useState({x: 0, y: 0});
-  position = img.reference ? position : [-displacement.x + position[0], position[1], -displacement.y + position[2]]
+  const [displacement, setDisplacement] = useState({ x: 0, y: 0 });
+  position = img.reference
+    ? position
+    : [
+        -displacement.x + position[0],
+        position[1],
+        -displacement.y + position[2],
+      ];
 
   function loadImg() {
     imgObj.onload = function () {
@@ -322,19 +342,22 @@ function ImageElement({
       texture.current = new THREE.CanvasTexture(canvas);
       texture.current.needsUpdate = true;
       setImgLoaded(imgLoaded + 1);
-      
-      console.log("hello")
-      if(!referenceCenter && img.reference) {
-        const center = {x: width.current/2, y: height.current/2}
-        setReferenceCenter(center)
-      } 
-      
-      else if (!img.reference) {
-        const center = {x: width.current/2, y: height.current/2}
-        if(referenceCenter) {
-          const actualDisplacement = getActualDisplacement({point: {x: center.x*img.x_scale, y: -center.y*img.y_scale}, rotation: img.rotation, displacement: {x: img.x_disp, y: img.y_disp}, referenceCenter: {x: referenceCenter.x, y: referenceCenter.y}})
-          console.log(actualDisplacement, img)
-          setDisplacement(actualDisplacement)
+
+      console.log("hello");
+      if (!referenceCenter && img.reference) {
+        const center = { x: width.current / 2, y: height.current / 2 };
+        setReferenceCenter(center);
+      } else if (!img.reference) {
+        const center = { x: width.current / 2, y: height.current / 2 };
+        if (referenceCenter) {
+          const actualDisplacement = getActualDisplacement({
+            point: { x: center.x * img.x_scale, y: -center.y * img.y_scale },
+            rotation: img.rotation,
+            displacement: { x: img.x_disp, y: img.y_disp },
+            referenceCenter: { x: referenceCenter.x, y: referenceCenter.y },
+          });
+          console.log(actualDisplacement, img);
+          setDisplacement(actualDisplacement);
         }
       }
     };
@@ -367,9 +390,7 @@ function ImageElement({
           )
         }
         rotation={
-          rotation
-            ? [0, THREE.MathUtils.degToRad(-rotation), 0]
-            : [0, 0, 0]
+          rotation ? [0, THREE.MathUtils.degToRad(-rotation), 0] : [0, 0, 0]
         }
         position={position}
       >
@@ -680,7 +701,10 @@ const App = () => {
         <CameraElement />
         <CameraControls ref={setCameraControls} />
         {/* <Viewcube /> */}
-        <group ref={mesh} rotation={[Math.PI / 2, THREE.MathUtils.degToRad(-globalRotation), 0]}>
+        <group
+          ref={mesh}
+          rotation={[Math.PI / 2, THREE.MathUtils.degToRad(-globalRotation), 0]}
+        >
           {filteredImages.map((img, index) => {
             return (
               <Suspense key={index} fallback={null}>
@@ -765,16 +789,16 @@ const App = () => {
                                         <AiFillEye />
                                       )}
                                     </IconButton>
-                                      <IconButton
-                                        size="small"
-                                        onClick={() =>
-                                          handleConfigureImage(img.id, index)
-                                        }
-                                      >
-                                        <GoSettings
-                                          style={{ cursor: "pointer" }}
-                                        />
-                                      </IconButton>
+                                    <IconButton
+                                      size="small"
+                                      onClick={() =>
+                                        handleConfigureImage(img.id, index)
+                                      }
+                                    >
+                                      <GoSettings
+                                        style={{ cursor: "pointer" }}
+                                      />
+                                    </IconButton>
                                   </div>
                                 </div>
                                 {img.open && (
@@ -786,78 +810,86 @@ const App = () => {
                                       marginTop: "10px",
                                     }}
                                   >
-                                    {!groupImages && <TextField
-                                      defaultValue={
-                                        img.transformX
-                                          ? roundNum(img.transformX)
-                                          : 0
-                                      }
-                                      fullWidth
-                                      size="small"
-                                      label="X Displacement"
-                                      type="number"
-                                      InputLabelProps={{
-                                        shrink: true,
-                                      }}
-                                      inputProps={{
-                                        step: "5",
-                                      }}
-                                      onChange={(e) =>
-                                        moveX(index, e.target.value)
-                                      }
-                                    />}
-                                    {!groupImages && <TextField
-                                      defaultValue={
-                                        roundNum(img.transformY)
-                                          ? img.transformY
-                                          : 0
-                                      }
-                                      fullWidth
-                                      size="small"
-                                      label="Y Displacement"
-                                      type="number"
-                                      inputProps={{
-                                        step: "5",
-                                      }}
-                                      InputLabelProps={{
-                                        shrink: true,
-                                      }}
-                                      onChange={(e) =>
-                                        moveY(index, e.target.value)
-                                      }
-                                    />}
-                                    {!groupImages && <TextField
-                                      defaultValue={
-                                        img.scaleX ? roundNum(img.scaleX) : 1
-                                      }
-                                      fullWidth
-                                      size="small"
-                                      label="Scale X"
-                                      type="number"
-                                      inputProps={{
-                                        step: "0.1",
-                                      }}
-                                      InputLabelProps={{
-                                        shrink: true,
-                                      }}
-                                      onChange={(e) => scaleX(e, index)}
-                                    />}
-                                    {!groupImages && <TextField
-                                      defaultValue={
-                                        img.scaleY ? roundNum(img.scaleY) : 1
-                                      }
-                                      fullWidth
-                                      size="small"
-                                      label="Scale Y"
-                                      type="number"
-                                      inputProps={{
-                                        step: "0.1",
-                                      }}
-                                      InputLabelProps={{
-                                        shrink: true,
-                                      }}
-                                      onChange={(e) => scaleY(e, index)}
-                                    />}
+                                    {!groupImages && (
+                                      <TextField
+                                        defaultValue={
+                                          img.transformX
+                                            ? roundNum(img.transformX)
+                                            : 0
+                                        }
+                                        fullWidth
+                                        size="small"
+                                        label="X Displacement"
+                                        type="number"
+                                        InputLabelProps={{
+                                          shrink: true,
+                                        }}
+                                        inputProps={{
+                                          step: "5",
+                                        }}
+                                        onChange={(e) =>
+                                          moveX(index, e.target.value)
+                                        }
+                                      />
+                                    )}
+                                    {!groupImages && (
+                                      <TextField
+                                        defaultValue={
+                                          roundNum(img.transformY)
+                                            ? img.transformY
+                                            : 0
+                                        }
+                                        fullWidth
+                                        size="small"
+                                        label="Y Displacement"
+                                        type="number"
+                                        inputProps={{
+                                          step: "5",
+                                        }}
+                                        InputLabelProps={{
+                                          shrink: true,
+                                        }}
+                                        onChange={(e) =>
+                                          moveY(index, e.target.value)
+                                        }
+                                      />
+                                    )}
+                                    {!groupImages && (
+                                      <TextField
+                                        defaultValue={
+                                          img.scaleX ? roundNum(img.scaleX) : 1
+                                        }
+                                        fullWidth
+                                        size="small"
+                                        label="Scale X"
+                                        type="number"
+                                        inputProps={{
+                                          step: "0.1",
+                                        }}
+                                        InputLabelProps={{
+                                          shrink: true,
+                                        }}
+                                        onChange={(e) => scaleX(e, index)}
+                                      />
+                                    )}
+                                    {!groupImages && (
+                                      <TextField
+                                        defaultValue={
+                                          img.scaleY ? roundNum(img.scaleY) : 1
+                                        }
+                                        fullWidth
+                                        size="small"
+                                        label="Scale Y"
+                                        type="number"
+                                        inputProps={{
+                                          step: "0.1",
+                                        }}
+                                        InputLabelProps={{
+                                          shrink: true,
+                                        }}
+                                        onChange={(e) => scaleY(e, index)}
+                                      />
+                                    )}
                                     <TextField
                                       defaultValue={
                                         img.opacity
@@ -880,26 +912,28 @@ const App = () => {
                                         targetImageOpacityChange(e, index)
                                       }
                                     />
-                                    {!groupImages && <TextField
-                                      defaultValue={
-                                        img.rotation
-                                          ? roundNum(img.rotation)
-                                          : roundNum(0)
-                                      }
-                                      fullWidth
-                                      size="small"
-                                      label="Rotation (Degrees)"
-                                      type="number"
-                                      inputProps={{
-                                        step: "1",
-                                      }}
-                                      InputLabelProps={{
-                                        shrink: true,
-                                      }}
-                                      onChange={(e) =>
-                                        rotationHandler(e, index)
-                                      }
-                                    />}
+                                    {!groupImages && (
+                                      <TextField
+                                        defaultValue={
+                                          img.rotation
+                                            ? roundNum(img.rotation)
+                                            : roundNum(0)
+                                        }
+                                        fullWidth
+                                        size="small"
+                                        label="Rotation (Degrees)"
+                                        type="number"
+                                        inputProps={{
+                                          step: "1",
+                                        }}
+                                        InputLabelProps={{
+                                          shrink: true,
+                                        }}
+                                        onChange={(e) =>
+                                          rotationHandler(e, index)
+                                        }
+                                      />
+                                    )}
                                   </div>
                                 )}
                               </div>
@@ -921,70 +955,79 @@ const App = () => {
         {/* <button onClick={() => switchToView("iso")}>Isometric</button> */}
       </div>
       <div id="canvas-controls">
-      <FormGroup>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={showBorder}
-                    onChange={(e) => setShowBorder(e.target.checked)}
-                  />
-                }
-                label="Show Borders"
+        <FormGroup>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={showBorder}
+                onChange={(e) => setShowBorder(e.target.checked)}
               />
-            </FormGroup>
-            <TextField
-              value={spacing}
-              fullWidth
-              size="small"
-              label="Image Spacing"
-              type="number"
-              inputProps={{
-                step: "50",
-              }}
-              InputLabelProps={{
-                shrink: true,
-              }}
-              onChange={(e) => setSpacing(e.target.value)}
-            />
-            <TextField
-              value={opacity}
-              fullWidth
-              size="small"
-              label="Global Opacity (Percent)"
-              type="number"
-              inputProps={{
-                step: "1",
-                max: 100,
-                min: 1,
-              }}
-              InputLabelProps={{
-                shrink: true,
-              }}
-              onChange={(e) => mainOpacityChange(e)}
-              disabled={!groupImages}
-            />
-            <TextField
-              value={globalRotation}
-              fullWidth
-              size="small"
-              label="Global Rotation"
-              type="number"
-              inputProps={{
-                step: "1",
-              }}
-              InputLabelProps={{
-                shrink: true,
-              }}
-              onChange={(e) => setGlobalRotation(e.target.value)}
-              disabled={!groupImages}
-            />
-            <div style={{display: 'flex', alignItems: 'center', columnGap: '6px'}}>
-              <Typography>Registration</Typography>
-              <div style={{display: 'flex', columnGap: '4px'}}>
-                <div onClick={() => setGroupImages(!groupImages)} className="registration-icon">{groupImages ? <FaLock size="1em" /> : <FaUnlock size="1em" />}</div>
-                <div onClick={resetImages} className="registration-icon"><GrPowerReset/></div>
-              </div>
+            }
+            label="Show Borders"
+          />
+        </FormGroup>
+        <TextField
+          value={spacing}
+          fullWidth
+          size="small"
+          label="Image Spacing"
+          type="number"
+          inputProps={{
+            step: "50",
+          }}
+          InputLabelProps={{
+            shrink: true,
+          }}
+          onChange={(e) => setSpacing(e.target.value)}
+        />
+        <TextField
+          value={opacity}
+          fullWidth
+          size="small"
+          label="Global Opacity (Percent)"
+          type="number"
+          inputProps={{
+            step: "1",
+            max: 100,
+            min: 1,
+          }}
+          InputLabelProps={{
+            shrink: true,
+          }}
+          onChange={(e) => mainOpacityChange(e)}
+          disabled={!groupImages}
+        />
+        <TextField
+          value={globalRotation}
+          fullWidth
+          size="small"
+          label="Global Rotation"
+          type="number"
+          inputProps={{
+            step: "1",
+          }}
+          InputLabelProps={{
+            shrink: true,
+          }}
+          onChange={(e) => setGlobalRotation(e.target.value)}
+          disabled={!groupImages}
+        />
+        <div
+          style={{ display: "flex", alignItems: "center", columnGap: "6px" }}
+        >
+          <Typography>Registration</Typography>
+          <div style={{ display: "flex", columnGap: "4px" }}>
+            <div
+              onClick={() => setGroupImages(!groupImages)}
+              className="registration-icon"
+            >
+              {groupImages ? <FaLock size="1em" /> : <FaUnlock size="1em" />}
             </div>
+            <div onClick={resetImages} className="registration-icon">
+              <GrPowerReset />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
