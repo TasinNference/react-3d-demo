@@ -7,11 +7,12 @@ import {
   OrthographicCamera,
   useCamera,
 } from "@react-three/drei";
+import { OrbitControls as ThreeOrbitControls } from "three/examples/jsm/controls/OrbitControls"
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import { GoSettings } from "react-icons/go";
 import { AiFillEyeInvisible, AiFillEye } from "react-icons/ai";
 import randomColor from "randomcolor";
-import { Matrix4, Scene } from "three";
+import { AxesHelper, Matrix4, Scene } from "three";
 import { CameraControls } from "./CameraControls";
 import * as holdEvent from "hold-event";
 import {
@@ -47,6 +48,17 @@ const SPACING = 50;
 
 const API_URL = `${window.location.origin}`;
 
+const CameraController = () => {
+  const { camera, gl } = useThree();
+  useEffect(() => {
+    const controls = new ThreeOrbitControls(camera, gl.domElement);
+    return () => {
+      controls.dispose();
+    };
+  }, [camera, gl]);
+  return null;
+};
+
 function Viewcube() {
   const { gl, scene, camera, size } = useThree();
   const virtualScene = useMemo(() => new Scene(), []);
@@ -72,13 +84,15 @@ function Viewcube() {
         makeDefault={false}
         position={[0, 0, 100]}
       />
+      <ambientLight intensity={0.5} />
       <mesh
         ref={ref}
         raycast={useCamera(virtualCam)}
-        position={[size.width / 2 - 80, size.height / 2 - 80, 0]}
+        position={[- (size.width / 2) + 400, - (size.height / 2) + 110, 0]}
         onPointerOut={(e) => set(null)}
         onPointerMove={(e) => set(Math.floor(e.faceIndex / 2))}
       >
+        {/* <boxGeometry attach="geometry" args={[60, 60, 60]} />
         {[...Array(6)].map((_, index) => {
           return (
             <meshLambertMaterial
@@ -87,10 +101,9 @@ function Viewcube() {
               color={index === hover ? "hotpink" : "white"}
             />
           );
-        })}
-        <boxGeometry args={[60, 60, 60]} />
+        })} */}
+        <primitive object={new THREE.AxesHelper(100).setColors("red", "blue", "green")} />
       </mesh>
-      <ambientLight intensity={0.5} />
       <pointLight position={[10, 10, 10]} intensity={0.5} />
     </>,
     virtualScene
@@ -577,7 +590,7 @@ const App = () => {
       <Canvas>
         <CameraElement />
         <CameraControls ref={setCameraControls} />
-        {/* <Viewcube /> */}
+        <Viewcube />
         <group
           ref={mesh}
           rotation={[Math.PI / 2, THREE.MathUtils.degToRad(-globalRotation), 0]}
@@ -605,6 +618,15 @@ const App = () => {
           })}
         </group>
       </Canvas>
+      {/* <Canvas>
+        <CameraController />
+        <ambientLight />
+        <primitive object={new THREE.AxesHelper(10)} />
+        <mesh>
+          <boxGeometry attach="geometry" args={[5, 5, 5]} />
+          <meshBasicMaterial attach="material" color="lightblue" />
+        </mesh>
+      </Canvas> */}
       <div id="canvas-layers">
         <div
           style={{
