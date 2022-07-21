@@ -45,7 +45,7 @@ const X_SCALE_INCREMENT = 0.1;
 const Y_SCALE_INCREMENT = 0.1;
 const SPACING = 50;
 
-const API_URL = "https://14.140.231.202";
+const API_URL = `${window.location.origin}`;
 
 // const imgData = {
 //   request: {
@@ -222,7 +222,7 @@ function getImgData(data) {
       name: itm.slide_id,
       scaleX: itm.x_scale,
       scaleY: itm.y_scale,
-      img: `/hdd_drive/registration_outcome/${itm.slide_id}/${itm.slide_id}_panorama.jpeg`,
+      img: `/wsi_data/registration_outcome/${itm.slide_id}/${itm.slide_id}_panorama.jpeg`,
     };
   });
   let arr = [];
@@ -231,7 +231,7 @@ function getImgData(data) {
     name: reference.slide_id,
     url: `/images/${reference.slide_id}.jpeg`,
     borderColor: randomColor(),
-    img: `/hdd_drive/registration_outcome/${reference.slide_id}/${reference.slide_id}_panorama.jpeg`,
+    img: `/wsi_data/registration_outcome/${reference.slide_id}/${reference.slide_id}_panorama.jpeg`,
     reference: true,
   });
   arr = [...arr, ...registerArr];
