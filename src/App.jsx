@@ -46,115 +46,7 @@ const X_SCALE_INCREMENT = 0.1;
 const Y_SCALE_INCREMENT = 0.1;
 const SPACING = 50;
 
-const API_URL = "https://14.140.231.202";
-
-// const imgData = {
-//   request: {
-//     reference_slide_info: {
-//       slide_id: "H01BBB24P-6639",
-//       grid_id: "grid_merged",
-//       grids: [
-//         {
-//           id: "62a1a0ce0ca2c83b4d1efd60",
-//           boundingBox: {
-//             end_x: 590.0729166666666,
-//             end_y: 711.659477124183,
-//             start_x: 66.92708333333334,
-//             start_y: 204.340522875817,
-//           },
-//         },
-//         {
-//           id: "62a1a0ce0ca2c83b4d1efd61",
-//           boundingBox: {
-//             end_x: 549.0729166666666,
-//             end_y: 1224,
-//             start_x: 24.927083333333343,
-//             start_y: 736.340522875817,
-//           },
-//         },
-//       ],
-//       stainColor: "red-pink",
-//     },
-//     register_slide_info: [
-//       {
-//         slide_id: "H01BBB24P-6638",
-//         grid_id: "grid_merged",
-//         grids: [
-//           {
-//             id: "62a1a0ac0ca2c83b4d1efd5d",
-//             boundingBox: {
-//               end_x: 597.0729166666666,
-//               end_y: 1021.659477124183,
-//               start_x: 72.92708333333334,
-//               start_y: 500.340522875817,
-//             },
-//           },
-//         ],
-//         stainColor: "red-pink",
-//       },
-//     ],
-//   },
-//   response: {
-//     status: true,
-//     reference_slide_info: {
-//       slide_id: "H01BBB24P-6639",
-//       grid_id: "grid_merged",
-//     },
-//     register_slide_info: [
-//       {
-//         slide_id: "H01BBB24P-6638",
-//         grid_id: "grid_merged",
-//         tilt: 98.56557776856678,
-//         x_disp: 1017.9208399401064,
-//         y_disp: 117.50423590224302,
-//         x_scale: 0.9801446591539287,
-//         y_scale: 0.9850595270811353,
-//         x_skew: 0.020011303049138344,
-//         y_skew: 0,
-//       },
-//     ],
-//   },
-// };
-
-function CloneProps(props) {
-  const { children, ...other } = props;
-  return children(other);
-}
-
-const registerData = {
-  status: true,
-  reference_slide_info: {
-    slide_id: "H01BBB24P-6636",
-    grid_id: "grid_merged",
-    img: "/wsi_data/registration_outcome/H01BBB24P-6636/H01BBB24P-6636_panorama.jpeg",
-  },
-  register_slide_info: [
-    {
-      slide_id: "H01BBB24P-6635",
-      grid_id: "grid_merged",
-      tilt: 0.6755608193436402,
-      x_disp: -7.002938601508233,
-      y_disp: 21.5733004113515,
-      x_scale: 0.9985830846238507,
-      y_scale: 1.002959527647854,
-      x_skew: 0.0010078995117070938,
-      y_skew: 0,
-      img: "/wsi_data/registration_outcome/H01BBB24P-6635/H01BBB24P-6635_panorama.jpeg",
-    },
-    {
-      slide_id: "H01BBB24P-6637",
-      grid_id: "grid_merged",
-      tilt: 171.52841795158662,
-      x_disp: 756.4809090508966,
-      y_disp: 1013.6539416437139,
-      x_scale: 1.0134707342588396,
-      y_scale: 1.1562656607862223,
-      x_skew: -0.020939868868742294,
-      y_skew: 0,
-      img: "/wsi_data/registration_outcome/H01BBB24P-6637/H01BBB24P-6637_panorama.jpeg",
-    },
-  ],
-};
+const API_URL = `${window.location.origin}`;
 
 const CameraController = () => {
   const { camera, gl } = useThree();
@@ -235,7 +127,7 @@ function getImgData(data) {
       name: itm.slide_id,
       scaleX: itm.x_scale,
       scaleY: itm.y_scale,
-      img: `/hdd_drive/registration_outcome/${itm.slide_id}/${itm.slide_id}_panorama.jpeg`,
+      img: `/wsi_data/registration_outcome/${itm.slide_id}/${itm.slide_id}_panorama.jpeg`,
     };
   });
   let arr = [];
@@ -244,7 +136,7 @@ function getImgData(data) {
     name: reference.slide_id,
     url: `/images/${reference.slide_id}.jpeg`,
     borderColor: randomColor(),
-    img: `/hdd_drive/registration_outcome/${reference.slide_id}/${reference.slide_id}_panorama.jpeg`,
+    img: `/wsi_data/registration_outcome/${reference.slide_id}/${reference.slide_id}_panorama.jpeg`,
     reference: true,
   });
   arr = [...arr, ...registerArr];
@@ -281,8 +173,6 @@ function getActualDisplacement({
 
   return newPoint;
 }
-
-const imgData = getImgData(registerData);
 
 // const imgData = [
 //   {
