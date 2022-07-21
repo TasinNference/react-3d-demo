@@ -283,7 +283,6 @@ const imgData = getImgData(registerData);
 
 function ImageElement({
   position,
-  globalRotation,
   rotation,
   opacity,
   img,
@@ -299,7 +298,7 @@ function ImageElement({
   const imgObj = new Image();
   const texture = useRef();
   const [displacement, setDisplacement] = useState({x: 0, y: 0});
-  position = [-displacement.x, position[1], -displacement.y]
+  position = img.reference ? position : [-displacement.x + position[0], position[1], -displacement.y + position[2]]
 
   function loadImg() {
     imgObj.onload = function () {
@@ -314,7 +313,7 @@ function ImageElement({
       console.log(showBorder);
       if (showBorder) {
         ctx.strokeStyle = img.borderColor;
-        ctx.lineWidth = 15;
+        ctx.lineWidth = 2;
         ctx.strokeRect(0, 0, canvas.width, canvas.height);
       } else {
         ctx.lineWidth = 0;
@@ -324,10 +323,13 @@ function ImageElement({
       texture.current.needsUpdate = true;
       setImgLoaded(imgLoaded + 1);
       
-      if(img.reference) {
+      console.log("hello")
+      if(!referenceCenter && img.reference) {
         const center = {x: width.current/2, y: height.current/2}
         setReferenceCenter(center)
-      } else {
+      } 
+      
+      else if (!img.reference) {
         const center = {x: width.current/2, y: height.current/2}
         if(referenceCenter) {
           const actualDisplacement = getActualDisplacement({point: {x: center.x*img.x_scale, y: -center.y*img.y_scale}, rotation: img.rotation, displacement: {x: img.x_disp, y: img.y_disp}, referenceCenter: {x: referenceCenter.x, y: referenceCenter.y}})
@@ -346,7 +348,7 @@ function ImageElement({
 
   useEffect(() => {
     loadImg();
-  }, [showBorder, opacity, img.img]);
+  }, [showBorder, opacity, img.img, referenceCenter]);
 
   useFrame(() => {
     if (texture.current) {
@@ -366,8 +368,8 @@ function ImageElement({
         }
         rotation={
           rotation
-            ? [0, THREE.MathUtils.degToRad(-rotation - globalRotation), 0]
-            : [0, THREE.MathUtils.degToRad(-globalRotation), 0]
+            ? [0, THREE.MathUtils.degToRad(-rotation), 0]
+            : [0, 0, 0]
         }
         position={position}
       >
@@ -678,12 +680,11 @@ const App = () => {
         <CameraElement />
         <CameraControls ref={setCameraControls} />
         {/* <Viewcube /> */}
-        <group ref={mesh} rotation={[Math.PI / 2, 0, 0]}>
+        <group ref={mesh} rotation={[Math.PI / 2, THREE.MathUtils.degToRad(-globalRotation), 0]}>
           {filteredImages.map((img, index) => {
             return (
               <Suspense key={index} fallback={null}>
                 <ImageElement
-                  globalRotation={globalRotation}
                   position={[
                     img.transformX ? img.transformX : 0,
                     calcPosition(index),
