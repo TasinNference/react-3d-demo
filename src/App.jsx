@@ -320,6 +320,8 @@ function ImageElement({
         -displacement.y + position[2],
       ];
 
+  console.log("position: ", -displacement.x,  position)
+
   function loadImg() {
     imgObj.onload = function () {
       width.current = this.width;
@@ -457,14 +459,6 @@ const App = () => {
     defaultData.current = formattedData;
   }, []);
 
-  const handleSpacingIncrease = () => {
-    setSpacing(spacing + SPACING);
-  };
-
-  const handleSpacingDecrease = () => {
-    if (spacing > SPACING) setSpacing(spacing - SPACING);
-  };
-
   const calcPosition = (index) => {
     return -1 * (index - (filteredImages.length - 1) / 2) * spacing;
   };
@@ -489,7 +483,7 @@ const App = () => {
   const targetImageOpacityChange = (e, index) => {
     setImagesArr([
       ...imagesArr.slice(0, index),
-      { ...imagesArr[index], opacity: e.target.value },
+      { ...imagesArr[index], opacity: parseFloat(e.target.value) },
       ...imagesArr.slice(index + 1),
     ]);
   };
@@ -510,23 +504,15 @@ const App = () => {
 
   const mainOpacityChange = (e) => {
     resetOpacity();
-    setOpacity(e.target.value);
+    setOpacity(parseFloat(e.target.value));
   };
 
   const rotationHandler = (e, index) => {
     setImagesArr([
       ...imagesArr.slice(0, index),
-      { ...imagesArr[index], rotation: e.target.value },
+      { ...imagesArr[index], rotation: parseFloat(e.target.value) },
       ...imagesArr.slice(index + 1),
     ]);
-  };
-
-  const toFrontView = () => {
-    setCameraView("front");
-  };
-
-  const toIsoView = () => {
-    setCameraView("iso");
   };
 
   const toggleImageVisibility = (index) => {
@@ -542,18 +528,19 @@ const App = () => {
       ...imagesArr.slice(0, index),
       {
         ...imagesArr[index],
-        transformX: value,
+        transformX: parseFloat(value),
       },
       ...imagesArr.slice(index + 1),
     ]);
   };
 
   const moveY = (index, value) => {
+    console.log(value)
     setImagesArr([
       ...imagesArr.slice(0, index),
       {
         ...imagesArr[index],
-        transformY: value,
+        transformY: parseFloat(value),
       },
       ...imagesArr.slice(index + 1),
     ]);
@@ -564,7 +551,7 @@ const App = () => {
       ...imagesArr.slice(0, index),
       {
         ...imagesArr[index],
-        scaleX: e.target.value,
+        scaleX: parseFloat(e.target.value),
       },
       ...imagesArr.slice(index + 1),
     ]);
@@ -575,7 +562,7 @@ const App = () => {
       ...imagesArr.slice(0, index),
       {
         ...imagesArr[index],
-        scaleY: e.target.value,
+        scaleY: parseFloat(e.target.value),
       },
       ...imagesArr.slice(index + 1),
     ]);
@@ -706,6 +693,7 @@ const App = () => {
           rotation={[Math.PI / 2, THREE.MathUtils.degToRad(-globalRotation), 0]}
         >
           {filteredImages.map((img, index) => {
+            console.log("transX: ", img.transformX)
             return (
               <Suspense key={index} fallback={null}>
                 <ImageElement
