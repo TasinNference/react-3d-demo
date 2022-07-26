@@ -7,7 +7,7 @@ import {
   OrthographicCamera,
   useCamera,
 } from "@react-three/drei";
-import { OrbitControls as ThreeOrbitControls } from "three/examples/jsm/controls/OrbitControls"
+import { OrbitControls as ThreeOrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import { GoSettings } from "react-icons/go";
 import { AiFillEyeInvisible, AiFillEye } from "react-icons/ai";
@@ -39,6 +39,7 @@ import RestartAlt from "@mui/icons-material/RestartAlt";
 import { useSearchParams } from "react-router-dom";
 import { FaLock, FaUnlock } from "react-icons/fa";
 import { GrPowerReset } from "react-icons/gr";
+import Sidebar from "./components/Sidebar";
 
 const X_INCREMENT = 1;
 const Y_INCREMENT = 1;
@@ -86,9 +87,10 @@ function Viewcube() {
       />
       <ambientLight intensity={0.5} />
       <mesh
+        scale={0.75}
         ref={ref}
         raycast={useCamera(virtualCam)}
-        position={[- (size.width / 2) + 400, - (size.height / 2) + 110, 0]}
+        position={[-(size.width / 2) + 450, -(size.height / 2) + 80, 0]}
         onPointerOut={(e) => set(null)}
         onPointerMove={(e) => set(Math.floor(e.faceIndex / 2))}
       >
@@ -102,7 +104,9 @@ function Viewcube() {
             />
           );
         })} */}
-        <primitive object={new THREE.AxesHelper(100).setColors("red", "blue", "green")} />
+        <primitive
+          object={new THREE.AxesHelper(100).setColors("red", "blue", "green")}
+        />
       </mesh>
       <pointLight position={[10, 10, 10]} intensity={0.5} />
     </>,
@@ -207,6 +211,9 @@ function ImageElement({
   setReferenceCenter,
   referenceCenter,
 }) {
+  const matrix = new THREE.Matrix4();
+  matrix.multiply(new THREE.Matrix4().makeRotationX(-Math.PI / 2))
+  matrix.multiply(new THREE.Matrix4().makeShear(0,0,0,0,0,0))
   const [imgLoaded, setImgLoaded] = useState(0);
   const canvas = document.createElement("canvas");
   const width = useRef();
@@ -223,7 +230,7 @@ function ImageElement({
         -displacement.y + position[2],
       ];
 
-  console.log("position: ", -displacement.x,  position)
+  console.log("position: ", -displacement.x, position);
 
   function loadImg() {
     imgObj.onload = function () {
@@ -299,7 +306,12 @@ function ImageElement({
         }
         position={position}
       >
-        <mesh rotation={[-Math.PI / 2, 0, 0]}>
+        <mesh
+          matrixAutoUpdate={false}
+          matrix={matrix}
+          // rotation={[-Math.PI / 2, 0, 0]}
+          onClick={() => console.log("test")}
+        >
           <planeBufferGeometry
             attach="geometry"
             args={[width.current, height.current]}
@@ -438,7 +450,7 @@ const App = () => {
   };
 
   const moveY = (index, value) => {
-    console.log(value)
+    console.log(value);
     setImagesArr([
       ...imagesArr.slice(0, index),
       {
@@ -594,9 +606,10 @@ const App = () => {
         <group
           ref={mesh}
           rotation={[Math.PI / 2, THREE.MathUtils.degToRad(-globalRotation), 0]}
+          position={[0, 0, 0]}
         >
           {filteredImages.map((img, index) => {
-            console.log("transX: ", img.transformX)
+            console.log("transX: ", img.transformX);
             return (
               <Suspense key={index} fallback={null}>
                 <ImageElement
@@ -627,7 +640,13 @@ const App = () => {
           <meshBasicMaterial attach="material" color="lightblue" />
         </mesh>
       </Canvas> */}
-      <div id="canvas-layers">
+      <Sidebar
+        data={imagesArr}
+        handleDragEnd={handleDragEnd}
+        apiUrl={API_URL}
+        toggleImageVisibility={toggleImageVisibility}
+      />
+      {/* <div id="canvas-layers">
         <div
           style={{
             height: "100%",
@@ -849,7 +868,7 @@ const App = () => {
             </DragDropContext>
           </div>
         </div>
-      </div>
+      </div> */}
       <div id="canvas-view-changer">
         {/* <button onClick={() => switchToView("front")}>Front</button> */}
         {/* <button onClick={() => switchToView("iso")}>Isometric</button> */}
