@@ -46,7 +46,7 @@ const X_SCALE_INCREMENT = 0.1;
 const Y_SCALE_INCREMENT = 0.1;
 const SPACING = 50;
 
-const API_URL = `${window.location.origin}`;
+const API_URL = "https://14.140.231.202";
 
 const CameraController = () => {
   const { camera, gl } = useThree();
@@ -127,7 +127,7 @@ function getImgData(data) {
       name: itm.slide_id,
       scaleX: itm.x_scale,
       scaleY: itm.y_scale,
-      img: `/wsi_data/registration_outcome/${itm.slide_id}/${itm.slide_id}_panorama.jpeg`,
+      img: `/hdd_drive/registration_outcome/${itm.slide_id}/${itm.slide_id}_panorama.jpeg`,
     };
   });
   let arr = [];
@@ -136,7 +136,7 @@ function getImgData(data) {
     name: reference.slide_id,
     url: `/images/${reference.slide_id}.jpeg`,
     borderColor: randomColor(),
-    img: `/wsi_data/registration_outcome/${reference.slide_id}/${reference.slide_id}_panorama.jpeg`,
+    img: `/hdd_drive/registration_outcome/${reference.slide_id}/${reference.slide_id}_panorama.jpeg`,
     reference: true,
   });
   arr = [...arr, ...registerArr];
@@ -214,16 +214,9 @@ function ImageElement({
   const ctx = canvas.getContext("2d");
   const imgObj = new Image();
   const texture = useRef();
-  const [displacement, setDisplacement] = useState({ x: 0, y: 0 });
-  position = img.reference
-    ? position
-    : [
-        -displacement.x + position[0],
-        position[1],
-        -displacement.y + position[2],
-      ];
-
-  console.log("position: ", -displacement.x,  position)
+  const group = useRef();
+  const group2 = useRef();
+  const mesh = useRef();
 
   function loadImg() {
     imgObj.onload = function () {
@@ -243,27 +236,13 @@ function ImageElement({
       } else {
         ctx.lineWidth = 0;
       }
-
       texture.current = new THREE.CanvasTexture(canvas);
       texture.current.needsUpdate = true;
       setImgLoaded(imgLoaded + 1);
 
-      console.log("hello");
-      if (!referenceCenter && img.reference) {
-        const center = { x: width.current / 2, y: height.current / 2 };
+      if(!referenceCenter && img.reference) {
+        const center = {x: width.current/2, y: height.current/2}
         setReferenceCenter(center);
-      } else if (!img.reference) {
-        const center = { x: width.current / 2, y: height.current / 2 };
-        if (referenceCenter) {
-          const actualDisplacement = getActualDisplacement({
-            point: { x: center.x * img.x_scale, y: -center.y * img.y_scale },
-            rotation: img.rotation,
-            displacement: { x: img.x_disp, y: img.y_disp },
-            referenceCenter: { x: referenceCenter.x, y: referenceCenter.y },
-          });
-          console.log(actualDisplacement, img);
-          setDisplacement(actualDisplacement);
-        }
       }
     };
     imgObj.crossOrigin = "anonymus";
@@ -278,6 +257,34 @@ function ImageElement({
     loadImg();
   }, [showBorder, opacity, img.img, referenceCenter]);
 
+  useEffect(() => {
+    if(mesh.current && group.current && !img.reference && referenceCenter && group2.current) {
+      group.current.matrixAutoUpdate = false;
+      mesh.current.position.set(width.current/2, 0, height.current/2);
+      // group.current.position.set(-referenceCenter.x, position[1], -referenceCenter.y)
+      group.current.scale.x = img.scaleX ? img.scaleX : 1;
+      group.current.scale.y = img.scaleY ? img.scaleY : 1;
+      group.current.rotation.y = degToRad(-img.rotation) 
+      // console.log(img.scaleX)
+      // const matrix = new THREE.Matrix4();
+      // matrix.multiply(new THREE.Matrix4().makeScale(img.scaleX || 1, img.scaleY || 1, 1))
+      // matrix.multiply(new THREE.Matrix4().makeRotationY(degToRad(-img.rotation)))
+      // matrix.makeRotationY(degToRad(-img.rotation))
+      // matrix.makeTranslation(img.x_disp,0,0);
+      // group.current.applyMatrix4(matrix)
+      const matrix = new Matrix4()
+      const matrix2 = new Matrix4()
+      matrix2.makeTranslation(img.x_disp, 0, img.y_disp)
+      matrix.multiply(new Matrix4().makeTranslation(-referenceCenter.x, position[1], -referenceCenter.y))
+      matrix.multiply(new Matrix4().makeScale(img.scaleX,img.scaleY,1))
+      matrix.multiply(new Matrix4().makeShear(0,img.y_skew,0,0,img.x_skew,0))
+      matrix.multiply(new Matrix4().makeRotationY(degToRad(-img.rotation)))
+      // matrix.multiply(new Matrix4().makeTranslation(100, 0, 100))
+      group.current.applyMatrix4(matrix)
+      group2.current.applyMatrix4(matrix2)
+    }
+  }, [imgLoaded])
+
   useFrame(() => {
     if (texture.current) {
       texture.current.needsUpdate = true;
@@ -286,20 +293,12 @@ function ImageElement({
 
   return (
     imgLoaded && (
+      <group ref={group2}>
       <group
-        scale={
-          new THREE.Vector3(
-            img.scaleX ? img.scaleX : 1,
-            1,
-            img.scaleY ? img.scaleY : 1
-          )
-        }
-        rotation={
-          rotation ? [0, THREE.MathUtils.degToRad(-rotation), 0] : [0, 0, 0]
-        }
         position={position}
+        ref={group}
       >
-        <mesh rotation={[-Math.PI / 2, 0, 0]}>
+        <mesh rotation={[-Math.PI / 2, 0, 0]} ref={mesh}>
           <planeBufferGeometry
             attach="geometry"
             args={[width.current, height.current]}
@@ -311,6 +310,7 @@ function ImageElement({
             transparent={true}
           />
         </mesh>
+      </group>
       </group>
     )
   );
@@ -596,7 +596,6 @@ const App = () => {
           rotation={[Math.PI / 2, THREE.MathUtils.degToRad(-globalRotation), 0]}
         >
           {filteredImages.map((img, index) => {
-            console.log("transX: ", img.transformX)
             return (
               <Suspense key={index} fallback={null}>
                 <ImageElement
