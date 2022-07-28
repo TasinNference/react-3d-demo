@@ -53,8 +53,8 @@ export const ItemContent = styled.div`
 `;
 
 export const ItemImg = styled.img`
-  width: 100px;
-  height: 100px;
+  width: 75px;
+  height: 75px;
   object-position: center;
   object-fit: cover;
   display: block;
@@ -80,6 +80,13 @@ export const ReferenceImgTxt = styled(Typography).attrs(() => ({variant: 'captio
 `
 
 export const ItemAdjustmentContainer = styled.div`
-  display: grid;
-  row-gap: 10px;
+  table {
+    tr:not(:last-child) td {
+      padding-bottom: 10px;
+    }
+
+    td:not(:last-child) {
+      padding-right: 10px;
+    }
+  }
 `

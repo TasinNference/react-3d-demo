@@ -395,10 +395,10 @@ const App = () => {
     ]);
   };
 
-  const targetImageOpacityChange = (e, index) => {
+  const targetImageOpacityChange = (value, index) => {
     setImagesArr([
       ...imagesArr.slice(0, index),
-      { ...imagesArr[index], opacity: parseFloat(e.target.value) },
+      { ...imagesArr[index], opacity: parseFloat(value) },
       ...imagesArr.slice(index + 1),
     ]);
   };
@@ -417,9 +417,9 @@ const App = () => {
     setOpacity(50);
   };
 
-  const mainOpacityChange = (e) => {
+  const mainOpacityChange = (value) => {
     resetOpacity();
-    setOpacity(parseFloat(e.target.value));
+    setOpacity(parseFloat(value));
   };
 
   const rotationHandler = (e, index) => {
@@ -645,6 +645,9 @@ const App = () => {
         handleDragEnd={handleDragEnd}
         apiUrl={API_URL}
         toggleImageVisibility={toggleImageVisibility}
+        targetImageOpacityChange={targetImageOpacityChange}
+        roundNum={roundNum}
+        opacity={opacity}
       />
       {/* <div id="canvas-layers">
         <div
@@ -913,7 +916,7 @@ const App = () => {
           InputLabelProps={{
             shrink: true,
           }}
-          onChange={(e) => mainOpacityChange(e)}
+          onChange={(e) => mainOpacityChange(e.target.value)}
           disabled={!groupImages}
         />
         <TextField
