@@ -1,4 +1,4 @@
-import { Card, IconButton, Typography } from "@mui/material";
+import { Card, IconButton, Slider, Typography } from "@mui/material";
 import React, { forwardRef } from "react";
 import {
   ItemAdjustmentContainer,
@@ -18,6 +18,7 @@ import { MdDragHandle } from "react-icons/md";
 import { AiFillEyeInvisible, AiFillEye } from "react-icons/ai";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import CustomInput from "../CustomInput";
+import CustomSlider from "../CustomSlider";
 
 const DraggableItem = forwardRef(
   (
@@ -61,13 +62,20 @@ const DraggableItem = forwardRef(
                     <Typography variant="caption">Opacity</Typography>
                   </td>
                   <td>
-                    <CustomInput
+                    {/* <CustomInput
                       min={1}
                       max={100}
                       setValue={(value) => targetImageOpacityChange(value, index)}
                       value={
                         img.opacity ? roundNum(img.opacity) : roundNum(opacity)
                       }
+                    /> */}
+                    <CustomSlider
+                      size="small"
+                      defaultValue={img.opacity ? roundNum(img.opacity) : roundNum(opacity)}
+                      min={1}
+                      max={100}
+                      onChange={(e) => targetImageOpacityChange(e.target.value, index)}
                     />
                   </td>
                 </tr>
@@ -80,7 +88,7 @@ const DraggableItem = forwardRef(
   }
 );
 
-const Sidebar = ({
+const LeftSidebar = ({
   data,
   handleDragEnd,
   apiUrl,
@@ -135,4 +143,4 @@ const Sidebar = ({
   );
 };
 
-export default Sidebar;
+export default LeftSidebar;

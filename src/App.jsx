@@ -39,7 +39,8 @@ import RestartAlt from "@mui/icons-material/RestartAlt";
 import { useSearchParams } from "react-router-dom";
 import { FaLock, FaUnlock } from "react-icons/fa";
 import { GrPowerReset } from "react-icons/gr";
-import Sidebar from "./components/Sidebar";
+import LeftSidebar from "./components/LeftSidebar";
+import RightSidebar from "./components/RightSidebar";
 
 const X_INCREMENT = 1;
 const Y_INCREMENT = 1;
@@ -47,7 +48,7 @@ const X_SCALE_INCREMENT = 0.1;
 const Y_SCALE_INCREMENT = 0.1;
 const SPACING = 50;
 
-const API_URL = `${window.location.origin}`;
+const API_URL = "https://14.140.231.202";
 
 const CameraController = () => {
   const { camera, gl } = useThree();
@@ -59,6 +60,27 @@ const CameraController = () => {
   }, [camera, gl]);
   return null;
 };
+
+function createArrow(dir, hex) {
+  var origin = new THREE.Vector3(0, 0, 0);
+  var length = 75;
+  return new THREE.ArrowHelper(dir, origin, length, hex, 15, 10)
+}
+
+function createAxis() {
+  var dir1 = new THREE.Vector3(0, 1, 0);
+  var dir2 = new THREE.Vector3(1, 0, 0);
+  var dir3 = new THREE.Vector3(0, 0, 1);
+  var hex1 = 0x00ff00;
+  var hex2 = 0xff0000;
+  var hex3 = 0x0000ff;
+  var arrowHelper1 = createArrow(dir1, hex1);
+  var arrowHelper2 = createArrow(dir2, hex2);
+  var arrowHelper3 = createArrow(dir3, hex3);
+  var group = new THREE.Group();
+  group.add(arrowHelper1, arrowHelper2, arrowHelper3);
+  return group
+}
 
 function Viewcube() {
   const { gl, scene, camera, size } = useThree();
@@ -77,6 +99,8 @@ function Viewcube() {
     gl.clearDepth();
     gl.render(virtualScene, virtualCam.current);
   }, 1);
+
+  const group = createAxis();
 
   return createPortal(
     <>
@@ -104,9 +128,7 @@ function Viewcube() {
             />
           );
         })} */}
-        <primitive
-          object={new THREE.AxesHelper(100).setColors("red", "blue", "green")}
-        />
+        <primitive object={group} />
       </mesh>
       <pointLight position={[10, 10, 10]} intensity={0.5} />
     </>,
@@ -131,7 +153,7 @@ function getImgData(data) {
       name: itm.slide_id,
       scaleX: itm.x_scale,
       scaleY: itm.y_scale,
-      img: `/wsi_data/registration_outcome/${itm.slide_id}/${itm.slide_id}_panorama.jpeg`,
+      img: `/hdd_drive/registration_outcome/${itm.slide_id}/${itm.slide_id}_panorama.jpeg`,
     };
   });
   let arr = [];
@@ -140,7 +162,7 @@ function getImgData(data) {
     name: reference.slide_id,
     url: `/images/${reference.slide_id}.jpeg`,
     borderColor: randomColor(),
-    img: `/wsi_data/registration_outcome/${reference.slide_id}/${reference.slide_id}_panorama.jpeg`,
+    img: `/hdd_drive/registration_outcome/${reference.slide_id}/${reference.slide_id}_panorama.jpeg`,
     reference: true,
   });
   arr = [...arr, ...registerArr];
@@ -212,8 +234,8 @@ function ImageElement({
   referenceCenter,
 }) {
   const matrix = new THREE.Matrix4();
-  matrix.multiply(new THREE.Matrix4().makeRotationX(-Math.PI / 2))
-  matrix.multiply(new THREE.Matrix4().makeShear(0,0,0,0,0,0))
+  matrix.multiply(new THREE.Matrix4().makeRotationX(-Math.PI / 2));
+  matrix.multiply(new THREE.Matrix4().makeShear(0, 0, 0, 0, 0, 0));
   const [imgLoaded, setImgLoaded] = useState(0);
   const canvas = document.createElement("canvas");
   const width = useRef();
@@ -640,7 +662,7 @@ const App = () => {
           <meshBasicMaterial attach="material" color="lightblue" />
         </mesh>
       </Canvas> */}
-      <Sidebar
+      <LeftSidebar
         data={imagesArr}
         handleDragEnd={handleDragEnd}
         apiUrl={API_URL}
@@ -648,6 +670,12 @@ const App = () => {
         targetImageOpacityChange={targetImageOpacityChange}
         roundNum={roundNum}
         opacity={opacity}
+      />
+      <RightSidebar
+        mainOpacityChange={mainOpacityChange}
+        opacity={opacity}
+        setSpacing={setSpacing}
+        spacing={spacing}
       />
       {/* <div id="canvas-layers">
         <div

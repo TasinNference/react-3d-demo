@@ -81,12 +81,17 @@ export const ReferenceImgTxt = styled(Typography).attrs(() => ({variant: 'captio
 
 export const ItemAdjustmentContainer = styled.div`
   table {
-    tr:not(:last-child) td {
-      padding-bottom: 10px;
+    width: 100%;
+    td {
+      vertical-align: middle;
     }
 
-    td:not(:last-child) {
-      padding-right: 10px;
+    td:last-child {
+      width: 60%;
+    }
+
+    tr:not(:last-child) td {
+      padding-bottom: 10px;
     }
   }
 `
