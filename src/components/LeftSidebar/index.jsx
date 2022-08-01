@@ -39,7 +39,7 @@ const DraggableItem = forwardRef(
       <LayersItem ref={ref} {...draggableProps}>
         {img.reference && <ReferenceImgTxt>Reference</ReferenceImgTxt>}
         <ItemHeader>
-          <ItemName>{img.name}</ItemName>
+          <ItemName>{img.formatted_name}</ItemName>
           <ItemIconsContainer>
             <IconButton
               size="small"
@@ -53,7 +53,7 @@ const DraggableItem = forwardRef(
           </ItemIconsContainer>
         </ItemHeader>
         <ItemContent>
-          <ItemImg src={`${apiUrl}${img.img}`} />
+          <ItemImg src={img.img} />
           <ItemAdjustmentContainer>
             <table>
               <tbody>

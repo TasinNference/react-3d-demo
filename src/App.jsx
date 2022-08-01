@@ -3,8 +3,10 @@ import { Canvas, createPortal, useFrame, useThree } from "@react-three/fiber";
 import "./App.css";
 import * as THREE from "three";
 import {
+  Edges,
   OrbitControls,
   OrthographicCamera,
+  Plane,
   useCamera,
 } from "@react-three/drei";
 import { OrbitControls as ThreeOrbitControls } from "three/examples/jsm/controls/OrbitControls";
@@ -41,6 +43,7 @@ import { FaLock, FaUnlock } from "react-icons/fa";
 import { GrPowerReset } from "react-icons/gr";
 import LeftSidebar from "./components/LeftSidebar";
 import RightSidebar from "./components/RightSidebar";
+import { rectData } from "./bounded_boxes";
 
 const X_INCREMENT = 1;
 const Y_INCREMENT = 1;
@@ -49,6 +52,10 @@ const Y_SCALE_INCREMENT = 0.1;
 const SPACING = 50;
 
 const API_URL = "https://14.140.231.202";
+
+const calcPosition = (index, length, spacing) => {
+  return -1 * (index - (length - 1) / 2) * spacing;
+};
 
 const CameraController = () => {
   const { camera, gl } = useThree();
@@ -64,7 +71,7 @@ const CameraController = () => {
 function createArrow(dir, hex) {
   var origin = new THREE.Vector3(0, 0, 0);
   var length = 75;
-  return new THREE.ArrowHelper(dir, origin, length, hex, 15, 10)
+  return new THREE.ArrowHelper(dir, origin, length, hex, 15, 10);
 }
 
 function createAxis() {
@@ -79,7 +86,7 @@ function createAxis() {
   var arrowHelper3 = createArrow(dir3, hex3);
   var group = new THREE.Group();
   group.add(arrowHelper1, arrowHelper2, arrowHelper3);
-  return group
+  return group;
 }
 
 function Viewcube() {
@@ -153,16 +160,17 @@ function getImgData(data) {
       name: itm.slide_id,
       scaleX: itm.x_scale,
       scaleY: itm.y_scale,
-      img: `/hdd_drive/registration_outcome/${itm.slide_id}/${itm.slide_id}_panorama.jpeg`,
+      img: `/images/${itm.slide_id}_panorama.jpeg`,
     };
   });
   let arr = [];
   arr.push({
+    formatted_name: reference.formatted_name,
     id: reference.slide_id,
     name: reference.slide_id,
     url: `/images/${reference.slide_id}.jpeg`,
     borderColor: randomColor(),
-    img: `/hdd_drive/registration_outcome/${reference.slide_id}/${reference.slide_id}_panorama.jpeg`,
+    img: `/images/${reference.slide_id}_panorama.jpeg`,
     reference: true,
   });
   arr = [...arr, ...registerArr];
@@ -224,6 +232,16 @@ function getActualDisplacement({
 //   },
 // ];
 
+const calcRectPosition = (rect, index, length, spacing) => {
+  const width = 400;
+  const height = 534;
+  const relativePosition = {
+    x: (rect.max_x + rect.min_x) / 2 - width / 2,
+    y: (rect.max_y + rect.min_y) / 2 - height / 2,
+  };
+  return [relativePosition.x, calcPosition(index, length, spacing) + spacing/2, relativePosition.y];
+};
+
 function ImageElement({
   position,
   rotation,
@@ -232,7 +250,10 @@ function ImageElement({
   showBorder,
   setReferenceCenter,
   referenceCenter,
+  spacing,
+  filteredLength,
 }) {
+  const { scene } = useThree();
   const matrix = new THREE.Matrix4();
   matrix.multiply(new THREE.Matrix4().makeRotationX(-Math.PI / 2));
   matrix.multiply(new THREE.Matrix4().makeShear(0, 0, 0, 0, 0, 0));
@@ -296,7 +317,7 @@ function ImageElement({
       }
     };
     imgObj.crossOrigin = "anonymus";
-    imgObj.src = `${API_URL}${img.img}`;
+    imgObj.src = img.img;
   }
 
   useEffect(() => {
@@ -342,7 +363,9 @@ function ImageElement({
             attach="material"
             map={texture.current}
             side={THREE.DoubleSide}
-            transparent={true}
+            transparent={1}
+            depthWrite={false}
+            depthTest={false}
           />
         </mesh>
       </group>
@@ -389,16 +412,98 @@ const App = () => {
   const filteredImages = imagesArr.filter((img) => !img.hidden);
 
   useEffect(() => {
-    data.current = searchParams.get("data");
-    var actual = JSON.parse(atob(data.current));
+    // data.current = searchParams.get("data");
+    const actual = {
+      reference_slide_info: {
+        slide_id: "JR-20-4929-A21-1_H01BBB30P-12293",
+        grid_id: "grid_merged",
+        formatted_name: "A21-1",
+      },
+      register_slide_info: [
+        {
+          slide_id: "JR-20-4929-A21-2_H01BBB30P-12292",
+          grid_id: "grid_merged",
+          tilt: -15.321032564825954,
+          x_disp: -18.117563694356747,
+          y_disp: 61.52526145467156,
+          x_scale: 1.030343892059006,
+          y_scale: 1.0364768269132412,
+          x_skew: -0.03142258484844155,
+          y_skew: 0,
+          pan_target_path:
+            "JR-20-4929-A21-1_H01BBB30P-12293/JR-20-4929-A21-1_H01BBB30P-12293_panorama.jpeg",
+          pan_mov_path_list: ["JR-20-4929-A21-2_H01BBB30P-12292_panorama.jpeg"],
+          formatted_name: "A21-2",
+        },
+        {
+          slide_id: "JR-20-4929-A21-3_H01BBB30P-12291",
+          grid_id: "grid_merged",
+          tilt: -2.479458965626319,
+          x_disp: -38.85664411410366,
+          y_disp: 11.15020017853337,
+          x_scale: 1.029869372449001,
+          y_scale: 1.050718326907051,
+          x_skew: 0.0484054807253748,
+          y_skew: 0,
+          pan_target_path:
+            "JR-20-4929-A21-1_H01BBB30P-12293/JR-20-4929-A21-1_H01BBB30P-12293_panorama.jpeg",
+          pan_mov_path_list: ["JR-20-4929-A21-3_H01BBB30P-12291_panorama.jpeg"],
+          formatted_name: "A21-3",
+        },
+        {
+          slide_id: "JR-20-4929-A21-4_H01BBB30P-12290",
+          grid_id: "grid_merged",
+          tilt: -2.870591671422097,
+          x_disp: -95.59231783111959,
+          y_disp: 20.891415415338447,
+          x_scale: 1.0099056181743453,
+          y_scale: 1.0159732867303473,
+          x_skew: -0.02099167677513413,
+          y_skew: 0,
+          pan_target_path:
+            "JR-20-4929-A21-1_H01BBB30P-12293/JR-20-4929-A21-1_H01BBB30P-12293_panorama.jpeg",
+          pan_mov_path_list: ["JR-20-4929-A21-4_H01BBB30P-12290_panorama.jpeg"],
+          formatted_name: "A21-4",
+        },
+        {
+          slide_id: "JR-20-4929-A21-5_H01BBB30P-12289",
+          grid_id: "grid_merged",
+          tilt: 4.015596683460688,
+          x_disp: -163.44731220278106,
+          y_disp: -247.26676293475353,
+          x_scale: 0.9555368981354696,
+          y_scale: 0.9329968139211626,
+          x_skew: 0.16996736324758144,
+          y_skew: 0,
+          pan_target_path:
+            "JR-20-4929-A21-1_H01BBB30P-12293/JR-20-4929-A21-1_H01BBB30P-12293_panorama.jpeg",
+          pan_mov_path_list: ["JR-20-4929-A21-5_H01BBB30P-12289_panorama.jpeg"],
+          formatted_name: "A21-5",
+        },
+        {
+          slide_id: "JR-20-4929-A21-6_H01BBB30P-12288",
+          grid_id: "grid_merged",
+          tilt: -5.5128496198353,
+          x_disp: -4.705573016884154,
+          y_disp: 17.28713846227371,
+          x_scale: 0.9944155850585511,
+          y_scale: 0.9944155850585511,
+          x_skew: -0.026283899042117285,
+          y_skew: 0,
+          pan_target_path:
+            "JR-20-4929-A21-1_H01BBB30P-12293/JR-20-4929-A21-1_H01BBB30P-12293_panorama.jpeg",
+          pan_mov_path_list: ["JR-20-4929-A21-6_H01BBB30P-12288_panorama.jpeg"],
+          formatted_name: "A21-6",
+        },
+      ],
+    };
     const formattedData = getImgData(actual);
+    console.log(formattedData);
     setImagesArr(formattedData);
     defaultData.current = formattedData;
   }, []);
 
-  const calcPosition = (index) => {
-    return -1 * (index - (filteredImages.length - 1) / 2) * spacing;
-  };
+  
 
   const handleDragEnd = (result) => {
     if (!result.destination) return;
@@ -633,22 +738,54 @@ const App = () => {
           {filteredImages.map((img, index) => {
             console.log("transX: ", img.transformX);
             return (
-              <Suspense key={index} fallback={null}>
-                <ImageElement
-                  position={[
-                    img.transformX ? img.transformX : 0,
-                    calcPosition(index),
-                    img.transformY ? -img.transformY : 0,
-                  ]}
-                  img={img}
-                  rotation={img.rotation}
-                  url={img.url}
-                  opacity={img.opacity ? img.opacity : opacity}
-                  showBorder={showBorder}
-                  setReferenceCenter={setReferenceCenter}
-                  referenceCenter={referenceCenter}
-                />
-              </Suspense>
+              <>
+                <Suspense key={index} fallback={null}>
+                  <ImageElement
+                    position={[
+                      img.transformX ? img.transformX : 0,
+                      calcPosition(index, filteredImages.length, spacing),
+                      img.transformY ? -img.transformY : 0,
+                    ]}
+                    img={img}
+                    rotation={img.rotation}
+                    url={img.url}
+                    opacity={img.opacity ? img.opacity : opacity}
+                    showBorder={showBorder}
+                    setReferenceCenter={setReferenceCenter}
+                    referenceCenter={referenceCenter}
+                    spacing={spacing}
+                    filteredLength={filteredImages.length}
+                  />
+                </Suspense>
+                {(filteredImages.length > 1 && index !== 0) && rectData.map((r) => (
+                  <mesh
+                    rotation={[0, 0, 0]}
+                    frustumCulled={false}
+                    position={calcRectPosition(r, index, filteredImages.length, spacing)}
+                    renderOrder={1000}
+                  >
+                    <cylinderBufferGeometry
+                      attach="geometry"
+                      args={[
+                        (r.max_x - r.min_x) / 2,
+                        (r.max_x - r.min_x) / 2,
+                        spacing,
+                        32,
+                      ]}
+                    />
+                    <Plane args={[]} />
+                    <meshBasicMaterial
+                      opacity={0.1}
+                      transparent={1}
+                      attach="material"
+                      color="blue"
+                      depthWrite={false}
+                      depthTest={false}
+                    />
+                    <Edges color="red" />
+                  </mesh>
+                ))}
+              </>
             );
           })}
         </group>
