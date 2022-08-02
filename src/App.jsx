@@ -155,12 +155,12 @@ function getImgData(data) {
       ...itm,
       rotation: itm.tilt,
       id: itm.slide_id,
-      url: `/images/${itm.slide_id}.jpeg`,
+      url: `/3d-viewer/images/${itm.slide_id}.jpeg`,
       borderColor: randomColor(),
       name: itm.slide_id,
       scaleX: itm.x_scale,
       scaleY: itm.y_scale,
-      img: `/images/${itm.slide_id}_panorama.jpeg`,
+      img: `/3d-viewer/images/${itm.slide_id}_panorama.jpeg`,
     };
   });
   let arr = [];
@@ -168,9 +168,9 @@ function getImgData(data) {
     formatted_name: reference.formatted_name,
     id: reference.slide_id,
     name: reference.slide_id,
-    url: `/images/${reference.slide_id}.jpeg`,
+    url: `/3d-viewer/images/${reference.slide_id}.jpeg`,
     borderColor: randomColor(),
-    img: `/images/${reference.slide_id}_panorama.jpeg`,
+    img: `/3d-viewer/images/${reference.slide_id}_panorama.jpeg`,
     reference: true,
   });
   arr = [...arr, ...registerArr];
@@ -468,9 +468,9 @@ const App = () => {
         {
           slide_id: "JR-20-4929-A21-5_H01BBB30P-12289",
           grid_id: "grid_merged",
-          tilt: 4.015596683460688,
-          x_disp: -163.44731220278106,
-          y_disp: -247.26676293475353,
+          tilt: -4.015596683460688,
+          x_disp: -142.44731220278106,
+          y_disp: -200.26676293475353,
           x_scale: 0.9555368981354696,
           y_scale: 0.9329968139211626,
           x_skew: 0.16996736324758144,
@@ -775,14 +775,14 @@ const App = () => {
                     />
                     <Plane args={[]} />
                     <meshBasicMaterial
-                      opacity={0.1}
+                      opacity={0.05}
                       transparent={1}
                       attach="material"
                       color="blue"
                       depthWrite={false}
                       depthTest={false}
                     />
-                    <Edges color="red" />
+                    <Edges color="black" />
                   </mesh>
                 ))}
               </>
