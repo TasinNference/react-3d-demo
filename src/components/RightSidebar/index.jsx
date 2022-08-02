@@ -2,14 +2,24 @@ import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
+  ButtonBase,
   Typography,
 } from "@mui/material";
 import React, { useState } from "react";
 import { BottomContainer, RightContainer, TopContainer } from "./styles";
 import CustomSlider from "../CustomSlider";
 import CollapseComponent from "../CollapseComponent";
+import { GrPowerReset } from "react-icons/gr";
 
-const RightSidebar = ({ mainOpacityChange, opacity, setSpacing, spacing }) => {
+const RightSidebar = ({
+  resetImages,
+  mainOpacityChange,
+  opacity,
+  setSpacing,
+  spacing,
+  globalRotation,
+  setGlobalRotation,
+}) => {
   const [composite, setComposite] = useState(true);
   const [settings, setSettings] = useState(true);
 
@@ -78,8 +88,32 @@ const RightSidebar = ({ mainOpacityChange, opacity, setSpacing, spacing }) => {
                   />
                 </td>
               </tr>
+              <tr>
+                <td>
+                  <Typography variant="caption">Rotation</Typography>
+                </td>
+                <td>
+                  <CustomSlider
+                    size="small"
+                    defaultValue={globalRotation}
+                    aria-label="Small"
+                    valueLabelDisplay="auto"
+                    min={0}
+                    max={360}
+                    onChange={(e) => setGlobalRotation(e.target.value)}
+                  />
+                </td>
+              </tr>
             </tbody>
           </table>
+          <div
+            style={{ display: "flex", alignItems: "center", columnGap: "4px", justifyContent: 'flex-end' }}
+          >
+            <Typography variant="caption">Registration</Typography>
+            <ButtonBase onClick={resetImages}>
+              <GrPowerReset />
+            </ButtonBase>
+          </div>
         </CollapseComponent>
       </BottomContainer>
     </RightContainer>
