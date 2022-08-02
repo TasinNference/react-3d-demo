@@ -156,12 +156,12 @@ function getImgData(data) {
       ...itm,
       rotation: itm.tilt,
       id: itm.slide_id,
-      url: `${url_pefix}${itm.slide_id}.jpeg`,
+      url: `${url_prefix}${itm.slide_id}.jpeg`,
       borderColor: randomColor(),
       name: itm.slide_id,
       scaleX: itm.x_scale,
       scaleY: itm.y_scale,
-      img: `${url_pefix}${itm.slide_id}_panorama.jpeg`,
+      img: `${url_prefix}${itm.slide_id}_panorama.jpeg`,
     };
   });
   let arr = [];
@@ -169,9 +169,9 @@ function getImgData(data) {
     formatted_name: reference.formatted_name,
     id: reference.slide_id,
     name: reference.slide_id,
-    url: `${url_pefix$}{reference.slide_id}.jpeg`,
+    url: `${url_prefix}${reference.slide_id}.jpeg`,
     borderColor: randomColor(),
-    img: `${url_pefix}${reference.slide_id}_panorama.jpeg`,
+    img: `${url_prefix}${reference.slide_id}_panorama.jpeg`,
     reference: true,
   });
   arr = [...arr, ...registerArr];
@@ -415,7 +415,7 @@ const App = () => {
   useEffect(() => {
     // data.current = searchParams.get("data");
     const actual = {
-      url_prefix: "`/3d-viewer/images/",
+      url_prefix: "/3d-viewer/images/",
       reference_slide_info: {
         slide_id: "JR-20-4929-A21-1_H01BBB30P-12293",
         grid_id: "grid_merged",
