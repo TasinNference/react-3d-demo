@@ -775,14 +775,14 @@ const App = () => {
                     />
                     <Plane args={[]} />
                     <meshBasicMaterial
-                      opacity={0.05}
+                      opacity={0.025}
                       transparent={1}
                       attach="material"
                       color="blue"
                       depthWrite={false}
                       depthTest={false}
                     />
-                    <Edges color="black" />
+                    <Edges color="blue" />
                   </mesh>
                 ))}
               </>
@@ -813,6 +813,9 @@ const App = () => {
         opacity={opacity}
         setSpacing={setSpacing}
         spacing={spacing}
+        globalRotation={globalRotation}
+        setGlobalRotation={setGlobalRotation}
+        resetImages={resetImages}
       />
       {/* <div id="canvas-layers">
         <div
