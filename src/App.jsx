@@ -775,14 +775,14 @@ const App = () => {
                     />
                     <Plane args={[]} />
                     <meshBasicMaterial
-                      opacity={0.1}
+                      opacity={0.025}
                       transparent={1}
                       attach="material"
                       color="blue"
                       depthWrite={false}
                       depthTest={false}
                     />
-                    <Edges color="red" />
+                    <Edges color="blue" />
                   </mesh>
                 ))}
               </>
