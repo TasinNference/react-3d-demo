@@ -51,7 +51,7 @@ const X_SCALE_INCREMENT = 0.1;
 const Y_SCALE_INCREMENT = 0.1;
 const SPACING = 50;
 
-const API_URL = "https://14.140.231.202";
+const API_URL = "";
 
 const calcPosition = (index, length, spacing) => {
   return -1 * (index - (length - 1) / 2) * spacing;
@@ -149,18 +149,19 @@ function roundNum(num) {
 
 function getImgData(data) {
   const reference = data.reference_slide_info;
+  const url_prefix = data.url_prefix;
   const registerResponse = data.register_slide_info;
   const registerArr = registerResponse.map((itm) => {
     return {
       ...itm,
       rotation: itm.tilt,
       id: itm.slide_id,
-      url: `/3d-viewer/images/${itm.slide_id}.jpeg`,
+      url: `${url_pefix}${itm.slide_id}.jpeg`,
       borderColor: randomColor(),
       name: itm.slide_id,
       scaleX: itm.x_scale,
       scaleY: itm.y_scale,
-      img: `/3d-viewer/images/${itm.slide_id}_panorama.jpeg`,
+      img: `${url_pefix}${itm.slide_id}_panorama.jpeg`,
     };
   });
   let arr = [];
@@ -168,9 +169,9 @@ function getImgData(data) {
     formatted_name: reference.formatted_name,
     id: reference.slide_id,
     name: reference.slide_id,
-    url: `/3d-viewer/images/${reference.slide_id}.jpeg`,
+    url: `${url_pefix$}{reference.slide_id}.jpeg`,
     borderColor: randomColor(),
-    img: `/3d-viewer/images/${reference.slide_id}_panorama.jpeg`,
+    img: `${url_pefix}${reference.slide_id}_panorama.jpeg`,
     reference: true,
   });
   arr = [...arr, ...registerArr];
@@ -414,6 +415,7 @@ const App = () => {
   useEffect(() => {
     // data.current = searchParams.get("data");
     const actual = {
+      url_prefix: "`/3d-viewer/images/",
       reference_slide_info: {
         slide_id: "JR-20-4929-A21-1_H01BBB30P-12293",
         grid_id: "grid_merged",
