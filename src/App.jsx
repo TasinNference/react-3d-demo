@@ -777,7 +777,7 @@ const App = () => {
                     />
                     <Plane args={[]} />
                     <meshBasicMaterial
-                      opacity={0.025}
+                      opacity={0.05}
                       transparent={1}
                       attach="material"
                       color="blue"
