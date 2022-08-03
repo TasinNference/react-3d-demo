@@ -7,7 +7,7 @@ import {
   OrthographicCamera,
   useCamera,
 } from "@react-three/drei";
-import { OrbitControls as ThreeOrbitControls } from "three/examples/jsm/controls/OrbitControls"
+import { OrbitControls as ThreeOrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import { GoSettings } from "react-icons/go";
 import { AiFillEyeInvisible, AiFillEye } from "react-icons/ai";
@@ -46,7 +46,7 @@ const X_SCALE_INCREMENT = 0.1;
 const Y_SCALE_INCREMENT = 0.1;
 const SPACING = 50;
 
-const API_URL = "https://14.140.231.202";
+const API_URL = "https://pramana.nferx.com";
 
 const CameraController = () => {
   const { camera, gl } = useThree();
@@ -88,7 +88,7 @@ function Viewcube() {
       <mesh
         ref={ref}
         raycast={useCamera(virtualCam)}
-        position={[- (size.width / 2) + 400, - (size.height / 2) + 110, 0]}
+        position={[-(size.width / 2) + 400, -(size.height / 2) + 110, 0]}
         onPointerOut={(e) => set(null)}
         onPointerMove={(e) => set(Math.floor(e.faceIndex / 2))}
       >
@@ -102,7 +102,9 @@ function Viewcube() {
             />
           );
         })} */}
-        <primitive object={new THREE.AxesHelper(100).setColors("red", "blue", "green")} />
+        <primitive
+          object={new THREE.AxesHelper(100).setColors("red", "blue", "green")}
+        />
       </mesh>
       <pointLight position={[10, 10, 10]} intensity={0.5} />
     </>,
@@ -127,7 +129,7 @@ function getImgData(data) {
       name: itm.slide_id,
       scaleX: itm.x_scale,
       scaleY: itm.y_scale,
-      img: `/hdd_drive/registration_outcome/${itm.slide_id}/${itm.slide_id}_panorama.jpeg`,
+      img: `/wsi_data/registration_outcome/${itm.slide_id}/${itm.slide_id}_panorama.jpeg`,
     };
   });
   let arr = [];
@@ -136,7 +138,7 @@ function getImgData(data) {
     name: reference.slide_id,
     url: `/images/${reference.slide_id}.jpeg`,
     borderColor: randomColor(),
-    img: `/hdd_drive/registration_outcome/${reference.slide_id}/${reference.slide_id}_panorama.jpeg`,
+    img: `/wsi_data/registration_outcome/${reference.slide_id}/${reference.slide_id}_panorama.jpeg`,
     reference: true,
   });
   arr = [...arr, ...registerArr];
@@ -215,8 +217,9 @@ function ImageElement({
   const imgObj = new Image();
   const texture = useRef();
   const group = useRef();
-  const group2 = useRef();
   const mesh = useRef();
+  const [mat, setMat] = useState();
+  const [mat2, setMat2] = useState();
 
   function loadImg() {
     imgObj.onload = function () {
@@ -240,8 +243,8 @@ function ImageElement({
       texture.current.needsUpdate = true;
       setImgLoaded(imgLoaded + 1);
 
-      if(!referenceCenter && img.reference) {
-        const center = {x: width.current/2, y: height.current/2}
+      if (!referenceCenter && img.reference) {
+        const center = { x: width.current / 2, y: height.current / 2 };
         setReferenceCenter(center);
       }
     };
@@ -258,13 +261,19 @@ function ImageElement({
   }, [showBorder, opacity, img.img, referenceCenter]);
 
   useEffect(() => {
-    if(mesh.current && group.current && !img.reference && referenceCenter && group2.current) {
-      group.current.matrixAutoUpdate = false;
-      mesh.current.position.set(width.current/2, 0, height.current/2);
-      // group.current.position.set(-referenceCenter.x, position[1], -referenceCenter.y)
-      group.current.scale.x = img.scaleX ? img.scaleX : 1;
-      group.current.scale.y = img.scaleY ? img.scaleY : 1;
-      group.current.rotation.y = degToRad(-img.rotation) 
+    if (img.reference) {
+      const matrix = new Matrix4();
+      matrix.multiply(new Matrix4().makeTranslation(...position));
+      setMat(matrix);
+    } else if (
+      mesh.current &&
+      group.current &&
+      !img.reference &&
+      referenceCenter
+    ) {
+      console.log("values", img);
+      console.log(referenceCenter.y*2)
+      mesh.current.position.set(width.current / 2, 0, height.current / 2);
       // console.log(img.scaleX)
       // const matrix = new THREE.Matrix4();
       // matrix.multiply(new THREE.Matrix4().makeScale(img.scaleX || 1, img.scaleY || 1, 1))
@@ -272,18 +281,28 @@ function ImageElement({
       // matrix.makeRotationY(degToRad(-img.rotation))
       // matrix.makeTranslation(img.x_disp,0,0);
       // group.current.applyMatrix4(matrix)
-      const matrix = new Matrix4()
-      const matrix2 = new Matrix4()
-      matrix2.makeTranslation(img.x_disp, 0, img.y_disp)
-      matrix.multiply(new Matrix4().makeTranslation(-referenceCenter.x, position[1], -referenceCenter.y))
-      matrix.multiply(new Matrix4().makeScale(img.scaleX,img.scaleY,1))
-      matrix.multiply(new Matrix4().makeShear(0,img.y_skew,0,0,img.x_skew,0))
-      matrix.multiply(new Matrix4().makeRotationY(degToRad(-img.rotation)))
-      // matrix.multiply(new Matrix4().makeTranslation(100, 0, 100))
-      group.current.applyMatrix4(matrix)
-      group2.current.applyMatrix4(matrix2)
+      const matrix = new Matrix4();
+      const matrix2 = new Matrix4();
+      matrix.multiply(
+        new Matrix4().makeTranslation(
+          -referenceCenter.x,
+          position[1],
+          -referenceCenter.y
+        )
+      );
+      matrix.multiply(
+        new Matrix4().makeShear(0, -img.y_skew, 0, 0, -img.x_skew, 0)
+      );
+      matrix.multiply(new Matrix4().makeScale(img.scaleX, 1, img.scaleY));
+      matrix.multiply(new Matrix4().makeRotationY(degToRad(-img.rotation)));
+      // // group.current.applyMatrix4(matrix)
+      matrix2.multiply(new Matrix4().makeTranslation(
+        img.x_disp, 0, img.y_disp
+      ))
+      setMat(matrix);
+      setMat2(matrix2)
     }
-  }, [imgLoaded])
+  }, [imgLoaded]);
 
   useFrame(() => {
     if (texture.current) {
@@ -293,24 +312,21 @@ function ImageElement({
 
   return (
     imgLoaded && (
-      <group ref={group2}>
-      <group
-        position={position}
-        ref={group}
-      >
-        <mesh rotation={[-Math.PI / 2, 0, 0]} ref={mesh}>
-          <planeBufferGeometry
-            attach="geometry"
-            args={[width.current, height.current]}
-          />
-          <meshBasicMaterial
-            attach="material"
-            map={texture.current}
-            side={THREE.DoubleSide}
-            transparent={true}
-          />
-        </mesh>
-      </group>
+      <group ref={group} matrixAutoUpdate={false} matrix={mat2}>
+        <group ref={group} matrixAutoUpdate={false} matrix={mat}>
+          <mesh rotation={[-Math.PI / 2, 0, 0]} ref={mesh}>
+            <planeBufferGeometry
+              attach="geometry"
+              args={[width.current, height.current]}
+            />
+            <meshBasicMaterial
+              attach="material"
+              map={texture.current}
+              side={THREE.DoubleSide}
+              transparent={true}
+            />
+          </mesh>
+        </group>
       </group>
     )
   );
@@ -438,7 +454,7 @@ const App = () => {
   };
 
   const moveY = (index, value) => {
-    console.log(value)
+    console.log(value);
     setImagesArr([
       ...imagesArr.slice(0, index),
       {
@@ -635,7 +651,8 @@ const App = () => {
         >
           <div
             style={{
-              display: currentTab === 0 ? "block" : "none", height: '100%'
+              display: currentTab === 0 ? "block" : "none",
+              height: "100%",
             }}
           >
             <DragDropContext onDragEnd={handleDragEnd}>
