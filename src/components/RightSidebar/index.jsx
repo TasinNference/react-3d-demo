@@ -32,13 +32,13 @@ const RightSidebar = ({ mainOpacityChange, opacity, setSpacing, spacing }) => {
             <img src="/images/skin-tissue-1.jpg" style={{ width: "100%" }} />
           </AccordionDetails>
         </Accordion> */}
-        <CollapseComponent
+        {/* <CollapseComponent
           value={settings}
           onClick={() => setSettings(!settings)}
           title="Composite Preview"
         >
           <img src="/images/skin-tissue-1.jpg" style={{ width: "100%" }} />
-        </CollapseComponent>
+        </CollapseComponent> */}
       </TopContainer>
       <BottomContainer>
         <CollapseComponent
