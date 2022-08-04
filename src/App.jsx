@@ -272,7 +272,6 @@ function ImageElement({
       referenceCenter
     ) {
       console.log("values", img);
-      console.log(referenceCenter.y*2)
       mesh.current.position.set(width.current / 2, 0, height.current / 2);
       // console.log(img.scaleX)
       // const matrix = new THREE.Matrix4();
@@ -290,12 +289,12 @@ function ImageElement({
           -referenceCenter.y
         )
       );
-      matrix.multiply(
-        new Matrix4().makeShear(0, -img.y_skew, 0, 0, -img.x_skew, 0)
-      );
       matrix.multiply(new Matrix4().makeScale(img.scaleX, 1, img.scaleY));
+      matrix.multiply(
+        new Matrix4().makeShear(0, img.y_skew, 0, 0, img.x_skew, 0)
+      );
       matrix.multiply(new Matrix4().makeRotationY(degToRad(-img.rotation)));
-      // // group.current.applyMatrix4(matrix)
+      // group.current.applyMatrix4(matrix)
       matrix2.multiply(new Matrix4().makeTranslation(
         img.x_disp, 0, img.y_disp
       ))
