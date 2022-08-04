@@ -11,7 +11,7 @@ import CustomSlider from "../CustomSlider";
 import CollapseComponent from "../CollapseComponent";
 import { GrPowerReset } from "react-icons/gr";
 
-const RightSidebar = ({ mainOpacityChange, opacity, setSpacing, spacing, resetImages, globalRotation, setGlobalRotation }) => {
+const RightSidebar = ({ mainOpacityChange, opacity, setSpacing, spacing, globalRotation, setGlobalRotation }) => {
   const [composite, setComposite] = useState(true);
   const [settings, setSettings] = useState(true);
 
@@ -98,14 +98,6 @@ const RightSidebar = ({ mainOpacityChange, opacity, setSpacing, spacing, resetIm
               </tr>
             </tbody>
           </table>
-          <div
-            style={{ display: "flex", alignItems: "center", columnGap: "4px", justifyContent: 'flex-end' }}
-          >
-            <Typography variant="caption">Registration</Typography>
-            <ButtonBase onClick={resetImages}>
-              <GrPowerReset />
-            </ButtonBase>
-          </div>
         </CollapseComponent>
       </BottomContainer>
     </RightContainer>

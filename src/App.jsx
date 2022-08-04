@@ -14,6 +14,7 @@ import { AiFillEyeInvisible, AiFillEye } from "react-icons/ai";
 import randomColor from "randomcolor";
 import { AxesHelper, Matrix4, Scene } from "three";
 import { CameraControls } from "./CameraControls";
+import CameraControlsDefault from "camera-controls"
 import * as holdEvent from "hold-event";
 import {
   Box,
@@ -41,6 +42,7 @@ import { FaLock, FaUnlock } from "react-icons/fa";
 import { GrPowerReset } from "react-icons/gr";
 import LeftSidebar from "./components/LeftSidebar";
 import RightSidebar from "./components/RightSidebar";
+import TopToolbar from "./components/TopToolbar";
 
 const X_INCREMENT = 1;
 const Y_INCREMENT = 1;
@@ -48,7 +50,7 @@ const X_SCALE_INCREMENT = 0.1;
 const Y_SCALE_INCREMENT = 0.1;
 const SPACING = 50;
 
-const API_URL = `${window.location.origin}`;
+const API_URL = "https://pramana.nferx.com";
 
 const CameraController = () => {
   const { camera, gl } = useThree();
@@ -433,7 +435,7 @@ const App = () => {
 
   const resetImages = () => {
     setImagesArr(defaultData.current);
-    switchToView("front");
+    switchToView('front');
     setGlobalRotation(0);
     setSpacing(200);
     setOpacity(50);
@@ -514,6 +516,42 @@ const App = () => {
   }, []);
 
   const [cameraControls, setCameraControls] = useState(null);
+  const [cursorMode, setCursorMode] = useState("pan");
+
+
+  useEffect(() => {
+    console.log("cursor", cursorMode)
+    if(!cameraControls) return
+
+    switch (cursorMode) {
+      case "pan":
+        console.log("cursor yay")
+        cameraControls.mouseButtons.left = CameraControlsDefault.ACTION.OFFSET
+        cameraControls.mouseButtons.right = CameraControlsDefault.ACTION.NONE
+        cameraControls.mouseButtons.wheel = CameraControlsDefault.ACTION.NONE
+        cameraControls.mouseButtons.middle = CameraControlsDefault.ACTION.NONE
+        break;
+      
+      case "rotate":
+        console.log("cursor yay")
+        cameraControls.mouseButtons.left = CameraControlsDefault.ACTION.ROTATE
+        cameraControls.mouseButtons.right = CameraControlsDefault.ACTION.NONE
+        cameraControls.mouseButtons.wheel = CameraControlsDefault.ACTION.NONE
+        cameraControls.mouseButtons.middle = CameraControlsDefault.ACTION.NONE
+        break;
+
+      case "zoom":
+        console.log("cursor yay")
+        cameraControls.mouseButtons.left = CameraControlsDefault.ACTION.ZOOM
+        cameraControls.mouseButtons.right = CameraControlsDefault.ACTION.NONE
+        cameraControls.mouseButtons.wheel = CameraControlsDefault.ACTION.NONE
+        cameraControls.mouseButtons.middle = CameraControlsDefault.ACTION.NONE
+        break;
+    
+      default:
+        break;
+    }
+  }, [cursorMode, cameraControls])
 
   const DEG90 = Math.PI / 2;
   const DEG45 = Math.PI / 4;
@@ -537,82 +575,83 @@ const App = () => {
     fitToMesh();
   };
 
-  useEffect(() => {
-    if (cameraControls) {
-      cameraControls.addEventListener("rest", () => {
-        cameraControls.setOrbitPoint(0, 0, 0);
-      });
+  // useEffect(() => {
+  //   if (cameraControls) {
+  //     cameraControls.addEventListener("rest", () => {
+  //       cameraControls.setOrbitPoint(0, 0, 0);
+  //     });
 
-      const KEYCODE = {
-        W: 87,
-        A: 65,
-        S: 83,
-        D: 68,
-        ARROW_LEFT: 37,
-        ARROW_UP: 38,
-        ARROW_RIGHT: 39,
-        ARROW_DOWN: 40,
-      };
+  //     const KEYCODE = {
+  //       W: 87,
+  //       A: 65,
+  //       S: 83,
+  //       D: 68,
+  //       ARROW_LEFT: 37,
+  //       ARROW_UP: 38,
+  //       ARROW_RIGHT: 39,
+  //       ARROW_DOWN: 40,
+  //     };
 
-      const wKey = new holdEvent.KeyboardKeyHold(KEYCODE.W, 16.666);
-      const aKey = new holdEvent.KeyboardKeyHold(KEYCODE.A, 16.666);
-      const sKey = new holdEvent.KeyboardKeyHold(KEYCODE.S, 16.666);
-      const dKey = new holdEvent.KeyboardKeyHold(KEYCODE.D, 16.666);
-      aKey.addEventListener("holding", function (event) {
-        cameraControls.truck(0.1 * event.deltaTime, 0, false);
-      });
-      dKey.addEventListener("holding", function (event) {
-        cameraControls.truck(-0.1 * event.deltaTime, 0, false);
-      });
-      wKey.addEventListener("holding", function (event) {
-        cameraControls.truck(0, 0.1 * event.deltaTime, false);
-      });
-      sKey.addEventListener("holding", function (event) {
-        cameraControls.truck(0, -0.1 * event.deltaTime, false);
-      });
+  //     const wKey = new holdEvent.KeyboardKeyHold(KEYCODE.W, 16.666);
+  //     const aKey = new holdEvent.KeyboardKeyHold(KEYCODE.A, 16.666);
+  //     const sKey = new holdEvent.KeyboardKeyHold(KEYCODE.S, 16.666);
+  //     const dKey = new holdEvent.KeyboardKeyHold(KEYCODE.D, 16.666);
+  //     aKey.addEventListener("holding", function (event) {
+  //       cameraControls.truck(0.1 * event.deltaTime, 0, false);
+  //     });
+  //     dKey.addEventListener("holding", function (event) {
+  //       cameraControls.truck(-0.1 * event.deltaTime, 0, false);
+  //     });
+  //     wKey.addEventListener("holding", function (event) {
+  //       cameraControls.truck(0, 0.1 * event.deltaTime, false);
+  //     });
+  //     sKey.addEventListener("holding", function (event) {
+  //       cameraControls.truck(0, -0.1 * event.deltaTime, false);
+  //     });
 
-      const leftKey = new holdEvent.KeyboardKeyHold(KEYCODE.ARROW_LEFT, 100);
-      const rightKey = new holdEvent.KeyboardKeyHold(KEYCODE.ARROW_RIGHT, 100);
-      const upKey = new holdEvent.KeyboardKeyHold(KEYCODE.ARROW_UP, 100);
-      const downKey = new holdEvent.KeyboardKeyHold(KEYCODE.ARROW_DOWN, 100);
-      leftKey.addEventListener("holding", function (event) {
-        cameraControls.rotate(
-          0.05 * THREE.MathUtils.DEG2RAD * event.deltaTime,
-          0,
-          true
-        );
-      });
-      rightKey.addEventListener("holding", function (event) {
-        cameraControls.rotate(
-          -0.05 * THREE.MathUtils.DEG2RAD * event.deltaTime,
-          0,
-          true
-        );
-      });
-      upKey.addEventListener("holding", function (event) {
-        cameraControls.rotate(
-          0,
-          0.05 * THREE.MathUtils.DEG2RAD * event.deltaTime,
-          true
-        );
-      });
-      downKey.addEventListener("holding", function (event) {
-        cameraControls.rotate(
-          0,
-          -0.05 * THREE.MathUtils.DEG2RAD * event.deltaTime,
-          true
-        );
-      });
-    }
-  }, [cameraControls]);
+  //     const leftKey = new holdEvent.KeyboardKeyHold(KEYCODE.ARROW_LEFT, 100);
+  //     const rightKey = new holdEvent.KeyboardKeyHold(KEYCODE.ARROW_RIGHT, 100);
+  //     const upKey = new holdEvent.KeyboardKeyHold(KEYCODE.ARROW_UP, 100);
+  //     const downKey = new holdEvent.KeyboardKeyHold(KEYCODE.ARROW_DOWN, 100);
+  //     leftKey.addEventListener("holding", function (event) {
+  //       cameraControls.rotate(
+  //         0.05 * THREE.MathUtils.DEG2RAD * event.deltaTime,
+  //         0,
+  //         true
+  //       );
+  //     });
+  //     rightKey.addEventListener("holding", function (event) {
+  //       cameraControls.rotate(
+  //         -0.05 * THREE.MathUtils.DEG2RAD * event.deltaTime,
+  //         0,
+  //         true
+  //       );
+  //     });
+  //     upKey.addEventListener("holding", function (event) {
+  //       cameraControls.rotate(
+  //         0,
+  //         0.05 * THREE.MathUtils.DEG2RAD * event.deltaTime,
+  //         true
+  //       );
+  //     });
+  //     downKey.addEventListener("holding", function (event) {
+  //       cameraControls.rotate(
+  //         0,
+  //         -0.05 * THREE.MathUtils.DEG2RAD * event.deltaTime,
+  //         true
+  //       );
+  //     });
+  //   }
+  // }, [cameraControls]);
 
   function fitToMesh() {
-    cameraControls.fitToBox(mesh.current, true, {
-      paddingTop: 50,
-      paddingBottom: 50,
-      paddingRight: 50,
-      paddingLeft: 50,
-    });
+    // cameraControls.fitToBox(mesh.current, true, {
+    //   paddingTop: 200,
+    //   paddingBottom: 200,
+    //   paddingRight: 50,
+    //   paddingLeft: 50,
+    // });
+    cameraControls.fitToSphere(mesh.current, true)
   }
 
   const handleTabChange = (event, index) => {
@@ -676,10 +715,10 @@ const App = () => {
         opacity={opacity}
         setSpacing={setSpacing}
         spacing={spacing}
-        resetImages={resetImages}
         globalRotation={globalRotation}
         setGlobalRotation={setGlobalRotation}
       />
+      <TopToolbar resetImages={resetImages} fitToMesh={fitToMesh} cursorMode={cursorMode} setCursorMode={setCursorMode} />
       {/* <div id="canvas-layers">
         <div
           style={{
