@@ -50,7 +50,7 @@ const X_SCALE_INCREMENT = 0.1;
 const Y_SCALE_INCREMENT = 0.1;
 const SPACING = 50;
 
-const API_URL = "https://pramana.nferx.com";
+const API_URL = `${window.location.origin}`
 
 const CameraController = () => {
   const { camera, gl } = useThree();
