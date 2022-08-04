@@ -3,8 +3,10 @@ import { Canvas, createPortal, useFrame, useThree } from "@react-three/fiber";
 import "./App.css";
 import * as THREE from "three";
 import {
+  Edges,
   OrbitControls,
   OrthographicCamera,
+  Plane,
   useCamera,
 } from "@react-three/drei";
 import { OrbitControls as ThreeOrbitControls } from "three/examples/jsm/controls/OrbitControls";
@@ -14,7 +16,7 @@ import { AiFillEyeInvisible, AiFillEye } from "react-icons/ai";
 import randomColor from "randomcolor";
 import { AxesHelper, Matrix4, Scene } from "three";
 import { CameraControls } from "./CameraControls";
-import CameraControlsDefault from "camera-controls"
+import CameraControlsDefault from "camera-controls";
 import * as holdEvent from "hold-event";
 import {
   Box,
@@ -43,6 +45,7 @@ import { GrPowerReset } from "react-icons/gr";
 import LeftSidebar from "./components/LeftSidebar";
 import RightSidebar from "./components/RightSidebar";
 import TopToolbar from "./components/TopToolbar";
+import { rectData } from "./bounded_boxes";
 
 const X_INCREMENT = 1;
 const Y_INCREMENT = 1;
@@ -51,6 +54,25 @@ const Y_SCALE_INCREMENT = 0.1;
 const SPACING = 50;
 
 const API_URL = `${window.location.origin}`
+// const API_URL = "https://pramana.nferx.com";
+
+const calcPosition = (index, length, spacing) => {
+  return -1 * (index - (length - 1) / 2) * spacing;
+};
+
+const calcRectPosition = (rect, index, length, spacing) => {
+  const width = 400;
+  const height = 534;
+  const relativePosition = {
+    x: (rect.max_x + rect.min_x) / 2 - width / 2,
+    y: (rect.max_y + rect.min_y) / 2 - height / 2,
+  };
+  return [
+    relativePosition.x,
+    calcPosition(index, length, spacing) + spacing / 2,
+    relativePosition.y,
+  ];
+};
 
 const CameraController = () => {
   const { camera, gl } = useThree();
@@ -66,7 +88,7 @@ const CameraController = () => {
 function createArrow(dir, hex) {
   var origin = new THREE.Vector3(0, 0, 0);
   var length = 75;
-  return new THREE.ArrowHelper(dir, origin, length, hex, 15, 10)
+  return new THREE.ArrowHelper(dir, origin, length, hex, 15, 10);
 }
 
 function createAxis() {
@@ -81,7 +103,7 @@ function createAxis() {
   var arrowHelper3 = createArrow(dir3, hex3);
   var group = new THREE.Group();
   group.add(arrowHelper1, arrowHelper2, arrowHelper3);
-  return group
+  return group;
 }
 
 function Viewcube() {
@@ -234,6 +256,8 @@ function ImageElement({
   showBorder,
   setReferenceCenter,
   referenceCenter,
+  spacing,
+  filteredLength,
 }) {
   const matrix = new THREE.Matrix4();
   matrix.multiply(new THREE.Matrix4().makeRotationX(-Math.PI / 2));
@@ -279,7 +303,6 @@ function ImageElement({
       texture.current.needsUpdate = true;
       setImgLoaded(imgLoaded + 1);
 
-      console.log("hello");
       if (!referenceCenter && img.reference) {
         const center = { x: width.current / 2, y: height.current / 2 };
         setReferenceCenter(center);
@@ -345,6 +368,8 @@ function ImageElement({
             map={texture.current}
             side={THREE.DoubleSide}
             transparent={true}
+            depthWrite={false}
+            depthTest={false}
           />
         </mesh>
       </group>
@@ -387,20 +412,18 @@ const App = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const data = useRef();
   const defaultData = useRef();
+  const [referenceSlide, setReferenceSlide] = useState();
 
   const filteredImages = imagesArr.filter((img) => !img.hidden);
 
   useEffect(() => {
     data.current = searchParams.get("data");
     var actual = JSON.parse(atob(data.current));
+    setReferenceSlide(actual.reference_slide_info.slide_id, "hello")
     const formattedData = getImgData(actual);
     setImagesArr(formattedData);
     defaultData.current = formattedData;
   }, []);
-
-  const calcPosition = (index) => {
-    return -1 * (index - (filteredImages.length - 1) / 2) * spacing;
-  };
 
   const handleDragEnd = (result) => {
     if (!result.destination) return;
@@ -435,7 +458,7 @@ const App = () => {
 
   const resetImages = () => {
     setImagesArr(defaultData.current);
-    switchToView('front');
+    switchToView("front");
     setGlobalRotation(0);
     setSpacing(200);
     setOpacity(50);
@@ -518,40 +541,39 @@ const App = () => {
   const [cameraControls, setCameraControls] = useState(null);
   const [cursorMode, setCursorMode] = useState("pan");
 
-
   useEffect(() => {
-    console.log("cursor", cursorMode)
-    if(!cameraControls) return
+    console.log("cursor", cursorMode);
+    if (!cameraControls) return;
 
     switch (cursorMode) {
       case "pan":
-        console.log("cursor yay")
-        cameraControls.mouseButtons.left = CameraControlsDefault.ACTION.OFFSET
-        cameraControls.mouseButtons.right = CameraControlsDefault.ACTION.NONE
-        cameraControls.mouseButtons.wheel = CameraControlsDefault.ACTION.NONE
-        cameraControls.mouseButtons.middle = CameraControlsDefault.ACTION.NONE
+        console.log("cursor yay");
+        cameraControls.mouseButtons.left = CameraControlsDefault.ACTION.OFFSET;
+        cameraControls.mouseButtons.right = CameraControlsDefault.ACTION.NONE;
+        cameraControls.mouseButtons.wheel = CameraControlsDefault.ACTION.NONE;
+        cameraControls.mouseButtons.middle = CameraControlsDefault.ACTION.NONE;
         break;
-      
+
       case "rotate":
-        console.log("cursor yay")
-        cameraControls.mouseButtons.left = CameraControlsDefault.ACTION.ROTATE
-        cameraControls.mouseButtons.right = CameraControlsDefault.ACTION.NONE
-        cameraControls.mouseButtons.wheel = CameraControlsDefault.ACTION.NONE
-        cameraControls.mouseButtons.middle = CameraControlsDefault.ACTION.NONE
+        console.log("cursor yay");
+        cameraControls.mouseButtons.left = CameraControlsDefault.ACTION.ROTATE;
+        cameraControls.mouseButtons.right = CameraControlsDefault.ACTION.NONE;
+        cameraControls.mouseButtons.wheel = CameraControlsDefault.ACTION.NONE;
+        cameraControls.mouseButtons.middle = CameraControlsDefault.ACTION.NONE;
         break;
 
       case "zoom":
-        console.log("cursor yay")
-        cameraControls.mouseButtons.left = CameraControlsDefault.ACTION.ZOOM
-        cameraControls.mouseButtons.right = CameraControlsDefault.ACTION.NONE
-        cameraControls.mouseButtons.wheel = CameraControlsDefault.ACTION.NONE
-        cameraControls.mouseButtons.middle = CameraControlsDefault.ACTION.NONE
+        console.log("cursor yay");
+        cameraControls.mouseButtons.left = CameraControlsDefault.ACTION.ZOOM;
+        cameraControls.mouseButtons.right = CameraControlsDefault.ACTION.NONE;
+        cameraControls.mouseButtons.wheel = CameraControlsDefault.ACTION.NONE;
+        cameraControls.mouseButtons.middle = CameraControlsDefault.ACTION.NONE;
         break;
-    
+
       default:
         break;
     }
-  }, [cursorMode, cameraControls])
+  }, [cursorMode, cameraControls]);
 
   const DEG90 = Math.PI / 2;
   const DEG45 = Math.PI / 4;
@@ -651,7 +673,7 @@ const App = () => {
     //   paddingRight: 50,
     //   paddingLeft: 50,
     // });
-    cameraControls.fitToSphere(mesh.current, true)
+    cameraControls.fitToSphere(mesh.current, true);
   }
 
   const handleTabChange = (event, index) => {
@@ -671,23 +693,63 @@ const App = () => {
         >
           {filteredImages.map((img, index) => {
             console.log("transX: ", img.transformX);
+            console.log()
             return (
-              <Suspense key={index} fallback={null}>
-                <ImageElement
-                  position={[
-                    img.transformX ? img.transformX : 0,
-                    calcPosition(index),
-                    img.transformY ? -img.transformY : 0,
-                  ]}
-                  img={img}
-                  rotation={img.rotation}
-                  url={img.url}
-                  opacity={img.opacity ? img.opacity : opacity}
-                  showBorder={showBorder}
-                  setReferenceCenter={setReferenceCenter}
-                  referenceCenter={referenceCenter}
-                />
-              </Suspense>
+              <>
+                <Suspense key={index} fallback={null}>
+                  <ImageElement
+                    position={[
+                      img.transformX ? img.transformX : 0,
+                      calcPosition(index, filteredImages.length, spacing),
+                      img.transformY ? -img.transformY : 0,
+                    ]}
+                    img={img}
+                    rotation={img.rotation}
+                    url={img.url}
+                    opacity={img.opacity ? img.opacity : opacity}
+                    showBorder={showBorder}
+                    setReferenceCenter={setReferenceCenter}
+                    referenceCenter={referenceCenter}
+                    spacing={spacing}
+                    filteredLength={filteredImages.length}
+                  />
+                </Suspense>
+                {(filteredImages.length > 1 && referenceSlide === "JR-20-4929-A21-1_H01BBB30P-12293") &&
+                  index !== 0 &&
+                  rectData.map((r) => (
+                    <mesh
+                      rotation={[0, 0, 0]}
+                      frustumCulled={false}
+                      position={calcRectPosition(
+                        r,
+                        index,
+                        filteredImages.length,
+                        spacing
+                      )}
+                      renderOrder={1000}
+                    >
+                      <cylinderBufferGeometry
+                        attach="geometry"
+                        args={[
+                          (r.max_x - r.min_x) / 2,
+                          (r.max_x - r.min_x) / 2,
+                          spacing,
+                          32,
+                        ]}
+                      />
+                      <Plane args={[]} />
+                      <meshBasicMaterial
+                        opacity={0.1}
+                        transparent={1}
+                        attach="material"
+                        color="blue"
+                        depthWrite={false}
+                        depthTest={false}
+                      />
+                      <Edges color="red" />
+                    </mesh>
+                  ))}
+              </>
             );
           })}
         </group>
@@ -718,7 +780,12 @@ const App = () => {
         globalRotation={globalRotation}
         setGlobalRotation={setGlobalRotation}
       />
-      <TopToolbar resetImages={resetImages} fitToMesh={fitToMesh} cursorMode={cursorMode} setCursorMode={setCursorMode} />
+      <TopToolbar
+        resetImages={resetImages}
+        fitToMesh={fitToMesh}
+        cursorMode={cursorMode}
+        setCursorMode={setCursorMode}
+      />
       {/* <div id="canvas-layers">
         <div
           style={{
