@@ -53,8 +53,8 @@ const X_SCALE_INCREMENT = 0.1;
 const Y_SCALE_INCREMENT = 0.1;
 const SPACING = 50;
 
-const API_URL = `${window.location.origin}`
-// const API_URL = "https://pramana.nferx.com";
+// const API_URL = `${window.location.origin}`
+const API_URL = "https://pramana.nferx.com";
 
 const calcPosition = (index, length, spacing) => {
   return -1 * (index - (length - 1) / 2) * spacing;
@@ -746,7 +746,7 @@ const App = () => {
                         depthWrite={false}
                         depthTest={false}
                       />
-                      <Edges color="red" />
+                      <Edges color="blue" />
                     </mesh>
                   ))}
               </>
