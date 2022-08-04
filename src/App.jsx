@@ -676,6 +676,9 @@ const App = () => {
         opacity={opacity}
         setSpacing={setSpacing}
         spacing={spacing}
+        resetImages={resetImages}
+        globalRotation={globalRotation}
+        setGlobalRotation={setGlobalRotation}
       />
       {/* <div id="canvas-layers">
         <div
