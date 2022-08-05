@@ -25,14 +25,8 @@ const TopToolbar = ({ resetImages, fitToMesh, cursorMode, setCursorMode }) => {
   return (
     <TopToolbarContainer>
       <ToolbarGroup>
-        <IconElement selected={cursorMode === "pan"} onClick={() => setCursorMode("pan")} tooltipTitle="Pan">
+        <IconElement selected={cursorMode === "pan"} onClick={() => setCursorMode(cursorMode === "pan" ? "free" : "pan")} tooltipTitle="Pan">
           <GrPan />
-        </IconElement>
-        <IconElement selected={cursorMode === "rotate"} onClick={() => setCursorMode("rotate")} tooltipTitle="Rotate">
-          <Tb3DRotate />
-        </IconElement>
-        <IconElement selected={cursorMode === "zoom"} onClick={() => setCursorMode("zoom")} tooltipTitle="Zoom">
-          <AiOutlineZoomIn />
         </IconElement>
       </ToolbarGroup>
       <ToolbarDivider />

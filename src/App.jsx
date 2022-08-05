@@ -53,8 +53,8 @@ const X_SCALE_INCREMENT = 0.1;
 const Y_SCALE_INCREMENT = 0.1;
 const SPACING = 50;
 
-const API_URL = `${window.location.origin}`
-// const API_URL = "https://pramana.nferx.com";
+// const API_URL = `${window.location.origin}`
+const API_URL = "https://pramana.nferx.com";
 
 const calcPosition = (index, length, spacing) => {
   return -1 * (index - (length - 1) / 2) * spacing;
@@ -539,7 +539,7 @@ const App = () => {
   }, []);
 
   const [cameraControls, setCameraControls] = useState(null);
-  const [cursorMode, setCursorMode] = useState("pan");
+  const [cursorMode, setCursorMode] = useState("free");
 
   useEffect(() => {
     console.log("cursor", cursorMode);
@@ -554,23 +554,11 @@ const App = () => {
         cameraControls.mouseButtons.middle = CameraControlsDefault.ACTION.NONE;
         break;
 
-      case "rotate":
-        console.log("cursor yay");
+      default:
         cameraControls.mouseButtons.left = CameraControlsDefault.ACTION.ROTATE;
         cameraControls.mouseButtons.right = CameraControlsDefault.ACTION.NONE;
-        cameraControls.mouseButtons.wheel = CameraControlsDefault.ACTION.NONE;
+        cameraControls.mouseButtons.wheel = CameraControlsDefault.ACTION.ZOOM;
         cameraControls.mouseButtons.middle = CameraControlsDefault.ACTION.NONE;
-        break;
-
-      case "zoom":
-        console.log("cursor yay");
-        cameraControls.mouseButtons.left = CameraControlsDefault.ACTION.ZOOM;
-        cameraControls.mouseButtons.right = CameraControlsDefault.ACTION.NONE;
-        cameraControls.mouseButtons.wheel = CameraControlsDefault.ACTION.NONE;
-        cameraControls.mouseButtons.middle = CameraControlsDefault.ACTION.NONE;
-        break;
-
-      default:
         break;
     }
   }, [cursorMode, cameraControls]);
