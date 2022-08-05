@@ -550,7 +550,7 @@ const App = () => {
         console.log("cursor yay");
         cameraControls.mouseButtons.left = CameraControlsDefault.ACTION.OFFSET;
         cameraControls.mouseButtons.right = CameraControlsDefault.ACTION.NONE;
-        cameraControls.mouseButtons.wheel = CameraControlsDefault.ACTION.NONE;
+        cameraControls.mouseButtons.wheel = CameraControlsDefault.ACTION.ZOOM;
         cameraControls.mouseButtons.middle = CameraControlsDefault.ACTION.NONE;
         break;
 
