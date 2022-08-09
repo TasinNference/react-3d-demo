@@ -31,9 +31,9 @@ const TopToolbar = ({ resetImages, fitToMesh, cursorMode, setCursorMode }) => {
       </ToolbarGroup>
       <ToolbarDivider />
       <ToolbarGroup>
-        <IconElement tooltipTitle="Select View">
+        {/* <IconElement tooltipTitle="Select View">
           <IoMdCube />
-        </IconElement>
+        </IconElement> */}
         <IconElement onClick={fitToMesh} tooltipTitle="Fit to screen">
           <MdFitScreen />
         </IconElement>
