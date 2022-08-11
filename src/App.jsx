@@ -370,6 +370,7 @@ function ImageElement({
             transparent={true}
             depthWrite={false}
             depthTest={false}
+            toneMapped={false}
           />
         </mesh>
       </group>
