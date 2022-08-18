@@ -21,10 +21,11 @@ export const LayersContainer = styled.div``;
 export const LayersItem = styled.div`
   width: 100%;
   padding: 10px;
-  border: 1px solid #ba51ff;
-  box-shadow: 0px 3px 4px rgba(0, 0, 0, 0.17);
+  transition: background-color 0.25s ease-in-out, box-shadow 0.25s ease-in-out, border 0.25s ease-in-out;
+  border: ${({hidden}) => hidden ? '1px solid #a5a5a5' : '1px solid #ba51ff'};
+  box-shadow: ${({hidden}) => hidden ? 'none' : '0px 3px 4px rgba(0, 0, 0, 0.17)'};
   border-radius: 4px;
-  background-color: white;
+  background-color: ${({hidden}) => hidden ? '#fafafa' : 'white'};
   margin-bottom: 10px;
   display: grid;
   row-gap: 5px;

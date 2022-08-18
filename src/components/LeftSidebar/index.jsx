@@ -36,7 +36,7 @@ const DraggableItem = forwardRef(
     ref
   ) => {
     return (
-      <LayersItem ref={ref} {...draggableProps}>
+      <LayersItem ref={ref} {...draggableProps} hidden={img.hidden}>
         {img.reference && <ReferenceImgTxt>Reference</ReferenceImgTxt>}
         <ItemHeader>
           <ItemName>{img.name}</ItemName>
