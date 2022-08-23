@@ -1,4 +1,4 @@
-import { Card, IconButton, Slider, Typography } from "@mui/material";
+import { Card, IconButton, Slider, Tooltip, Typography } from "@mui/material";
 import React, { forwardRef } from "react";
 import {
   ItemAdjustmentContainer,
@@ -39,7 +39,7 @@ const DraggableItem = forwardRef(
       <LayersItem ref={ref} {...draggableProps} hidden={img.hidden}>
         {img.reference && <ReferenceImgTxt>Reference</ReferenceImgTxt>}
         <ItemHeader>
-          <ItemName>{img.name}</ItemName>
+          <Tooltip title={img.name} placement="top-start"><ItemName>{img.name}</ItemName></Tooltip>
           <ItemIconsContainer>
             <IconButton
               size="small"
