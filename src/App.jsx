@@ -2,8 +2,11 @@ import React, { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, createPortal, useFrame, useThree } from "@react-three/fiber";
 import "./App.css";
 import * as THREE from "three";
+import { freehandShape } from "./freehandShape";
+import axios from "axios"
 import {
   Edges,
+  Line,
   OrbitControls,
   OrthographicCamera,
   Plane,
@@ -53,8 +56,8 @@ const X_SCALE_INCREMENT = 0.1;
 const Y_SCALE_INCREMENT = 0.1;
 const SPACING = 50;
 
-const API_URL = `${window.location.origin}`
-// const API_URL = "https://pramana.nferx.com";
+// const API_URL = `${window.location.origin}`
+const API_URL = "https://pramana.nferx.com";
 
 const calcPosition = (index, length, spacing) => {
   return -1 * (index - (length - 1) / 2) * spacing;
@@ -164,11 +167,18 @@ function roundNum(num) {
   return Math.round((num + Number.EPSILON) * 100) / 100;
 }
 
-function getImgData(data) {
+async function getImgData(data) {
   const reference = data.reference_slide_info;
   const registerResponse = data.register_slide_info;
-  const registerArr = registerResponse.map((itm) => {
-    return {
+  const registerArr = [] 
+
+  for(let i = 0; i < registerResponse.length; i++) {
+    const itm = registerResponse[i]
+    const {data: {data: {slideId}}} = await axios.get(`/panorama_backend/mergedGrid/viewer?slideName=${itm.slide_id}`)
+    const annotations = (await axios.get(`/panorama_backend/grid-details?imageIds=${slideId}`)).data.data[0].annotations
+    console.log(annotations, "annotations")
+
+    registerArr.push({
       ...itm,
       rotation: itm.tilt,
       id: itm.slide_id,
@@ -178,8 +188,13 @@ function getImgData(data) {
       scaleX: itm.x_scale,
       scaleY: itm.y_scale,
       img: `/wsi_data/registration_outcome/${itm.slide_id}/${itm.slide_id}_panorama.jpeg`,
-    };
-  });
+      annotations
+    })
+  }
+  
+  const {data: {data: {slideId}}} = await axios.get(`/panorama_backend/mergedGrid/viewer?slideName=${reference.slide_id}`)
+  const annotations = (await axios.get(`/panorama_backend/grid-details?imageIds=${slideId}`)).data.data[0].annotations
+  console.log(annotations, "annotations")
   let arr = [];
   arr.push({
     id: reference.slide_id,
@@ -188,6 +203,7 @@ function getImgData(data) {
     borderColor: randomColor(),
     img: `/wsi_data/registration_outcome/${reference.slide_id}/${reference.slide_id}_panorama.jpeg`,
     reference: true,
+    annotations
   });
   arr = [...arr, ...registerArr];
   return arr;
@@ -258,6 +274,7 @@ function ImageElement({
   referenceCenter,
   spacing,
   filteredLength,
+  renderOrder
 }) {
   const matrix = new THREE.Matrix4();
   matrix.multiply(new THREE.Matrix4().makeRotationX(-Math.PI / 2));
@@ -352,6 +369,7 @@ function ImageElement({
           rotation ? [0, THREE.MathUtils.degToRad(-rotation), 0] : [0, 0, 0]
         }
         position={position}
+        renderOrder={1000}
       >
         <mesh
           matrixAutoUpdate={false}
@@ -368,8 +386,6 @@ function ImageElement({
             map={texture.current}
             side={THREE.DoubleSide}
             transparent={true}
-            depthWrite={false}
-            depthTest={false}
             toneMapped={false}
           />
         </mesh>
@@ -418,12 +434,16 @@ const App = () => {
   const filteredImages = imagesArr.filter((img) => !img.hidden);
 
   useEffect(() => {
+    async function fetchImages() {
+      const formattedData = await getImgData(actual);
+      setImagesArr(formattedData);
+      defaultData.current = formattedData;
+    }
+
     data.current = searchParams.get("data");
     var actual = JSON.parse(atob(data.current));
+    fetchImages();
     setReferenceSlide(actual.reference_slide_info.slide_id, "hello")
-    const formattedData = getImgData(actual);
-    setImagesArr(formattedData);
-    defaultData.current = formattedData;
   }, []);
 
   const handleDragEnd = (result) => {
@@ -656,18 +676,18 @@ const App = () => {
   // }, [cameraControls]);
 
   function fitToMesh() {
-    // cameraControls.fitToBox(mesh.current, true, {
-    //   paddingTop: 200,
-    //   paddingBottom: 200,
-    //   paddingRight: 50,
-    //   paddingLeft: 50,
-    // });
-    cameraControls.fitToSphere(mesh.current, true);
+    cameraControls.fitToBox(mesh.current, true, {
+      paddingTop: 200,
+      paddingBottom: 200,
+    });
+    // cameraControls.fitToSphere(mesh.current, true);
   }
 
   const handleTabChange = (event, index) => {
     setCurrentTab(index);
   };
+
+  const refCoords = freehandShape.map((coord) => ([coord[0] / 128 - referenceCenter?.x, coord[1] / 128 - referenceCenter?.y, 0]))
 
   return (
     <div fontFamily="sans-serif" id="canvas-container">
@@ -701,7 +721,17 @@ const App = () => {
                     referenceCenter={referenceCenter}
                     spacing={spacing}
                     filteredLength={filteredImages.length}
+                    renderOrder={index*2}
                   />
+                  <group position={[0, calcPosition(index, filteredImages.length, spacing)+1, 0]} rotation={[Math.PI / 2, 0, 0]}>
+                    <mesh>
+                      {img.annotations.map(({coordinates, annotationColor}) => {
+                        const formattedCoords = coordinates.map((coord) => ([coord.x / 128 - referenceCenter?.x, coord.y / 128 - referenceCenter?.y, 0]));
+
+                        return <Line points={[...formattedCoords, formattedCoords[0]]} color={annotationColor} lineWidth={1} />
+                      })}
+                    </mesh>
+                  </group>
                 </Suspense>
                 {(filteredImages.length > 1 && referenceSlide === "JR-20-4929-A21-1_H01BBB30P-12293") &&
                   index !== 0 &&
@@ -732,8 +762,6 @@ const App = () => {
                         transparent={1}
                         attach="material"
                         color="blue"
-                        depthWrite={false}
-                        depthTest={false}
                       />
                       <Edges color="blue" />
                     </mesh>
