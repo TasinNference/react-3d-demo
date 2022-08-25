@@ -357,7 +357,7 @@ function ImageElement({
 
   return (
     imgLoaded && (
-      <group
+        <group
         scale={
           new THREE.Vector3(
             img.scaleX ? img.scaleX : 1,
@@ -388,6 +388,13 @@ function ImageElement({
             transparent={true}
             toneMapped={false}
           />
+        </mesh>
+        <mesh position={[0, 1, 0]} rotation={[Math.PI/2, 0, 0]}>
+          {img.annotations.map(({coordinates, annotationColor}) => {
+            const formattedCoords = coordinates.map((coord) => ([coord.x / 128 - width.current/2, coord.y / 128 - height.current/2, 0]));
+
+            return <Line points={[...formattedCoords, formattedCoords[0]]} color={annotationColor} lineWidth={1} />
+          })}
         </mesh>
       </group>
     )
@@ -723,15 +730,6 @@ const App = () => {
                     filteredLength={filteredImages.length}
                     renderOrder={index*2}
                   />
-                  <group position={[0, calcPosition(index, filteredImages.length, spacing)+1, 0]} rotation={[Math.PI / 2, 0, 0]}>
-                    <mesh>
-                      {img.annotations.map(({coordinates, annotationColor}) => {
-                        const formattedCoords = coordinates.map((coord) => ([coord.x / 128 - referenceCenter?.x, coord.y / 128 - referenceCenter?.y, 0]));
-
-                        return <Line points={[...formattedCoords, formattedCoords[0]]} color={annotationColor} lineWidth={1} />
-                      })}
-                    </mesh>
-                  </group>
                 </Suspense>
                 {(filteredImages.length > 1 && referenceSlide === "JR-20-4929-A21-1_H01BBB30P-12293") &&
                   index !== 0 &&
