@@ -274,7 +274,8 @@ function ImageElement({
   referenceCenter,
   spacing,
   filteredLength,
-  renderOrder
+  renderOrder,
+  refAnns
 }) {
   const matrix = new THREE.Matrix4();
   matrix.multiply(new THREE.Matrix4().makeRotationX(-Math.PI / 2));
@@ -357,7 +358,8 @@ function ImageElement({
 
   return (
     imgLoaded && (
-        <group
+        <group>
+          <group
         scale={
           new THREE.Vector3(
             img.scaleX ? img.scaleX : 1,
@@ -397,6 +399,16 @@ function ImageElement({
           })}
         </mesh>
       </group>
+      {!img.reference && refAnns && (
+        <mesh position={[0, position[1]+1, 0]} rotation={[Math.PI/2, 0, 0]}>
+        {refAnns.map(({coordinates, annotationColor}) => {
+          const formattedCoords = coordinates.map((coord) => ([coord.x / 128 - referenceCenter?.x, coord.y / 128 - referenceCenter?.y, 0]));
+
+          return <Line points={[...formattedCoords, formattedCoords[0]]} color={annotationColor} lineWidth={1} />
+        })}
+      </mesh>
+      )}
+        </group>
     )
   );
 }
@@ -437,6 +449,13 @@ const App = () => {
   const data = useRef();
   const defaultData = useRef();
   const [referenceSlide, setReferenceSlide] = useState();
+  const [refAnns, setRefAnns] = useState([]) 
+
+  useEffect(() => {
+    
+  }, [imagesArr])
+
+  console.log("reference anns", refAnns)
 
   const filteredImages = imagesArr.filter((img) => !img.hidden);
 
@@ -445,12 +464,13 @@ const App = () => {
       const formattedData = await getImgData(actual);
       setImagesArr(formattedData);
       defaultData.current = formattedData;
+      setRefAnns(defaultData.current.find((img) => img.reference === true)?.annotations)
     }
 
     data.current = searchParams.get("data");
     var actual = JSON.parse(atob(data.current));
     fetchImages();
-    setReferenceSlide(actual.reference_slide_info.slide_id, "hello")
+    setReferenceSlide(actual.reference_slide_info.slide_id)
   }, []);
 
   const handleDragEnd = (result) => {
@@ -729,6 +749,7 @@ const App = () => {
                     spacing={spacing}
                     filteredLength={filteredImages.length}
                     renderOrder={index*2}
+                    refAnns={refAnns}
                   />
                 </Suspense>
                 {(filteredImages.length > 1 && referenceSlide === "JR-20-4929-A21-1_H01BBB30P-12293") &&
