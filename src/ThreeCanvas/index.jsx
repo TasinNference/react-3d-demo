@@ -1,4 +1,5 @@
-import React from "react";
+import React, { Suspense, useRef } from "react";
+import * as THREE from "three";
 import { Canvas } from "@react-three/fiber";
 import { CanvasContainer } from "./styles";
 import {
@@ -6,7 +7,10 @@ import {
   OrbitControls,
   GizmoHelper,
   GizmoViewport,
+  Image,
 } from "@react-three/drei";
+import Slide from "../Slide";
+import CamerElement from "../CameraElement";
 
 const ThreeCanvas = () => {
   return (
@@ -18,14 +22,10 @@ const ThreeCanvas = () => {
             labelColor="white"
           />
         </GizmoHelper>
-        <OrthographicCamera makeDefault zoom={40} position={[0, 0, 40]} />
+        <Slide url="https://www.educationcorner.com/images/featured-improve-test-taking.jpg" />
+        <CamerElement />
+        {/* <OrthographicCamera makeDefault={true} position={[0, 0, 80]} /> */}
         <OrbitControls />
-        <ambientLight intensity={0.1} />
-        <directionalLight color="red" position={[0, 0, 5]} />
-        <mesh>
-          <boxGeometry />
-          <meshStandardMaterial />
-        </mesh>
       </Canvas>
     </CanvasContainer>
   );
