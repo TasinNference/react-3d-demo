@@ -82,8 +82,6 @@ const Slide = ({ imgData, positionZ, refCenter, setRefCenter }) => {
               transparent={true}
               toneMapped={false}
               opacity={0.5}
-              depthTest={false}
-              depthWrite={false}
             />
             <Annotation
               img={imgData}

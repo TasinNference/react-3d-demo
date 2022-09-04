@@ -31,7 +31,7 @@ const ThreeCanvas = () => {
   return (
     <CanvasContainer>
       <Canvas>
-        <color attach="background" args={["black"]} />
+        {/* <color attach="background" args={["black"]} /> */}
         <GizmoHelper>
           <GizmoViewport axisColors={AXIS_COLORS} labelColor={LABEL_COLOR} />
         </GizmoHelper>

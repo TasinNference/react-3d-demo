@@ -5,7 +5,7 @@ const Annotation = ({ img, width, height }) => {
   return (
     width &&
     height && (
-      <mesh position={[0, 0, 10]}>
+      <mesh position={[0, 0, 1]}>
         {img.annotations.map(({ coordinates, annotationColor }) => {
           const formattedCoords = coordinates.map((coord) => [
             -width / 2 + coord.x / 128,
