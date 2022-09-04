@@ -17,12 +17,15 @@ const ThreeCanvas = () => {
   const [imagesArr, setImagesArr] = useState([]);
 
   useEffect(() => {
-    const paramsData = searchParams.get("data");
-    const parsedData = JSON.parse(atob(paramsData));
-    const formattedData = getRegistrationData(parsedData);
-    defaultData.current = formattedData;
-    setImagesArr(formattedData);
-    console.log(formattedData);
+    const fetchImgData = async () => {
+      const paramsData = searchParams.get("data");
+      const parsedData = JSON.parse(atob(paramsData));
+      const formattedData = await getRegistrationData(parsedData);
+      defaultData.current = formattedData;
+      setImagesArr(formattedData);
+    };
+
+    fetchImgData();
   }, []);
 
   return (

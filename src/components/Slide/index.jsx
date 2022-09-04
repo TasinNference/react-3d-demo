@@ -5,15 +5,20 @@ import { useState } from "react";
 import { useEffect } from "react";
 import { MathUtils, Matrix4 } from "three";
 import { degToRad } from "../../constants/functions";
+import Annotation from "../Annotation";
 
 const Slide = ({ imgData, positionZ, refCenter, setRefCenter }) => {
   const [texture, setTexture] = useState();
   const [mat1, setMat1] = useState();
   const [mat2, setMat2] = useState();
   const mesh = useRef();
+  const width = useRef();
+  const height = useRef();
 
   useTexture(`${window.location.origin}${imgData.url}`, (tex) => {
     setTexture(tex);
+    width.current = tex.image.width;
+    height.current = tex.image.height;
   });
 
   useEffect(() => {
@@ -21,16 +26,16 @@ const Slide = ({ imgData, positionZ, refCenter, setRefCenter }) => {
 
     if (imgData.reference && !refCenter) {
       const center = {
-        x: texture.image.width / 2,
-        y: texture.image.height / 2,
+        x: width.current / 2,
+        y: height.current / 2,
       };
       setRefCenter(center);
     }
 
     if (!imgData.reference) {
       mesh.current.position.set(
-        texture.image.width / 2,
-        -texture.image.height / 2,
+        width.current / 2,
+        -height.current / 2,
         positionZ
       );
       const matrix = new Matrix4();
@@ -68,7 +73,7 @@ const Slide = ({ imgData, positionZ, refCenter, setRefCenter }) => {
           <mesh ref={mesh} position={[0, 0, positionZ]}>
             <planeBufferGeometry
               attach="geometry"
-              args={[texture?.image.width, texture?.image.height]}
+              args={[width.current, height.current]}
             />
             <meshBasicMaterial
               attach="material"
@@ -79,6 +84,11 @@ const Slide = ({ imgData, positionZ, refCenter, setRefCenter }) => {
               opacity={0.5}
               depthTest={false}
               depthWrite={false}
+            />
+            <Annotation
+              img={imgData}
+              width={width.current}
+              height={height.current}
             />
           </mesh>
         </group>
