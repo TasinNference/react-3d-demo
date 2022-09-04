@@ -8,4 +8,8 @@ export const CAMERA_POSITION = [0, 0, 2000];
 export const X_COLOR = "red";
 export const Y_COLOR = "green";
 export const Z_COLOR = "blue";
+export const LABEL_COLOR = "white";
 export const AXIS_COLORS = [X_COLOR, Y_COLOR, Z_COLOR];
+
+// Global Defaults
+export const SLIDE_SPACING = 200;
