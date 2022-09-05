@@ -1,6 +1,6 @@
 import { Canvas } from "@react-three/fiber";
 import { CanvasContainer } from "./styles";
-import { OrbitControls, GizmoHelper, GizmoViewport } from "@react-three/drei";
+import { OrbitControls, GizmoHelper, GizmoViewcube } from "@react-three/drei";
 import Slide from "../Slide";
 import CameraElement from "../CameraElement";
 import { AXIS_COLORS, LABEL_COLOR } from "../../constants/variables";
@@ -10,11 +10,40 @@ import { getRegistrationData } from "../../constants/functions";
 import { useRef } from "react";
 import { useState } from "react";
 import SlidesContainer from "../SlidesContainer";
+import LeftSidebar from "../LeftSidebar";
 
 const ThreeCanvas = () => {
   const [searchParams] = useSearchParams();
   const defaultData = useRef([]);
   const [imagesArr, setImagesArr] = useState([]);
+  const [referenceSlide, setReferenceSlide] = useState();
+
+  // React-dnd
+  const handleDragEnd = (result) => {
+    if (!result.destination) return;
+
+    const items = Array.from(imagesArr);
+    const [reorderedItem] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, reorderedItem);
+    setImagesArr(items);
+  };
+
+  // Image functions
+  const toggleImageVisibility = (index) => {
+    setImagesArr([
+      ...imagesArr.slice(0, index),
+      { ...imagesArr[index], hidden: !imagesArr[index].hidden },
+      ...imagesArr.slice(index + 1),
+    ]);
+  };
+
+  const targetImageOpacityChange = (value, index) => {
+    setImagesArr([
+      ...imagesArr.slice(0, index),
+      { ...imagesArr[index], opacity: parseFloat(value) },
+      ...imagesArr.slice(index + 1),
+    ]);
+  };
 
   useEffect(() => {
     const fetchImgData = async () => {
@@ -23,6 +52,7 @@ const ThreeCanvas = () => {
       const formattedData = await getRegistrationData(parsedData);
       defaultData.current = formattedData;
       setImagesArr(formattedData);
+      setReferenceSlide(parsedData.reference_slide_info.slide_id);
     };
 
     fetchImgData();
@@ -31,14 +61,24 @@ const ThreeCanvas = () => {
   return (
     <CanvasContainer>
       <Canvas>
-        {/* <color attach="background" args={["black"]} /> */}
-        <GizmoHelper>
-          <GizmoViewport axisColors={AXIS_COLORS} labelColor={LABEL_COLOR} />
-        </GizmoHelper>
-        <SlidesContainer data={imagesArr} />
+        <color attach="background" args={["black"]} />
+        <SlidesContainer data={imagesArr} referenceSlide={referenceSlide} />
         <CameraElement />
         <OrbitControls />
+        <GizmoHelper>
+          <GizmoViewcube
+            faces={["Right", "Left", "Top", "Bottom", "Front", "Back"]}
+          />
+        </GizmoHelper>
       </Canvas>
+      <LeftSidebar
+        data={imagesArr}
+        toggleImageVisibility={toggleImageVisibility}
+        targetImageOpacityChange={targetImageOpacityChange}
+        handleDragEnd={handleDragEnd}
+        apiUrl={window.location.origin}
+        opacity={0.5}
+      />
     </CanvasContainer>
   );
 };

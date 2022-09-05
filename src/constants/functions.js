@@ -49,6 +49,7 @@ export const getRegistrationData = async (data) => {
 
   let arr = [];
   arr.push({
+    slide_id: reference.slide_id,
     url: `/wsi_data/registration_outcome/${reference.slide_id}/${reference.slide_id}_panorama.jpeg`,
     reference: true,
     annotations,
@@ -65,4 +66,22 @@ export const getPositionFromSpacing = (index, length) => {
 export const degToRad = (deg) => {
   const pi = Math.PI;
   return deg * (pi / 180);
+};
+
+export const calcRectPosition = (rect, index, length) => {
+  const width = 400;
+  const height = 534;
+  const relativePosition = {
+    x: (rect.max_x + rect.min_x) / 2 - width / 2,
+    y: height / 2 - (rect.max_y + rect.min_y) / 2,
+  };
+  return [
+    relativePosition.x,
+    relativePosition.y,
+    getPositionFromSpacing(index, length) + SLIDE_SPACING / 2 + 1,
+  ];
+};
+
+export const roundNum = (num) => {
+  return Math.round((num + Number.EPSILON) * 100) / 100;
 };
