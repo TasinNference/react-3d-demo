@@ -1,6 +1,9 @@
 import React from "react";
 import { rectData } from "../../constants/bounded_boxes";
-import { calcRectPosition } from "../../constants/functions";
+import {
+  calcRectPosition,
+  getPositionFromSpacing,
+} from "../../constants/functions";
 import { Edges, Plane, Extrude, Line } from "@react-three/drei";
 import { SLIDE_SPACING } from "../../constants/variables";
 import * as THREE from "three";
@@ -11,21 +14,23 @@ const extrudeSettings = {
 };
 
 const Projections = ({ length, index }) => {
+  const positionZ = getPositionFromSpacing(index, length) + 1;
   return (
     <group>
       {rectData.map((r) => {
         const shape = new THREE.Shape();
         const position = calcRectPosition(r, index, length - 1);
+        console.log(position);
         const points = [
-          [position[0], position[1], position[2]],
-          [position[0], position[1] + (r.max_y - r.min_y), position[2]],
+          [position[0], position[1], positionZ],
+          [position[0], position[1] + (r.max_y - r.min_y), positionZ],
           [
             position[0] + (r.max_x - r.min_x),
             position[1] + (r.max_y - r.min_y),
-            position[2],
+            positionZ,
           ],
-          [position[0] + (r.max_x - r.min_x), position[1], position[2]],
-          [position[0], position[1], position[2]],
+          [position[0] + (r.max_x - r.min_x), position[1], positionZ],
+          [position[0], position[1], positionZ],
         ];
 
         shape.moveTo(points[0][0], points[0][1]);

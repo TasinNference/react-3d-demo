@@ -72,7 +72,8 @@ const DraggableItem = forwardRef(
                     /> */}
                     <CustomSlider
                       size="small"
-                      defaultValue={
+                      defaultValue={opacity}
+                      value={
                         img.opacity ? roundNum(img.opacity) : roundNum(opacity)
                       }
                       min={1}
@@ -99,8 +100,6 @@ const LeftSidebar = ({
   targetImageOpacityChange,
   opacity,
 }) => {
-  console.log(data);
-
   return (
     <SidebarContainer>
       <SidebarHeader>

@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { getPositionFromSpacing } from "../../constants/functions";
+import { SLIDE_OPACITY } from "../../constants/variables";
 import Projection from "../Projection";
 import Slide from "../Slide";
 
-const SlidesContainer = ({ data, referenceSlide }) => {
+const SlidesContainer = ({ data, referenceSlide, opacity }) => {
   const [refCenter, setRefCenter] = useState();
   const filteredImages = data.filter((img) => !img.hidden);
 
@@ -17,6 +18,7 @@ const SlidesContainer = ({ data, referenceSlide }) => {
             refCenter={refCenter}
             setRefCenter={setRefCenter}
             key={imgData.slide_id}
+            opacity={imgData.opacity ? imgData.opacity : opacity}
           />
           {referenceSlide === "JR-20-4929-A21-1_H01BBB30P-12293" && (
             <Projection length={filteredImages.length} index={index} />

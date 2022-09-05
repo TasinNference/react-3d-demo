@@ -3,7 +3,11 @@ import { CanvasContainer } from "./styles";
 import { OrbitControls, GizmoHelper, GizmoViewcube } from "@react-three/drei";
 import Slide from "../Slide";
 import CameraElement from "../CameraElement";
-import { AXIS_COLORS, LABEL_COLOR } from "../../constants/variables";
+import {
+  AXIS_COLORS,
+  LABEL_COLOR,
+  SLIDE_OPACITY,
+} from "../../constants/variables";
 import { useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { getRegistrationData } from "../../constants/functions";
@@ -17,6 +21,7 @@ const ThreeCanvas = () => {
   const defaultData = useRef([]);
   const [imagesArr, setImagesArr] = useState([]);
   const [referenceSlide, setReferenceSlide] = useState();
+  const [opacity, setOpacity] = useState(SLIDE_OPACITY);
 
   // React-dnd
   const handleDragEnd = (result) => {
@@ -38,6 +43,7 @@ const ThreeCanvas = () => {
   };
 
   const targetImageOpacityChange = (value, index) => {
+    console.log("opacity change");
     setImagesArr([
       ...imagesArr.slice(0, index),
       { ...imagesArr[index], opacity: parseFloat(value) },
@@ -62,7 +68,11 @@ const ThreeCanvas = () => {
     <CanvasContainer>
       <Canvas>
         <color attach="background" args={["black"]} />
-        <SlidesContainer data={imagesArr} referenceSlide={referenceSlide} />
+        <SlidesContainer
+          data={imagesArr}
+          referenceSlide={referenceSlide}
+          opacity={opacity}
+        />
         <CameraElement />
         <OrbitControls />
         <GizmoHelper>
@@ -77,7 +87,7 @@ const ThreeCanvas = () => {
         targetImageOpacityChange={targetImageOpacityChange}
         handleDragEnd={handleDragEnd}
         apiUrl={window.location.origin}
-        opacity={0.5}
+        opacity={opacity}
       />
     </CanvasContainer>
   );
