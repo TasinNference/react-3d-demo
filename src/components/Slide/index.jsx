@@ -7,7 +7,14 @@ import { MathUtils, Matrix4 } from "three";
 import { degToRad } from "../../constants/functions";
 import Annotation from "../Annotation";
 
-const Slide = ({ imgData, positionZ, refCenter, setRefCenter, opacity }) => {
+const Slide = ({
+  imgData,
+  positionZ,
+  refCenter,
+  setRefCenter,
+  opacity,
+  composite,
+}) => {
   const [texture, setTexture] = useState();
   const [mat1, setMat1] = useState();
   const [mat2, setMat2] = useState();
@@ -52,6 +59,8 @@ const Slide = ({ imgData, positionZ, refCenter, setRefCenter, opacity }) => {
         new Matrix4().makeScale(imgData.x_scale, imgData.y_scale, 1)
       );
 
+      console.log(matrix, imgData);
+
       matrix2.multiply(
         new Matrix4().makeTranslation(imgData.x_disp, -imgData.y_disp, 0)
       );
@@ -82,6 +91,7 @@ const Slide = ({ imgData, positionZ, refCenter, setRefCenter, opacity }) => {
               img={imgData}
               width={width.current}
               height={height.current}
+              composite={composite}
             />
           </mesh>
         </group>

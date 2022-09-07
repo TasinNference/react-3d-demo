@@ -13,7 +13,7 @@ const extrudeSettings = {
   bevelEnabled: false,
 };
 
-const Projections = ({ length, index }) => {
+const Projections = ({ length, index, composite }) => {
   const positionZ = getPositionFromSpacing(index, length) + 1;
   return (
     <group>
@@ -40,7 +40,7 @@ const Projections = ({ length, index }) => {
 
         return (
           <mesh renderOrder={1000}>
-            <Line points={points} color="blue" lineWidth={0.5} />
+            <Line points={points} color="blue" lineWidth={composite ? 1 : 1} />
           </mesh>
         );
       })}

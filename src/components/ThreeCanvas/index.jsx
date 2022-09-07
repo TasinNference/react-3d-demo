@@ -1,6 +1,12 @@
 import { Canvas } from "@react-three/fiber";
 import { CanvasContainer } from "./styles";
-import { OrbitControls, GizmoHelper, GizmoViewcube } from "@react-three/drei";
+import {
+  OrbitControls,
+  GizmoHelper,
+  GizmoViewcube,
+  View,
+  MapControls,
+} from "@react-three/drei";
 import Slide from "../Slide";
 import CameraElement from "../CameraElement";
 import {
@@ -15,6 +21,10 @@ import { useRef } from "react";
 import { useState } from "react";
 import SlidesContainer from "../SlidesContainer";
 import LeftSidebar from "../LeftSidebar";
+import * as THREE from "three";
+import { borderRadius } from "@mui/system";
+import { Typography } from "@mui/material";
+import CollapsedSidebar from "../CollapsedSidebar";
 
 const ThreeCanvas = () => {
   const [searchParams] = useSearchParams();
@@ -22,6 +32,7 @@ const ThreeCanvas = () => {
   const [imagesArr, setImagesArr] = useState([]);
   const [referenceSlide, setReferenceSlide] = useState();
   const [opacity, setOpacity] = useState(SLIDE_OPACITY);
+  const [open, setOpen] = useState(true);
 
   // React-dnd
   const handleDragEnd = (result) => {
@@ -66,29 +77,39 @@ const ThreeCanvas = () => {
 
   return (
     <CanvasContainer>
-      <Canvas>
-        <color attach="background" args={["black"]} />
-        <SlidesContainer
+      {open ? (
+        <LeftSidebar
           data={imagesArr}
-          referenceSlide={referenceSlide}
+          toggleImageVisibility={toggleImageVisibility}
+          targetImageOpacityChange={targetImageOpacityChange}
+          handleDragEnd={handleDragEnd}
           opacity={opacity}
+          open={open}
+          setOpen={setOpen}
         />
-        <CameraElement />
-        <OrbitControls />
-        <GizmoHelper>
-          <GizmoViewcube
-            faces={["Right", "Left", "Top", "Bottom", "Front", "Back"]}
+      ) : (
+        <CollapsedSidebar
+          data={imagesArr}
+          handleDragEnd={handleDragEnd}
+          open={open}
+          setOpen={setOpen}
+        />
+      )}
+      <div style={{ height: "100vh" }}>
+        <Canvas>
+          <color attach="background" args={["black"]} />
+          <SlidesContainer
+            data={imagesArr}
+            referenceSlide={referenceSlide}
+            opacity={opacity}
           />
-        </GizmoHelper>
-      </Canvas>
-      <LeftSidebar
-        data={imagesArr}
-        toggleImageVisibility={toggleImageVisibility}
-        targetImageOpacityChange={targetImageOpacityChange}
-        handleDragEnd={handleDragEnd}
-        apiUrl={window.location.origin}
-        opacity={opacity}
-      />
+          <CameraElement />
+          <OrbitControls />
+          <GizmoHelper>
+            <GizmoViewcube />
+          </GizmoHelper>
+        </Canvas>
+      </div>
     </CanvasContainer>
   );
 };

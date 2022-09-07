@@ -2,14 +2,19 @@ import { Typography } from "@mui/material";
 import styled from "styled-components";
 
 export const SidebarContainer = styled.div`
+  width: ${({ open }) => (open ? "350px" : "0")};
+  background-color: #fbfbfc;
+  height: 100vh;
+  position: relative;
+  overflow-y: auto;
+`;
+
+export const SidebarSubContainer = styled.div`
+  padding: 30px;
   position: absolute;
   top: 0;
   left: 0;
-  width: 350px;
-  background-color: #fbfbfc;
-  overflow-y: auto;
-  height: 100vh;
-  padding: 30px;
+  min-width: 350px;
 `;
 
 export const SidebarHeader = styled.div`
@@ -21,11 +26,14 @@ export const LayersContainer = styled.div``;
 export const LayersItem = styled.div`
   width: 100%;
   padding: 10px;
-  transition: background-color 0.25s ease-in-out, box-shadow 0.25s ease-in-out, border 0.25s ease-in-out;
-  border: ${({hidden}) => hidden ? '1px solid #a5a5a5' : '1px solid #ba51ff'};
-  box-shadow: ${({hidden}) => hidden ? 'none' : '0px 3px 4px rgba(0, 0, 0, 0.17)'};
+  transition: background-color 0.25s ease-in-out, box-shadow 0.25s ease-in-out,
+    border 0.25s ease-in-out;
+  border: ${({ hidden }) =>
+    hidden ? "1px solid #e5e5e5" : "1px solid #ba51ff"};
+  box-shadow: ${({ hidden }) =>
+    hidden ? "none" : "0px 3px 4px rgba(0, 0, 0, 0.17)"};
   border-radius: 4px;
-  background-color: ${({hidden}) => hidden ? '#fafafa' : 'white'};
+  background-color: ${({ hidden }) => (hidden ? "#fafafa" : "white")};
   margin-bottom: 10px;
   display: grid;
   row-gap: 5px;
@@ -39,7 +47,9 @@ export const ItemHeader = styled.div`
   align-items: center;
 `;
 
-export const ItemName = styled(Typography).attrs(() => ({variant: 'caption'}))`
+export const ItemName = styled(Typography).attrs(() => ({
+  variant: "caption",
+}))`
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
@@ -68,17 +78,19 @@ export const ItemIconsContainer = styled.div`
   column-gap: 5px;
 `;
 
-export const ReferenceImgTxt = styled(Typography).attrs(() => ({variant: 'caption'}))`
+export const ReferenceImgTxt = styled(Typography).attrs(() => ({
+  variant: "caption",
+}))`
   position: absolute;
   top: 50%;
   background-color: #2793ff;
   color: white;
   writing-mode: vertical-rl;
-  transform:scale(-1) translate(100%,50%);
+  transform: scale(-1) translate(100%, 50%);
   padding: 8px 3px;
   border-top-right-radius: 4px;
   border-bottom-right-radius: 4px;
-`
+`;
 
 export const ItemAdjustmentContainer = styled.div`
   table {
@@ -95,4 +107,12 @@ export const ItemAdjustmentContainer = styled.div`
       padding-bottom: 10px;
     }
   }
-`
+`;
+
+export const CollapseIcon = styled.div`
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  cursor: pointer;
+  z-index: 1000;
+`;

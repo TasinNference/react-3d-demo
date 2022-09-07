@@ -1,6 +1,7 @@
 import { Card, IconButton, Slider, Tooltip, Typography } from "@mui/material";
-import React, { forwardRef } from "react";
+import React, { forwardRef, useState } from "react";
 import {
+  CollapseIcon,
   ItemAdjustmentContainer,
   ItemContent,
   ItemHeader,
@@ -12,13 +13,15 @@ import {
   ReferenceImgTxt,
   SidebarContainer,
   SidebarHeader,
+  SidebarSubContainer,
 } from "./styles";
 import { GoSettings } from "react-icons/go";
 import { MdDragHandle } from "react-icons/md";
-import { AiFillEyeInvisible, AiFillEye } from "react-icons/ai";
+import { AiOutlineEyeInvisible, AiFillEye } from "react-icons/ai";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import CustomSlider from "../CustomSlider";
 import { roundNum } from "../../constants/functions";
+import { TbResize } from "react-icons/tb";
 
 const DraggableItem = forwardRef(
   (
@@ -45,7 +48,7 @@ const DraggableItem = forwardRef(
               size="small"
               onClick={() => toggleImageVisibility(index)}
             >
-              {img.hidden ? <AiFillEyeInvisible /> : <AiFillEye />}
+              {img.hidden ? <AiOutlineEyeInvisible /> : <AiFillEye />}
             </IconButton>
             <IconButton size="small" {...dragHandleProps}>
               <MdDragHandle />
@@ -99,50 +102,57 @@ const LeftSidebar = ({
   toggleImageVisibility,
   targetImageOpacityChange,
   opacity,
+  open,
+  setOpen,
 }) => {
   return (
-    <SidebarContainer>
-      <SidebarHeader>
-        <Typography variant="h6">Select and arrange slides</Typography>
-        <Typography variant="caption" style={{ lineHeight: "1" }}>
-          Drag the thumbnails up and down to change the order in the stack
-        </Typography>
-      </SidebarHeader>
-      <DragDropContext onDragEnd={handleDragEnd}>
-        <Droppable droppableId="droppable">
-          {(provided) => (
-            <LayersContainer
-              {...provided.droppableProps}
-              ref={provided.innerRef}
-            >
-              {data.map((img, index) => (
-                <Draggable
-                  key={img.slide_id}
-                  draggableId={`${img.slide_id}`}
-                  index={index}
-                >
-                  {(provided) => {
-                    return (
-                      <DraggableItem
-                        index={index}
-                        toggleImageVisibility={toggleImageVisibility}
-                        draggableProps={provided.draggableProps}
-                        dragHandleProps={provided.dragHandleProps}
-                        ref={provided.innerRef}
-                        img={img}
-                        targetImageOpacityChange={targetImageOpacityChange}
-                        roundNum={roundNum}
-                        opacity={opacity}
-                      />
-                    );
-                  }}
-                </Draggable>
-              ))}
-              {provided.placeholder}
-            </LayersContainer>
-          )}
-        </Droppable>
-      </DragDropContext>
+    <SidebarContainer open={open}>
+      <CollapseIcon onClick={() => setOpen(!open)}>
+        <TbResize size={25} />
+      </CollapseIcon>
+      <SidebarSubContainer>
+        <SidebarHeader>
+          <Typography variant="h6">Select and arrange slides</Typography>
+          <Typography variant="caption" style={{ lineHeight: "1" }}>
+            Drag the thumbnails up and down to change the order in the stack
+          </Typography>
+        </SidebarHeader>
+        <DragDropContext onDragEnd={handleDragEnd}>
+          <Droppable droppableId="droppable">
+            {(provided) => (
+              <LayersContainer
+                {...provided.droppableProps}
+                ref={provided.innerRef}
+              >
+                {data.map((img, index) => (
+                  <Draggable
+                    key={img.slide_id}
+                    draggableId={`${img.slide_id}`}
+                    index={index}
+                  >
+                    {(provided) => {
+                      return (
+                        <DraggableItem
+                          index={index}
+                          toggleImageVisibility={toggleImageVisibility}
+                          draggableProps={provided.draggableProps}
+                          dragHandleProps={provided.dragHandleProps}
+                          ref={provided.innerRef}
+                          img={img}
+                          targetImageOpacityChange={targetImageOpacityChange}
+                          roundNum={roundNum}
+                          opacity={opacity}
+                        />
+                      );
+                    }}
+                  </Draggable>
+                ))}
+                {provided.placeholder}
+              </LayersContainer>
+            )}
+          </Droppable>
+        </DragDropContext>
+      </SidebarSubContainer>
     </SidebarContainer>
   );
 };
