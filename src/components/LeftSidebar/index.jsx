@@ -70,7 +70,7 @@ const DraggableItem = forwardRef(
                     /> */}
                     <CustomSlider
                       size="small"
-                      defaultValue={
+                      value={
                         img.opacity ? roundNum(img.opacity) : roundNum(opacity)
                       }
                       min={10}

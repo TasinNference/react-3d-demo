@@ -43,6 +43,7 @@ const SettingsWidget = ({
                   <CustomSlider
                     size="small"
                     defaultValue={opacity}
+                    value={opacity}
                     min={1}
                     max={100}
                     onChange={(e) => setOpacity(e.target.value)}

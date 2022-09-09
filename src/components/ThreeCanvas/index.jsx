@@ -57,6 +57,10 @@ const ThreeCanvas = () => {
     );
   };
 
+  useEffect(() => {
+    resetOpacity();
+  }, [opacity]);
+
   const resetImages = () => {
     setImagesArr(defaultData.current);
     setRotation(0);
