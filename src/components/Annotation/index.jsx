@@ -17,7 +17,8 @@ const Annotation = ({ img, width, height, composite }) => {
             <Line
               points={[...formattedCoords, formattedCoords[0]]}
               color={annotationColor}
-              lineWidth={composite ? 1 : 2}
+              lineWidth={composite ? 2 : 3}
+              toneMapped={false}
             />
           );
         })}

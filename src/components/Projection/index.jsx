@@ -5,13 +5,7 @@ import {
   getPositionFromSpacing,
 } from "../../constants/functions";
 import { Edges, Plane, Extrude, Line } from "@react-three/drei";
-import { SLIDE_SPACING } from "../../constants/variables";
 import * as THREE from "three";
-
-const extrudeSettings = {
-  steps: 2,
-  bevelEnabled: false,
-};
 
 const Projections = ({ length, index, composite }) => {
   const positionZ = getPositionFromSpacing(index, length) + 1;

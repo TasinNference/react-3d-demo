@@ -3,27 +3,31 @@ import { getPositionFromSpacing } from "../../constants/functions";
 import { SLIDE_OPACITY } from "../../constants/variables";
 import Projection from "../Projection";
 import Slide from "../Slide";
+import * as THREE from "three";
 
 const SlidesContainer = ({
   data,
   referenceSlide,
   opacity,
   composite = false,
+  rotation,
+  spacing,
 }) => {
   const [refCenter, setRefCenter] = useState();
   const filteredImages = data.filter((img) => !img.hidden);
-  const [hover, setHover] = useState(false);
+  console.log("rotation", rotation);
 
   return (
-    <group
-      onPointerOver={() => setHover(true)}
-      onPointerOut={() => setHover(false)}
-    >
+    <group rotation={[0, 0, THREE.MathUtils.degToRad(rotation)]}>
       {filteredImages.map((imgData, index) => (
         <>
           <Slide
             imgData={imgData}
-            positionZ={getPositionFromSpacing(index, filteredImages.length)}
+            positionZ={getPositionFromSpacing(
+              index,
+              filteredImages.length,
+              spacing
+            )}
             refCenter={refCenter}
             setRefCenter={setRefCenter}
             key={imgData.slide_id}

@@ -1,4 +1,4 @@
-import { Canvas } from "@react-three/fiber";
+import { Canvas, useThree } from "@react-three/fiber";
 import { CanvasContainer } from "./styles";
 import {
   OrbitControls,
@@ -13,6 +13,7 @@ import {
   AXIS_COLORS,
   LABEL_COLOR,
   SLIDE_OPACITY,
+  SLIDE_SPACING,
 } from "../../constants/variables";
 import { useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
@@ -25,6 +26,8 @@ import * as THREE from "three";
 import { borderRadius } from "@mui/system";
 import { Typography } from "@mui/material";
 import CollapsedSidebar from "../CollapsedSidebar";
+import { CameraControls } from "../CameraControls";
+import SettingsWidget from "../SettingsWidget";
 
 const ThreeCanvas = () => {
   const [searchParams] = useSearchParams();
@@ -33,6 +36,9 @@ const ThreeCanvas = () => {
   const [referenceSlide, setReferenceSlide] = useState();
   const [opacity, setOpacity] = useState(SLIDE_OPACITY);
   const [open, setOpen] = useState(true);
+  const [rotation, setRotation] = useState(0);
+  const [spacing, setSpacing] = useState(SLIDE_SPACING);
+  const cameraControls = useRef(null);
 
   // React-dnd
   const handleDragEnd = (result) => {
@@ -45,6 +51,19 @@ const ThreeCanvas = () => {
   };
 
   // Image functions
+  const resetOpacity = () => {
+    setImagesArr((prevArray) =>
+      prevArray.map(({ opacity, ...rest }) => ({ ...rest }))
+    );
+  };
+
+  const resetImages = () => {
+    setImagesArr(defaultData.current);
+    setRotation(0);
+    setSpacing(SLIDE_SPACING);
+    setOpacity(SLIDE_OPACITY);
+  };
+
   const toggleImageVisibility = (index) => {
     setImagesArr([
       ...imagesArr.slice(0, index),
@@ -95,19 +114,31 @@ const ThreeCanvas = () => {
           setOpen={setOpen}
         />
       )}
+      <SettingsWidget
+        opacity={opacity}
+        setOpacity={setOpacity}
+        roation={rotation}
+        setRotation={setRotation}
+        spacing={spacing}
+        setSpacing={setSpacing}
+        resetImages={resetImages}
+        resetOpacity={resetOpacity}
+      />
       <div style={{ height: "100vh" }}>
         <Canvas>
-          <color attach="background" args={["black"]} />
+          <GizmoHelper alignment="top-right">
+            <GizmoViewcube />
+          </GizmoHelper>
           <SlidesContainer
             data={imagesArr}
             referenceSlide={referenceSlide}
             opacity={opacity}
+            rotation={rotation}
+            spacing={spacing}
           />
           <CameraElement />
-          <OrbitControls />
-          <GizmoHelper>
-            <GizmoViewcube />
-          </GizmoHelper>
+          {/* <CameraControls ref={cameraControls} /> */}
+          <OrbitControls minZoom={0.2} maxZoom={5} />
         </Canvas>
       </div>
     </CanvasContainer>

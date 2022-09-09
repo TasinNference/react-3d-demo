@@ -10,7 +10,6 @@ export const CollapsedItems = styled.div`
 `;
 
 export const CollapsedMain = styled.div`
-  box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
   padding: 10px 10px 0 10px;
   border-radius: 4px;
   display: grid;

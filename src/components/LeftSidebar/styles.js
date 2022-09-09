@@ -69,6 +69,7 @@ export const ItemImg = styled.img`
   object-position: center;
   object-fit: cover;
   display: block;
+  border-radius: 4px;
 `;
 
 export const ItemIconsContainer = styled.div`
@@ -95,16 +96,13 @@ export const ReferenceImgTxt = styled(Typography).attrs(() => ({
 export const ItemAdjustmentContainer = styled.div`
   table {
     width: 100%;
+    border-collapse: collapse;
     td {
       vertical-align: middle;
     }
 
-    td:last-child {
-      width: 60%;
-    }
-
-    tr:not(:last-child) td {
-      padding-bottom: 10px;
+    td:first-child {
+      width: 40%;
     }
   }
 `;
@@ -115,4 +113,10 @@ export const CollapseIcon = styled.div`
   right: 10px;
   cursor: pointer;
   z-index: 1000;
+`;
+
+export const HideBtn = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 `;

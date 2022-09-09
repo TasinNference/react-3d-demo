@@ -2,6 +2,7 @@ import { Card, IconButton, Slider, Tooltip, Typography } from "@mui/material";
 import React, { forwardRef, useState } from "react";
 import {
   CollapseIcon,
+  HideBtn,
   ItemAdjustmentContainer,
   ItemContent,
   ItemHeader,
@@ -44,12 +45,6 @@ const DraggableItem = forwardRef(
             <ItemName>{img.slide_id}</ItemName>
           </Tooltip>
           <ItemIconsContainer>
-            <IconButton
-              size="small"
-              onClick={() => toggleImageVisibility(index)}
-            >
-              {img.hidden ? <AiOutlineEyeInvisible /> : <AiFillEye />}
-            </IconButton>
             <IconButton size="small" {...dragHandleProps}>
               <MdDragHandle />
             </IconButton>
@@ -75,16 +70,36 @@ const DraggableItem = forwardRef(
                     /> */}
                     <CustomSlider
                       size="small"
-                      defaultValue={opacity}
-                      value={
+                      defaultValue={
                         img.opacity ? roundNum(img.opacity) : roundNum(opacity)
                       }
-                      min={1}
+                      min={10}
                       max={100}
                       onChange={(e) =>
                         targetImageOpacityChange(e.target.value, index)
                       }
                     />
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <Typography variant="caption">
+                      {img.hidden ? "Hidden" : "Visible"}
+                    </Typography>
+                  </td>
+                  <td
+                    style={{
+                      display: "flex",
+                      justifyContent: "flex-end",
+                      alignItems: "center",
+                    }}
+                  >
+                    <div
+                      style={{ cursor: "pointer" }}
+                      onClick={() => toggleImageVisibility(index)}
+                    >
+                      {img.hidden ? <AiOutlineEyeInvisible /> : <AiFillEye />}
+                    </div>
                   </td>
                 </tr>
               </tbody>

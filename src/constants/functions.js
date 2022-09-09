@@ -1,5 +1,4 @@
 import axios from "axios";
-import { SLIDE_SPACING } from "./variables";
 
 export const getRegistrationData = async (data) => {
   const reference = data.reference_slide_info;
@@ -58,8 +57,8 @@ export const getRegistrationData = async (data) => {
   return arr;
 };
 
-export const getPositionFromSpacing = (index, length) => {
-  return -1 * (index - (length - 1) / 2) * SLIDE_SPACING;
+export const getPositionFromSpacing = (index, length, spacing) => {
+  return -1 * (index - (length - 1) / 2) * spacing;
 };
 
 export const degToRad = (deg) => {
