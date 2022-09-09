@@ -59,8 +59,6 @@ const Slide = ({
         new Matrix4().makeScale(imgData.x_scale, imgData.y_scale, 1)
       );
 
-      console.log(matrix, imgData);
-
       matrix2.multiply(
         new Matrix4().makeTranslation(imgData.x_disp, -imgData.y_disp, 0)
       );

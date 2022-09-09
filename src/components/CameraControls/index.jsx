@@ -50,7 +50,6 @@ extend({ CameraControlsDefault });
 export const CameraControls = forwardRef((_, ref) => {
   const cameraControls = useRef(null);
   const camera = useThree((state) => state.camera);
-  console.log(camera, "camera");
   const renderer = useThree((state) => state.gl);
   useFrame((_, delta) => cameraControls.current?.update(delta));
   useEffect(() => {

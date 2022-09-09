@@ -7,14 +7,13 @@ import {
 import { Edges, Plane, Extrude, Line } from "@react-three/drei";
 import * as THREE from "three";
 
-const Projections = ({ length, index, composite }) => {
-  const positionZ = getPositionFromSpacing(index, length) + 1;
+const Projections = ({ length, index, composite, spacing }) => {
+  console.log(rectData, "rect data");
+  const positionZ = getPositionFromSpacing(index, length, spacing) + 1;
   return (
     <group>
       {rectData.map((r) => {
-        const shape = new THREE.Shape();
         const position = calcRectPosition(r, index, length - 1);
-        console.log(position);
         const points = [
           [position[0], position[1], positionZ],
           [position[0], position[1] + (r.max_y - r.min_y), positionZ],
@@ -27,14 +26,11 @@ const Projections = ({ length, index, composite }) => {
           [position[0], position[1], positionZ],
         ];
 
-        shape.moveTo(points[0][0], points[0][1]);
-        shape.lineTo(points[1][0], points[1][1]);
-        shape.lineTo(points[2][0], points[2][1]);
-        shape.lineTo(points[3][0], points[3][1]);
+        console.log(points, "points");
 
         return (
           <mesh renderOrder={1000}>
-            <Line points={points} color="blue" lineWidth={composite ? 1 : 1} />
+            <Line points={points} color="blue" lineWidth={1} />
           </mesh>
         );
       })}

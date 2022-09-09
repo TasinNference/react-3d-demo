@@ -15,7 +15,6 @@ const SlidesContainer = ({
 }) => {
   const [refCenter, setRefCenter] = useState();
   const filteredImages = data.filter((img) => !img.hidden);
-  console.log("rotation", rotation);
 
   return (
     <group rotation={[0, 0, THREE.MathUtils.degToRad(rotation)]}>
@@ -39,6 +38,7 @@ const SlidesContainer = ({
               length={filteredImages.length}
               index={index}
               composite={composite}
+              spacing={spacing}
             />
           )}
         </>

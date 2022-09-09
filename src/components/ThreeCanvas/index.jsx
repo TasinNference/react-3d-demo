@@ -77,7 +77,6 @@ const ThreeCanvas = () => {
   };
 
   const targetImageOpacityChange = (value, index) => {
-    console.log("opacity change");
     setImagesArr([
       ...imagesArr.slice(0, index),
       { ...imagesArr[index], opacity: parseFloat(value) },
