@@ -39,6 +39,12 @@ const ThreeCanvas = () => {
   const [rotation, setRotation] = useState(0);
   const [spacing, setSpacing] = useState(SLIDE_SPACING);
   const cameraControls = useRef(null);
+  const [syncOpacity, setSyncOpacity] = useState(true);
+  const projectIndex = imagesArr.map((object) => object.project).indexOf(true);
+
+  console.log(projectIndex, "project index");
+
+  console.log(imagesArr);
 
   // React-dnd
   const handleDragEnd = (result) => {
@@ -50,22 +56,35 @@ const ThreeCanvas = () => {
     setImagesArr(items);
   };
 
+  useEffect(() => {
+    setSyncOpacity(true);
+  }, [opacity]);
+
   // Image functions
   const resetOpacity = () => {
     setImagesArr((prevArray) =>
       prevArray.map(({ opacity, ...rest }) => ({ ...rest }))
     );
+    setSyncOpacity(true);
   };
-
-  useEffect(() => {
-    resetOpacity();
-  }, [opacity]);
 
   const resetImages = () => {
     setImagesArr(defaultData.current);
     setRotation(0);
     setSpacing(SLIDE_SPACING);
     setOpacity(SLIDE_OPACITY);
+  };
+
+  const toggleImageProjection = (i, bool) => {
+    setImagesArr((prevArray) =>
+      prevArray.map(({ project, ...rest }, index) => {
+        if (i === index) {
+          return { ...rest, project: bool };
+        } else {
+          return { ...rest };
+        }
+      })
+    );
   };
 
   const toggleImageVisibility = (index) => {
@@ -82,6 +101,7 @@ const ThreeCanvas = () => {
       { ...imagesArr[index], opacity: parseFloat(value) },
       ...imagesArr.slice(index + 1),
     ]);
+    setSyncOpacity(false);
   };
 
   useEffect(() => {
@@ -108,6 +128,8 @@ const ThreeCanvas = () => {
           opacity={opacity}
           open={open}
           setOpen={setOpen}
+          syncOpacity={syncOpacity}
+          toggleImageProjection={toggleImageProjection}
         />
       ) : (
         <CollapsedSidebar
@@ -138,6 +160,7 @@ const ThreeCanvas = () => {
             opacity={opacity}
             rotation={rotation}
             spacing={spacing}
+            projectIndex={projectIndex}
           />
           <CameraElement />
           {/* <CameraControls ref={cameraControls} /> */}

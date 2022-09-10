@@ -14,7 +14,6 @@ export const SidebarSubContainer = styled.div`
   position: absolute;
   top: 0;
   left: 0;
-  min-width: 350px;
 `;
 
 export const SidebarHeader = styled.div`
@@ -83,11 +82,11 @@ export const ReferenceImgTxt = styled(Typography).attrs(() => ({
   variant: "caption",
 }))`
   position: absolute;
-  top: 50%;
+  top: 0;
   background-color: #2793ff;
   color: white;
   writing-mode: vertical-rl;
-  transform: scale(-1) translate(100%, 50%);
+  transform: scale(-1) translateX(100%);
   padding: 8px 3px;
   border-top-right-radius: 4px;
   border-bottom-right-radius: 4px;
@@ -119,4 +118,10 @@ export const HideBtn = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
+`;
+
+export const ImgItem = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 `;

@@ -1,8 +1,17 @@
-import { Card, IconButton, Slider, Tooltip, Typography } from "@mui/material";
+import {
+  Card,
+  IconButton,
+  Slider,
+  styled,
+  Switch,
+  Tooltip,
+  Typography,
+} from "@mui/material";
 import React, { forwardRef, useState } from "react";
 import {
   CollapseIcon,
   HideBtn,
+  ImgItem,
   ItemAdjustmentContainer,
   ItemContent,
   ItemHeader,
@@ -24,6 +33,50 @@ import CustomSlider from "../CustomSlider";
 import { roundNum } from "../../constants/functions";
 import { TbResize } from "react-icons/tb";
 
+const AntSwitch = styled(Switch)(({ theme }) => ({
+  width: 28,
+  height: 16,
+  padding: 0,
+  display: "flex",
+  "&:active": {
+    "& .MuiSwitch-thumb": {
+      width: 15,
+    },
+    "& .MuiSwitch-switchBase.Mui-checked": {
+      transform: "translateX(9px)",
+    },
+  },
+  "& .MuiSwitch-switchBase": {
+    padding: 2,
+    "&.Mui-checked": {
+      transform: "translateX(12px)",
+      color: "#fff",
+      "& + .MuiSwitch-track": {
+        opacity: 1,
+        backgroundColor: theme.palette.mode === "dark" ? "#177ddc" : "#1890ff",
+      },
+    },
+  },
+  "& .MuiSwitch-thumb": {
+    boxShadow: "0 2px 4px 0 rgb(0 35 11 / 20%)",
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    transition: theme.transitions.create(["width"], {
+      duration: 200,
+    }),
+  },
+  "& .MuiSwitch-track": {
+    borderRadius: 16 / 2,
+    opacity: 1,
+    backgroundColor:
+      theme.palette.mode === "dark"
+        ? "rgba(255,255,255,.35)"
+        : "rgba(0,0,0,.25)",
+    boxSizing: "border-box",
+  },
+}));
+
 const DraggableItem = forwardRef(
   (
     {
@@ -34,6 +87,8 @@ const DraggableItem = forwardRef(
       toggleImageVisibility,
       targetImageOpacityChange,
       opacity,
+      syncOpacity,
+      toggleImageProjection,
     },
     ref
   ) => {
@@ -71,7 +126,11 @@ const DraggableItem = forwardRef(
                     <CustomSlider
                       size="small"
                       value={
-                        img.opacity ? roundNum(img.opacity) : roundNum(opacity)
+                        syncOpacity
+                          ? roundNum(opacity)
+                          : img.opacity
+                          ? roundNum(img.opacity)
+                          : roundNum(opacity)
                       }
                       min={10}
                       max={100}
@@ -82,28 +141,36 @@ const DraggableItem = forwardRef(
                   </td>
                 </tr>
                 <tr>
-                  <td>
-                    <Typography variant="caption">
-                      {img.hidden ? "Hidden" : "Visible"}
-                    </Typography>
-                  </td>
+                  <td></td>
                   <td
                     style={{
                       display: "flex",
                       justifyContent: "flex-end",
                       alignItems: "center",
                     }}
-                  >
-                    <div
-                      style={{ cursor: "pointer" }}
-                      onClick={() => toggleImageVisibility(index)}
-                    >
-                      {img.hidden ? <AiOutlineEyeInvisible /> : <AiFillEye />}
-                    </div>
-                  </td>
+                  ></td>
                 </tr>
               </tbody>
             </table>
+            <ImgItem>
+              <Typography variant="caption">
+                {img.hidden ? "Hidden" : "Visible"}
+              </Typography>
+              <div
+                style={{ cursor: "pointer" }}
+                onClick={() => toggleImageVisibility(index)}
+              >
+                {img.hidden ? <AiOutlineEyeInvisible /> : <AiFillEye />}
+              </div>
+            </ImgItem>
+            <ImgItem>
+              <Typography variant="caption">Project Annotations</Typography>
+              <AntSwitch
+                checked={img.project ? true : false}
+                onChange={(e) => toggleImageProjection(index, e.target.checked)}
+                size="small"
+              />
+            </ImgItem>
           </ItemAdjustmentContainer>
         </ItemContent>
       </LayersItem>
@@ -119,6 +186,8 @@ const LeftSidebar = ({
   opacity,
   open,
   setOpen,
+  syncOpacity,
+  toggleImageProjection,
 }) => {
   return (
     <SidebarContainer open={open}>
@@ -157,6 +226,8 @@ const LeftSidebar = ({
                           targetImageOpacityChange={targetImageOpacityChange}
                           roundNum={roundNum}
                           opacity={opacity}
+                          syncOpacity={syncOpacity}
+                          toggleImageProjection={toggleImageProjection}
                         />
                       );
                     }}

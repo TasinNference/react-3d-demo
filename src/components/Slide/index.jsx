@@ -14,6 +14,10 @@ const Slide = ({
   setRefCenter,
   opacity,
   composite,
+  projectIndex,
+  length,
+  spacing,
+  index,
 }) => {
   const [texture, setTexture] = useState();
   const [mat1, setMat1] = useState();
@@ -85,12 +89,35 @@ const Slide = ({
               toneMapped={false}
               opacity={opacity / 100}
             />
+
             <Annotation
-              img={imgData}
+              annotations={imgData.annotations}
               width={width.current}
               height={height.current}
               composite={composite}
+              length={length}
+              projectIndex={projectIndex}
             />
+
+            {projectIndex === index &&
+              Array(length)
+                .fill()
+                .map((_, i) => {
+                  return (
+                    i !== index && (
+                      <group position={[0, 0, (index - i) * spacing]}>
+                        <Annotation
+                          annotations={imgData.annotations}
+                          width={width.current}
+                          height={height.current}
+                          composite={composite}
+                          length={length}
+                          projectIndex={projectIndex}
+                        />
+                      </group>
+                    )
+                  );
+                })}
           </mesh>
         </group>
       </group>

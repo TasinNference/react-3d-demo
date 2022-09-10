@@ -12,6 +12,7 @@ const SlidesContainer = ({
   composite = false,
   rotation,
   spacing,
+  projectIndex,
 }) => {
   const [refCenter, setRefCenter] = useState();
   const filteredImages = data.filter((img) => !img.hidden);
@@ -32,6 +33,10 @@ const SlidesContainer = ({
             key={imgData.slide_id}
             opacity={imgData.opacity ? imgData.opacity : opacity}
             composite={composite}
+            projectIndex={projectIndex}
+            length={filteredImages.length}
+            spacing={spacing}
+            index={index}
           />
           {referenceSlide === "JR-20-4929-A21-1_H01BBB30P-12293" && (
             <Projection
