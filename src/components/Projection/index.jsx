@@ -8,7 +8,6 @@ import { Edges, Plane, Extrude, Line } from "@react-three/drei";
 import * as THREE from "three";
 
 const Projections = ({ length, index, composite, spacing }) => {
-  console.log(rectData, "rect data");
   const positionZ = getPositionFromSpacing(index, length, spacing) + 1;
   return (
     <group>
@@ -25,8 +24,6 @@ const Projections = ({ length, index, composite, spacing }) => {
           [position[0] + (r.max_x - r.min_x), position[1], positionZ],
           [position[0], position[1], positionZ],
         ];
-
-        console.log(points, "points");
 
         return (
           <mesh renderOrder={1000}>

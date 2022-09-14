@@ -4,10 +4,9 @@ export const getRegistrationData = async (data) => {
   const reference = data.reference_slide_info;
   const registerResponse = data.register_slide_info;
   const registerArr = [];
-  let annotations = undefined;
 
-  for (let i = 0; i < registerResponse.length; i++) {
-    const itm = registerResponse[i];
+  const getAnnotations = async (id) => {
+    let anns = [];
 
     try {
       const {
@@ -15,46 +14,39 @@ export const getRegistrationData = async (data) => {
           data: { slideId },
         },
       } = await axios.get(
-        `/panorama_backend/mergedGrid/viewer?slideName=${itm.slide_id}`
+        `/panorama_backend/mergedGrid/viewer?slideName=${id}`
       );
-      annotations = (
+      anns = (
         await axios.get(`/panorama_backend/grid-details?imageIds=${slideId}`)
       ).data.data[0].annotations;
     } catch (error) {
       console.log(error);
     }
 
+    console.log(anns, "anns");
+    return anns;
+  };
+
+  const annotations = await Promise.all([
+    ...registerResponse.map((itm) => getAnnotations(itm.slide_id)),
+    getAnnotations(reference.slide_id),
+  ]);
+  // }
+
+  registerResponse.forEach((itm, index) => {
     registerArr.push({
       ...itm,
       url: `/wsi_data/registration_outcome/${itm.slide_id}/${itm.slide_id}_panorama.jpeg`,
-      annotations,
+      annotations: annotations[index],
     });
-  }
-
-  try {
-    const {
-      data: {
-        data: { slideId },
-      },
-    } = await axios.get(
-      `/panorama_backend/mergedGrid/viewer?slideName=${reference.slide_id}`
-    );
-    annotations = (
-      await axios.get(`/panorama_backend/grid-details?imageIds=${slideId}`)
-    ).data.data[0].annotations;
-  } catch (error) {
-    console.log(error);
-  }
-
-  let arr = [];
-  arr.push({
+  });
+  const refData = {
     slide_id: reference.slide_id,
     url: `/wsi_data/registration_outcome/${reference.slide_id}/${reference.slide_id}_panorama.jpeg`,
     reference: true,
-    annotations,
-  });
-  arr = [...arr, ...registerArr];
-  return arr;
+    annotations: annotations[annotations.length - 1],
+  };
+  return [refData, ...registerArr];
 };
 
 export const getPositionFromSpacing = (index, length, spacing) => {

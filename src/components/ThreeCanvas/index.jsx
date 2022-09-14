@@ -42,10 +42,6 @@ const ThreeCanvas = () => {
   const [syncOpacity, setSyncOpacity] = useState(true);
   const projectIndex = imagesArr.map((object) => object.project).indexOf(true);
 
-  console.log(projectIndex, "project index");
-
-  console.log(imagesArr);
-
   // React-dnd
   const handleDragEnd = (result) => {
     if (!result.destination) return;
