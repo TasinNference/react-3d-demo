@@ -9,6 +9,7 @@ import {
 import { AiOutlineMinusSquare, AiOutlinePlusSquare } from "react-icons/ai";
 import CustomSlider from "../CustomSlider";
 import { GrPowerReset } from "react-icons/gr";
+import { AntSwitch } from "../LeftSidebar";
 
 const SettingsWidget = ({
   opacity,
@@ -18,6 +19,8 @@ const SettingsWidget = ({
   spacing,
   setSpacing,
   resetImages,
+  composite,
+  setComposite,
 }) => {
   const [open, setOpen] = useState(true);
 
@@ -97,6 +100,20 @@ const SettingsWidget = ({
               </tr>
             </tbody>
           </table>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <Typography variant="caption">Composite View</Typography>
+            <AntSwitch
+              checked={composite}
+              onChange={(e) => setComposite(e.target.checked)}
+              size="small"
+            />
+          </div>
         </SettingsContent>
       </SettingsBody>
     </SettingsContainer>

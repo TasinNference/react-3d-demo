@@ -33,7 +33,7 @@ import CustomSlider from "../CustomSlider";
 import { roundNum } from "../../constants/functions";
 import { TbResize } from "react-icons/tb";
 
-const AntSwitch = styled(Switch)(({ theme }) => ({
+export const AntSwitch = styled(Switch)(({ theme }) => ({
   width: 28,
   height: 16,
   padding: 0,
@@ -89,6 +89,10 @@ const DraggableItem = forwardRef(
       opacity,
       syncOpacity,
       toggleImageProjection,
+      composite,
+      targetImageTiltChange,
+      targetImageXChange,
+      targetImageYChange,
     },
     ref
   ) => {
@@ -107,71 +111,140 @@ const DraggableItem = forwardRef(
         </ItemHeader>
         <ItemContent>
           <ItemImg src={img.url} />
-          <ItemAdjustmentContainer>
-            <table>
-              <tbody>
-                <tr>
-                  <td>
-                    <Typography variant="caption">Opacity</Typography>
-                  </td>
-                  <td>
-                    {/* <CustomInput
-                      min={1}
-                      max={100}
-                      setValue={(value) => targetImageOpacityChange(value, index)}
-                      value={
-                        img.opacity ? roundNum(img.opacity) : roundNum(opacity)
-                      }
-                    /> */}
-                    <CustomSlider
-                      size="small"
-                      value={
-                        syncOpacity
-                          ? roundNum(opacity)
-                          : img.opacity
-                          ? roundNum(img.opacity)
-                          : roundNum(opacity)
-                      }
-                      min={10}
-                      max={100}
-                      onChange={(e) =>
-                        targetImageOpacityChange(e.target.value, index)
-                      }
-                    />
-                  </td>
-                </tr>
-                <tr>
-                  <td></td>
-                  <td
-                    style={{
-                      display: "flex",
-                      justifyContent: "flex-end",
-                      alignItems: "center",
-                    }}
-                  ></td>
-                </tr>
-              </tbody>
-            </table>
-            <ImgItem>
-              <Typography variant="caption">
-                {img.hidden ? "Hidden" : "Visible"}
-              </Typography>
-              <div
-                style={{ cursor: "pointer" }}
-                onClick={() => toggleImageVisibility(index)}
-              >
-                {img.hidden ? <AiOutlineEyeInvisible /> : <AiFillEye />}
-              </div>
-            </ImgItem>
-            <ImgItem>
-              <Typography variant="caption">Project Annotations</Typography>
-              <AntSwitch
-                checked={img.project ? true : false}
-                onChange={(e) => toggleImageProjection(index, e.target.checked)}
-                size="small"
-              />
-            </ImgItem>
-          </ItemAdjustmentContainer>
+          {composite ? (
+            <ItemAdjustmentContainer>
+              <table>
+                <tbody>
+                  <tr>
+                    <td>
+                      <Typography variant="caption">Opacity</Typography>
+                    </td>
+                    <td>
+                      <CustomSlider
+                        size="small"
+                        value={
+                          syncOpacity
+                            ? roundNum(opacity)
+                            : img.opacity
+                            ? roundNum(img.opacity)
+                            : roundNum(opacity)
+                        }
+                        min={10}
+                        max={100}
+                        onChange={(e) =>
+                          targetImageOpacityChange(e.target.value, index)
+                        }
+                      />
+                    </td>
+                  </tr>
+                  {!img.reference && (
+                    <tr>
+                      <td>
+                        <Typography variant="caption">Rotate</Typography>
+                      </td>
+                      <td>
+                        <CustomSlider
+                          size="small"
+                          value={img.comp_tilt}
+                          min={img.tilt - 180}
+                          max={img.tilt + 180}
+                          onChange={(e) =>
+                            targetImageTiltChange(e.target.value, index)
+                          }
+                        />
+                      </td>
+                    </tr>
+                  )}
+                  {!img.reference && (
+                    <tr>
+                      <td>
+                        <Typography variant="caption">Pan X</Typography>
+                      </td>
+                      <td>
+                        <CustomSlider
+                          size="small"
+                          value={img.comp_x_disp}
+                          min={img.x_disp - 300}
+                          max={img.x_disp + 300}
+                          onChange={(e) =>
+                            targetImageXChange(e.target.value, index)
+                          }
+                        />
+                      </td>
+                    </tr>
+                  )}
+                  {!img.reference && (
+                    <tr>
+                      <td>
+                        <Typography variant="caption">Pan Y</Typography>
+                      </td>
+                      <td>
+                        <CustomSlider
+                          size="small"
+                          value={img.comp_y_disp}
+                          min={img.y_disp - 300}
+                          max={img.y_disp + 300}
+                          onChange={(e) =>
+                            targetImageYChange(e.target.value, index)
+                          }
+                        />
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </ItemAdjustmentContainer>
+          ) : (
+            <ItemAdjustmentContainer>
+              <table>
+                <tbody>
+                  <tr>
+                    <td>
+                      <Typography variant="caption">Opacity</Typography>
+                    </td>
+                    <td>
+                      <CustomSlider
+                        size="small"
+                        value={
+                          syncOpacity
+                            ? roundNum(opacity)
+                            : img.opacity
+                            ? roundNum(img.opacity)
+                            : roundNum(opacity)
+                        }
+                        min={10}
+                        max={100}
+                        onChange={(e) =>
+                          targetImageOpacityChange(e.target.value, index)
+                        }
+                      />
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <ImgItem>
+                <Typography variant="caption">
+                  {img.hidden ? "Hidden" : "Visible"}
+                </Typography>
+                <div
+                  style={{ cursor: "pointer" }}
+                  onClick={() => toggleImageVisibility(index)}
+                >
+                  {img.hidden ? <AiOutlineEyeInvisible /> : <AiFillEye />}
+                </div>
+              </ImgItem>
+              <ImgItem>
+                <Typography variant="caption">Project Annotations</Typography>
+                <AntSwitch
+                  checked={img.project ? true : false}
+                  onChange={(e) =>
+                    toggleImageProjection(index, e.target.checked)
+                  }
+                  size="small"
+                />
+              </ImgItem>
+            </ItemAdjustmentContainer>
+          )}
         </ItemContent>
       </LayersItem>
     );
@@ -188,6 +261,10 @@ const LeftSidebar = ({
   setOpen,
   syncOpacity,
   toggleImageProjection,
+  composite,
+  targetImageTiltChange,
+  targetImageXChange,
+  targetImageYChange,
 }) => {
   return (
     <SidebarContainer open={open}>
@@ -228,6 +305,10 @@ const LeftSidebar = ({
                           opacity={opacity}
                           syncOpacity={syncOpacity}
                           toggleImageProjection={toggleImageProjection}
+                          composite={composite}
+                          targetImageTiltChange={targetImageTiltChange}
+                          targetImageXChange={targetImageXChange}
+                          targetImageYChange={targetImageYChange}
                         />
                       );
                     }}

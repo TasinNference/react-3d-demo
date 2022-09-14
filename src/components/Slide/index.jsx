@@ -27,6 +27,36 @@ const Slide = ({
   const width = useRef();
   const height = useRef();
 
+  const calcMatrix = () => {
+    const matrix = new Matrix4();
+    const matrix2 = new Matrix4();
+
+    matrix.multiply(
+      new Matrix4().makeTranslation(-refCenter?.x, refCenter?.y, 0)
+    );
+
+    matrix.multiply(new Matrix4().makeRotationZ(degToRad(-imgData.comp_tilt)));
+
+    matrix.multiply(
+      new Matrix4().makeShear(imgData.x_skew, 0, imgData.y_skew, 0, 0, 0)
+    );
+
+    matrix.multiply(
+      new Matrix4().makeScale(imgData.x_scale, imgData.y_scale, 1)
+    );
+
+    matrix2.multiply(
+      new Matrix4().makeTranslation(
+        imgData.comp_x_disp,
+        -imgData.comp_y_disp,
+        0
+      )
+    );
+
+    setMat1(matrix);
+    setMat2(matrix2);
+  };
+
   useTexture(`${window.location.origin}${imgData.url}`, (tex) => {
     setTexture(tex);
     width.current = tex.image.width;
@@ -46,31 +76,16 @@ const Slide = ({
 
     if (!imgData.reference) {
       setPosition([width.current / 2, -height.current / 2]);
-      const matrix = new Matrix4();
-      const matrix2 = new Matrix4();
-
-      matrix.multiply(
-        new Matrix4().makeTranslation(-refCenter?.x, refCenter?.y, 0)
-      );
-
-      matrix.multiply(new Matrix4().makeRotationZ(degToRad(-imgData.tilt)));
-
-      matrix.multiply(
-        new Matrix4().makeShear(imgData.x_skew, 0, imgData.y_skew, 0, 0, 0)
-      );
-
-      matrix.multiply(
-        new Matrix4().makeScale(imgData.x_scale, imgData.y_scale, 1)
-      );
-
-      matrix2.multiply(
-        new Matrix4().makeTranslation(imgData.x_disp, -imgData.y_disp, 0)
-      );
-
-      setMat1(matrix);
-      setMat2(matrix2);
+      calcMatrix();
     }
   }, [texture, refCenter]);
+
+  useEffect(() => {
+    if (!imgData.reference) {
+      console.log("change");
+      calcMatrix();
+    }
+  }, [imgData.comp_tilt, imgData.comp_x_disp, imgData.comp_y_disp]);
 
   return (
     <Suspense fallback={null}>

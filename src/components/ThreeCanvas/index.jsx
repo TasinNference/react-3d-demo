@@ -38,9 +38,9 @@ const ThreeCanvas = () => {
   const [open, setOpen] = useState(true);
   const [rotation, setRotation] = useState(0);
   const [spacing, setSpacing] = useState(SLIDE_SPACING);
-  const cameraControls = useRef(null);
   const [syncOpacity, setSyncOpacity] = useState(true);
   const projectIndex = imagesArr.map((object) => object.project).indexOf(true);
+  const [composite, setComposite] = useState(true);
 
   // React-dnd
   const handleDragEnd = (result) => {
@@ -100,6 +100,30 @@ const ThreeCanvas = () => {
     setSyncOpacity(false);
   };
 
+  const targetImageTiltChange = (value, index) => {
+    setImagesArr([
+      ...imagesArr.slice(0, index),
+      { ...imagesArr[index], comp_tilt: parseFloat(value) },
+      ...imagesArr.slice(index + 1),
+    ]);
+  };
+
+  const targetImageXChange = (value, index) => {
+    setImagesArr([
+      ...imagesArr.slice(0, index),
+      { ...imagesArr[index], comp_x_disp: parseFloat(value) },
+      ...imagesArr.slice(index + 1),
+    ]);
+  };
+
+  const targetImageYChange = (value, index) => {
+    setImagesArr([
+      ...imagesArr.slice(0, index),
+      { ...imagesArr[index], comp_y_disp: parseFloat(value) },
+      ...imagesArr.slice(index + 1),
+    ]);
+  };
+
   useEffect(() => {
     const fetchImgData = async () => {
       const paramsData = searchParams.get("data");
@@ -126,6 +150,10 @@ const ThreeCanvas = () => {
           setOpen={setOpen}
           syncOpacity={syncOpacity}
           toggleImageProjection={toggleImageProjection}
+          composite={composite}
+          targetImageTiltChange={targetImageTiltChange}
+          targetImageXChange={targetImageXChange}
+          targetImageYChange={targetImageYChange}
         />
       ) : (
         <CollapsedSidebar
@@ -144,6 +172,8 @@ const ThreeCanvas = () => {
         setSpacing={setSpacing}
         resetImages={resetImages}
         resetOpacity={resetOpacity}
+        composite={composite}
+        setComposite={setComposite}
       />
       <div style={{ height: "100vh" }}>
         <Canvas>

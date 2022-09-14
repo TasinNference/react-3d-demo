@@ -36,6 +36,9 @@ export const getRegistrationData = async (data) => {
   registerResponse.forEach((itm, index) => {
     registerArr.push({
       ...itm,
+      comp_tilt: itm.tilt,
+      comp_x_disp: itm.x_disp,
+      comp_y_disp: itm.y_disp,
       url: `/wsi_data/registration_outcome/${itm.slide_id}/${itm.slide_id}_panorama.jpeg`,
       annotations: annotations[index],
     });

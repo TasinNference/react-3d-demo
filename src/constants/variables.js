@@ -13,4 +13,4 @@ export const AXIS_COLORS = [X_COLOR, Y_COLOR, Z_COLOR];
 
 // Global Defaults
 export const SLIDE_SPACING = 200;
-export const SLIDE_OPACITY = 50;
+export const SLIDE_OPACITY = 55;

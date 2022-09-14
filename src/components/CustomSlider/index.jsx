@@ -1,7 +1,15 @@
 import { Slider } from "@mui/material";
 import React from "react";
 
-const CustomSlider = ({ size, defaultValue, min, max, onChange, value }) => {
+const CustomSlider = ({
+  size,
+  defaultValue,
+  min,
+  max,
+  onChange,
+  value,
+  marks,
+}) => {
   return (
     <div style={{ display: "flex", alignItems: "center" }}>
       <Slider
@@ -15,6 +23,7 @@ const CustomSlider = ({ size, defaultValue, min, max, onChange, value }) => {
         min={min}
         max={max}
         onChange={onChange}
+        marks={marks}
       />
     </div>
   );
