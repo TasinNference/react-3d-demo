@@ -40,7 +40,7 @@ const ThreeCanvas = () => {
   const [spacing, setSpacing] = useState(SLIDE_SPACING);
   const [syncOpacity, setSyncOpacity] = useState(true);
   const projectIndex = imagesArr.map((object) => object.project).indexOf(true);
-  const [composite, setComposite] = useState(true);
+  const [composite, setComposite] = useState(false);
 
   // React-dnd
   const handleDragEnd = (result) => {
