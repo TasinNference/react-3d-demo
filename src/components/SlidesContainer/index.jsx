@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { getPositionFromSpacing } from "../../constants/functions";
-import { SLIDE_OPACITY } from "../../constants/variables";
 import Projection from "../Projection";
 import Slide from "../Slide";
 import * as THREE from "three";

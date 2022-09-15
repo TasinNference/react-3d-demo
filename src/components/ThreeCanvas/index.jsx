@@ -10,10 +10,10 @@ import {
 import Slide from "../Slide";
 import CameraElement from "../CameraElement";
 import {
-  AXIS_COLORS,
-  LABEL_COLOR,
-  SLIDE_OPACITY,
-  SLIDE_SPACING,
+  MAX_OPACITY,
+  MAX_SPACING,
+  MIN_OPACITY,
+  MIN_SPACING,
 } from "../../constants/variables";
 import { useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
@@ -34,10 +34,10 @@ const ThreeCanvas = () => {
   const defaultData = useRef([]);
   const [imagesArr, setImagesArr] = useState([]);
   const [referenceSlide, setReferenceSlide] = useState();
-  const [opacity, setOpacity] = useState(SLIDE_OPACITY);
+  const [opacity, setOpacity] = useState((MIN_OPACITY + MAX_OPACITY) / 2);
   const [open, setOpen] = useState(true);
   const [rotation, setRotation] = useState(0);
-  const [spacing, setSpacing] = useState(SLIDE_SPACING);
+  const [spacing, setSpacing] = useState((MIN_SPACING + MAX_SPACING) / 2);
   const [syncOpacity, setSyncOpacity] = useState(true);
   const projectIndex = imagesArr.map((object) => object.project).indexOf(true);
   const [composite, setComposite] = useState(false);
@@ -67,8 +67,8 @@ const ThreeCanvas = () => {
   const resetImages = () => {
     setImagesArr(defaultData.current);
     setRotation(0);
-    setSpacing(SLIDE_SPACING);
-    setOpacity(SLIDE_OPACITY);
+    setSpacing((MIN_SPACING + MAX_SPACING) / 2);
+    setOpacity((MAX_OPACITY + MIN_OPACITY) / 2);
   };
 
   const toggleImageProjection = (i, bool) => {
@@ -166,7 +166,7 @@ const ThreeCanvas = () => {
       <SettingsWidget
         opacity={opacity}
         setOpacity={setOpacity}
-        roation={rotation}
+        rotation={rotation}
         setRotation={setRotation}
         spacing={spacing}
         setSpacing={setSpacing}

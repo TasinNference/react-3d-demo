@@ -32,6 +32,12 @@ import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import CustomSlider from "../CustomSlider";
 import { roundNum } from "../../constants/functions";
 import { TbResize } from "react-icons/tb";
+import {
+  DISP_RANGE,
+  MAX_OPACITY,
+  MIN_OPACITY,
+  TILT_RANGE,
+} from "../../constants/variables";
 
 export const AntSwitch = styled(Switch)(({ theme }) => ({
   width: 28,
@@ -111,33 +117,33 @@ const DraggableItem = forwardRef(
         </ItemHeader>
         <ItemContent>
           <ItemImg src={img.url} />
-          {composite ? (
-            <ItemAdjustmentContainer>
-              <table>
-                <tbody>
-                  <tr>
-                    <td>
-                      <Typography variant="caption">Opacity</Typography>
-                    </td>
-                    <td>
-                      <CustomSlider
-                        size="small"
-                        value={
-                          syncOpacity
-                            ? roundNum(opacity)
-                            : img.opacity
-                            ? roundNum(img.opacity)
-                            : roundNum(opacity)
-                        }
-                        min={10}
-                        max={100}
-                        onChange={(e) =>
-                          targetImageOpacityChange(e.target.value, index)
-                        }
-                      />
-                    </td>
-                  </tr>
-                  {!img.reference && (
+          <ItemAdjustmentContainer>
+            <table>
+              <tbody>
+                <tr>
+                  <td>
+                    <Typography variant="caption">Opacity</Typography>
+                  </td>
+                  <td>
+                    <CustomSlider
+                      size="small"
+                      value={
+                        syncOpacity
+                          ? roundNum(opacity)
+                          : img.opacity
+                          ? roundNum(img.opacity)
+                          : roundNum(opacity)
+                      }
+                      min={MIN_OPACITY}
+                      max={MAX_OPACITY}
+                      onChange={(e) =>
+                        targetImageOpacityChange(e.target.value, index)
+                      }
+                    />
+                  </td>
+                </tr>
+                {!img.reference && composite && (
+                  <>
                     <tr>
                       <td>
                         <Typography variant="caption">Rotate</Typography>
@@ -145,17 +151,15 @@ const DraggableItem = forwardRef(
                       <td>
                         <CustomSlider
                           size="small"
-                          value={img.comp_tilt}
-                          min={img.tilt - 180}
-                          max={img.tilt + 180}
+                          value={roundNum(img.comp_tilt)}
+                          min={roundNum(img.tilt - TILT_RANGE)}
+                          max={roundNum(img.tilt + TILT_RANGE)}
                           onChange={(e) =>
                             targetImageTiltChange(e.target.value, index)
                           }
                         />
                       </td>
                     </tr>
-                  )}
-                  {!img.reference && (
                     <tr>
                       <td>
                         <Typography variant="caption">Pan X</Typography>
@@ -163,17 +167,15 @@ const DraggableItem = forwardRef(
                       <td>
                         <CustomSlider
                           size="small"
-                          value={img.comp_x_disp}
-                          min={img.x_disp - 300}
-                          max={img.x_disp + 300}
+                          value={roundNum(img.comp_x_disp)}
+                          min={roundNum(img.x_disp - DISP_RANGE)}
+                          max={roundNum(img.x_disp + DISP_RANGE)}
                           onChange={(e) =>
                             targetImageXChange(e.target.value, index)
                           }
                         />
                       </td>
                     </tr>
-                  )}
-                  {!img.reference && (
                     <tr>
                       <td>
                         <Typography variant="caption">Pan Y</Typography>
@@ -181,72 +183,49 @@ const DraggableItem = forwardRef(
                       <td>
                         <CustomSlider
                           size="small"
-                          value={img.comp_y_disp}
-                          min={img.y_disp - 300}
-                          max={img.y_disp + 300}
+                          value={roundNum(img.comp_y_disp)}
+                          min={roundNum(img.y_disp - DISP_RANGE)}
+                          max={roundNum(img.y_disp + DISP_RANGE)}
                           onChange={(e) =>
                             targetImageYChange(e.target.value, index)
                           }
                         />
                       </td>
                     </tr>
-                  )}
-                </tbody>
-              </table>
-            </ItemAdjustmentContainer>
-          ) : (
-            <ItemAdjustmentContainer>
-              <table>
-                <tbody>
-                  <tr>
-                    <td>
-                      <Typography variant="caption">Opacity</Typography>
-                    </td>
-                    <td>
-                      <CustomSlider
-                        size="small"
-                        value={
-                          syncOpacity
-                            ? roundNum(opacity)
-                            : img.opacity
-                            ? roundNum(img.opacity)
-                            : roundNum(opacity)
-                        }
-                        min={10}
-                        max={100}
-                        onChange={(e) =>
-                          targetImageOpacityChange(e.target.value, index)
-                        }
-                      />
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-              <ImgItem>
-                <Typography variant="caption">
-                  {img.hidden ? "Hidden" : "Visible"}
-                </Typography>
-                <div
-                  style={{ cursor: "pointer" }}
-                  onClick={() => toggleImageVisibility(index)}
-                >
-                  {img.hidden ? <AiOutlineEyeInvisible /> : <AiFillEye />}
-                </div>
-              </ImgItem>
-              {img.reference && (
+                  </>
+                )}
+              </tbody>
+            </table>
+            {!composite && (
+              <>
                 <ImgItem>
-                  <Typography variant="caption">Project Annotations</Typography>
-                  <AntSwitch
-                    checked={img.project ? true : false}
-                    onChange={(e) =>
-                      toggleImageProjection(index, e.target.checked)
-                    }
-                    size="small"
-                  />
+                  <Typography variant="caption">
+                    {img.hidden ? "Hidden" : "Visible"}
+                  </Typography>
+                  <div
+                    style={{ cursor: "pointer" }}
+                    onClick={() => toggleImageVisibility(index)}
+                  >
+                    {img.hidden ? <AiOutlineEyeInvisible /> : <AiFillEye />}
+                  </div>
                 </ImgItem>
-              )}
-            </ItemAdjustmentContainer>
-          )}
+                {img.reference && (
+                  <ImgItem>
+                    <Typography variant="caption">
+                      Project Annotations
+                    </Typography>
+                    <AntSwitch
+                      checked={img.project ? true : false}
+                      onChange={(e) =>
+                        toggleImageProjection(index, e.target.checked)
+                      }
+                      size="small"
+                    />
+                  </ImgItem>
+                )}
+              </>
+            )}
+          </ItemAdjustmentContainer>
         </ItemContent>
       </LayersItem>
     );

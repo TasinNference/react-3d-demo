@@ -10,6 +10,12 @@ import { AiOutlineMinusSquare, AiOutlinePlusSquare } from "react-icons/ai";
 import CustomSlider from "../CustomSlider";
 import { GrPowerReset } from "react-icons/gr";
 import { AntSwitch } from "../LeftSidebar";
+import {
+  MAX_OPACITY,
+  MAX_SPACING,
+  MIN_OPACITY,
+  MIN_SPACING,
+} from "../../constants/variables";
 
 const SettingsWidget = ({
   opacity,
@@ -47,8 +53,8 @@ const SettingsWidget = ({
                     size="small"
                     defaultValue={opacity}
                     value={opacity}
-                    min={1}
-                    max={100}
+                    min={MIN_OPACITY}
+                    max={MAX_OPACITY}
                     onChange={(e) => setOpacity(e.target.value)}
                   />
                 </td>
@@ -64,8 +70,8 @@ const SettingsWidget = ({
                     value={spacing}
                     aria-label="Small"
                     valueLabelDisplay="auto"
-                    min={50}
-                    max={500}
+                    min={MIN_SPACING}
+                    max={MAX_SPACING}
                     onChange={(e) => setSpacing(e.target.value)}
                   />
                 </td>
@@ -81,8 +87,8 @@ const SettingsWidget = ({
                     value={rotation}
                     aria-label="Small"
                     valueLabelDisplay="auto"
-                    min={0}
-                    max={360}
+                    min={-180}
+                    max={180}
                     onChange={(e) => setRotation(e.target.value)}
                   />
                 </td>
