@@ -233,16 +233,18 @@ const DraggableItem = forwardRef(
                   {img.hidden ? <AiOutlineEyeInvisible /> : <AiFillEye />}
                 </div>
               </ImgItem>
-              <ImgItem>
-                <Typography variant="caption">Project Annotations</Typography>
-                <AntSwitch
-                  checked={img.project ? true : false}
-                  onChange={(e) =>
-                    toggleImageProjection(index, e.target.checked)
-                  }
-                  size="small"
-                />
-              </ImgItem>
+              {img.reference && (
+                <ImgItem>
+                  <Typography variant="caption">Project Annotations</Typography>
+                  <AntSwitch
+                    checked={img.project ? true : false}
+                    onChange={(e) =>
+                      toggleImageProjection(index, e.target.checked)
+                    }
+                    size="small"
+                  />
+                </ImgItem>
+              )}
             </ItemAdjustmentContainer>
           )}
         </ItemContent>
