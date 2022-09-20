@@ -17,3 +17,11 @@ export const ANN_WIDTH = 2;
 // Composite
 export const DISP_RANGE = 500;
 export const TILT_RANGE = 180;
+
+export const stainColors = {
+  "H&E": "hotpink",
+  IHC: "blue",
+  ISH: "green",
+  SS: "purple",
+  U: "red",
+};

@@ -161,6 +161,11 @@ const ThreeCanvas = () => {
           handleDragEnd={handleDragEnd}
           open={open}
           setOpen={setOpen}
+          targetImageOpacityChange={targetImageOpacityChange}
+          syncOpacity={syncOpacity}
+          opacity={opacity}
+          toggleImageVisibility={toggleImageVisibility}
+          toggleImageProjection={toggleImageProjection}
         />
       )}
       <SettingsWidget

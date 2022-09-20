@@ -4,6 +4,7 @@ export const getRegistrationData = async (data) => {
   const reference = data.reference_slide_info;
   const registerResponse = data.register_slide_info;
   const registerArr = [];
+  let sType;
 
   const getAnnotations = async (id) => {
     let anns = [];
@@ -16,15 +17,20 @@ export const getRegistrationData = async (data) => {
       } = await axios.get(
         `/panorama_backend/mergedGrid/viewer?slideName=${id}`
       );
-      anns = (
+      const {
+        slide: { stainType },
+        annotations,
+      } = (
         await axios.get(`/panorama_backend/grid-details?imageIds=${slideId}`)
-      ).data.data[0].annotations;
+      ).data.data[0];
+      anns = annotations;
+      sType = stainType;
     } catch (error) {
       console.log(error);
     }
 
     console.log(anns, "anns");
-    return anns;
+    return [sType, anns];
   };
 
   const annotations = await Promise.all([
@@ -40,14 +46,16 @@ export const getRegistrationData = async (data) => {
       comp_x_disp: itm.x_disp,
       comp_y_disp: itm.y_disp,
       url: `/wsi_data/registration_outcome/${itm.slide_id}/${itm.slide_id}_panorama.jpeg`,
-      annotations: annotations[index],
+      annotations: annotations[index][1],
+      stainType: annotations[index][0],
     });
   });
   const refData = {
     slide_id: reference.slide_id,
     url: `/wsi_data/registration_outcome/${reference.slide_id}/${reference.slide_id}_panorama.jpeg`,
     reference: true,
-    annotations: annotations[annotations.length - 1],
+    annotations: annotations[annotations.length - 1][1],
+    stainType: annotations[annotations.length - 1][0],
   };
   return [refData, ...registerArr];
 };

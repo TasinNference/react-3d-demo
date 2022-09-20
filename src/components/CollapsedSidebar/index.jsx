@@ -1,4 +1,4 @@
-import { Tooltip } from "@mui/material";
+import { styled, Tooltip, tooltipClasses, Typography } from "@mui/material";
 import React, { forwardRef } from "react";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import {
@@ -7,27 +7,156 @@ import {
   CollapsedItem,
   CollapsedItems,
   CollapsedMain,
+  TooltipContent,
+  TooltipHeader,
+  TooltipItem,
+  TooltipName,
+  TooltipStainType,
 } from "./styles";
 import { HiOutlineArrowsExpand } from "react-icons/hi";
+import {
+  MAX_OPACITY,
+  MIN_OPACITY,
+  stainColors,
+} from "../../constants/variables";
+import { AiFillEye, AiOutlineEyeInvisible } from "react-icons/ai";
+import CustomSlider from "../CustomSlider";
+import { roundNum } from "../../constants/functions";
+import { AntSwitch } from "../LeftSidebar";
+
+const HtmlTooltip = styled(({ className, ...props }) => (
+  <Tooltip {...props} classes={{ popper: className }} />
+))(({ theme }) => ({
+  [`& .${tooltipClasses.tooltip}`]: {
+    backgroundColor: "#f5f5f9",
+    color: "rgba(0, 0, 0, 0.87)",
+    maxWidth: 250,
+    fontSize: theme.typography.pxToRem(12),
+    border: "1px solid #dadde9",
+    padding: "10px",
+  },
+}));
 
 const DraggableItem = forwardRef(
-  ({ img, draggableProps, dragHandleProps }, ref) => {
+  (
+    {
+      img,
+      draggableProps,
+      dragHandleProps,
+      index,
+      targetImageOpacityChange,
+      syncOpacity,
+      opacity,
+      toggleImageVisibility,
+      toggleImageProjection,
+    },
+    ref
+  ) => {
+    console.log(img, "test");
     return (
-      <CollapsedItem
-        {...draggableProps}
-        {...dragHandleProps}
-        ref={ref}
-        hidden={img.hidden}
-      >
-        <Tooltip title={img.slide_id} placement="right">
-          <CollapsedImg src={img.url} />
-        </Tooltip>
+      <CollapsedItem {...draggableProps} {...dragHandleProps} ref={ref}>
+        <HtmlTooltip
+          title={
+            <>
+              <TooltipHeader>
+                <TooltipName>{img.slide_id.split("_").pop()}</TooltipName>
+                <TooltipStainType color={stainColors[img.stainType]}>
+                  {img.stainType}
+                </TooltipStainType>
+              </TooltipHeader>
+              <TooltipContent>
+                <table>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <Typography variant="caption">Opacity</Typography>
+                      </td>
+                      <td>
+                        <CustomSlider
+                          size="small"
+                          value={
+                            syncOpacity
+                              ? roundNum(opacity)
+                              : img.opacity
+                              ? roundNum(img.opacity)
+                              : roundNum(opacity)
+                          }
+                          min={MIN_OPACITY}
+                          max={MAX_OPACITY}
+                          onChange={(e) =>
+                            targetImageOpacityChange(e.target.value, index)
+                          }
+                        />
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <TooltipItem>
+                  <Typography variant="caption">
+                    {img.hidden ? "Hidden" : "Visible"}
+                  </Typography>
+                  <div
+                    style={{ cursor: "pointer" }}
+                    onClick={() => toggleImageVisibility(index)}
+                  >
+                    {img.hidden ? (
+                      <AiOutlineEyeInvisible size={20} />
+                    ) : (
+                      <AiFillEye size={20} />
+                    )}
+                  </div>
+                </TooltipItem>
+                <TooltipItem>
+                  <Typography variant="caption" style={{ marginRight: "10px" }}>
+                    Project Annotations
+                  </Typography>
+                  <AntSwitch
+                    checked={img.project ? true : false}
+                    onChange={(e) =>
+                      toggleImageProjection(index, e.target.checked)
+                    }
+                    size="small"
+                  />
+                </TooltipItem>
+              </TooltipContent>
+            </>
+          }
+          placement="right"
+        >
+          <div style={{ position: "relative" }}>
+            <CollapsedImg
+              borderColor={stainColors[img.stainType]}
+              src={img.url}
+            />
+            <div
+              style={{
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+              }}
+            >
+              {img.hidden && <AiOutlineEyeInvisible color="black" size={30} />}
+            </div>
+          </div>
+        </HtmlTooltip>
       </CollapsedItem>
     );
   }
 );
 
-const CollapsedSidebar = ({ open, setOpen, data, handleDragEnd }) => {
+const CollapsedSidebar = ({
+  open,
+  setOpen,
+  data,
+  handleDragEnd,
+  targetImageOpacityChange,
+  syncOpacity,
+  opacity,
+  toggleImageProjection,
+  toggleImageVisibility,
+}) => {
+  console.log(data, "collapsed data");
   return (
     <div>
       <div
@@ -68,6 +197,13 @@ const CollapsedSidebar = ({ open, setOpen, data, handleDragEnd }) => {
                               dragHandleProps={provided.dragHandleProps}
                               ref={provided.innerRef}
                               img={img}
+                              targetImageOpacityChange={
+                                targetImageOpacityChange
+                              }
+                              syncOpacity={syncOpacity}
+                              opacity={opacity}
+                              toggleImageProjection={toggleImageProjection}
+                              toggleImageVisibility={toggleImageVisibility}
                             />
                           );
                         }}

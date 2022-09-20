@@ -27,8 +27,10 @@ export const LayersItem = styled.div`
   padding: 10px;
   transition: background-color 0.25s ease-in-out, box-shadow 0.25s ease-in-out,
     border 0.25s ease-in-out;
-  border: ${({ hidden }) =>
-    hidden ? "1px solid #e5e5e5" : "1px solid #ba51ff"};
+  border-width: 1px;
+  border-style: solid;
+  border-color: ${({ hidden, borderColor }) =>
+    hidden ? "#e5e5e5" : borderColor};
   box-shadow: ${({ hidden }) =>
     hidden ? "none" : "0px 3px 4px rgba(0, 0, 0, 0.17)"};
   border-radius: 4px;
@@ -41,7 +43,7 @@ export const LayersItem = styled.div`
 
 export const ItemHeader = styled.div`
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   column-gap: 10px;
   align-items: center;
 `;
@@ -52,9 +54,18 @@ export const ItemName = styled(Typography).attrs(() => ({
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
-  width: 100%;
-  font-weight: bold;
+  font-weight: bold !important;
 `;
+
+export const ItemInfo = styled.div`
+  display: flex;
+  column-gap: 10px;
+  align-items: center;
+`;
+
+export const StainType = styled(Typography).attrs(() => ({
+  variant: "caption",
+}))``;
 
 export const ItemContent = styled.div`
   display: grid;

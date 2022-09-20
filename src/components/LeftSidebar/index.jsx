@@ -7,6 +7,7 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
+import { stainColors } from "../../constants/variables";
 import React, { forwardRef, useState } from "react";
 import {
   CollapseIcon,
@@ -17,6 +18,7 @@ import {
   ItemHeader,
   ItemIconsContainer,
   ItemImg,
+  ItemInfo,
   ItemName,
   LayersContainer,
   LayersItem,
@@ -24,6 +26,7 @@ import {
   SidebarContainer,
   SidebarHeader,
   SidebarSubContainer,
+  StainType,
 } from "./styles";
 import { GoSettings } from "react-icons/go";
 import { MdDragHandle } from "react-icons/md";
@@ -103,12 +106,22 @@ const DraggableItem = forwardRef(
     ref
   ) => {
     return (
-      <LayersItem ref={ref} {...draggableProps} hidden={img.hidden}>
+      <LayersItem
+        borderColor={stainColors[img.stainType]}
+        ref={ref}
+        {...draggableProps}
+        hidden={img.hidden}
+      >
         {img.reference && <ReferenceImgTxt>Reference</ReferenceImgTxt>}
         <ItemHeader>
-          <Tooltip title={img.slide_id} placement="top-start">
-            <ItemName>{img.slide_id}</ItemName>
-          </Tooltip>
+          <ItemInfo>
+            <Tooltip title={img.slide_id} placement="top-start">
+              <ItemName>{img.slide_id.split("_").pop()}</ItemName>
+            </Tooltip>
+            <StainType color={stainColors[img.stainType]}>
+              {img.stainType}
+            </StainType>
+          </ItemInfo>
           <ItemIconsContainer>
             <IconButton size="small" {...dragHandleProps}>
               <MdDragHandle />

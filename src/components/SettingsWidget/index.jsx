@@ -106,7 +106,7 @@ const SettingsWidget = ({
               </tr>
             </tbody>
           </table>
-          <div
+          {/* <div
             style={{
               display: "flex",
               justifyContent: "space-between",
@@ -119,7 +119,7 @@ const SettingsWidget = ({
               onChange={(e) => setComposite(e.target.checked)}
               size="small"
             />
-          </div>
+          </div> */}
         </SettingsContent>
       </SettingsBody>
     </SettingsContainer>
