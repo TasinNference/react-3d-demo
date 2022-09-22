@@ -102,7 +102,6 @@ const Slide = ({
             map={texture}
             side={THREE.DoubleSide}
             transparent={true}
-            toneMapped={false}
             opacity={opacity / 100}
           />
 

@@ -19,7 +19,6 @@ const Annotation = ({ annotations, width, height, composite }) => {
               points={[...formattedCoords, formattedCoords[0]]}
               color={annotationColor}
               lineWidth={ANN_WIDTH}
-              toneMapped={false}
             />
           );
         })}
