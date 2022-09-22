@@ -19,7 +19,7 @@ import { useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { getRegistrationData } from "../../constants/functions";
 import { useRef } from "react";
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import SlidesContainer from "../SlidesContainer";
 import LeftSidebar from "../LeftSidebar";
 import * as THREE from "three";
@@ -185,14 +185,16 @@ const ThreeCanvas = () => {
           <GizmoHelper alignment="top-right">
             <GizmoViewcube />
           </GizmoHelper>
-          <SlidesContainer
-            data={imagesArr}
-            referenceSlide={referenceSlide}
-            opacity={opacity}
-            rotation={rotation}
-            spacing={spacing}
-            projectIndex={projectIndex}
-          />
+          <Suspense fallback={null}>
+            <SlidesContainer
+              data={imagesArr}
+              referenceSlide={referenceSlide}
+              opacity={opacity}
+              rotation={rotation}
+              spacing={spacing}
+              projectIndex={projectIndex}
+            />
+          </Suspense>
           <CameraElement />
           {/* <CameraControls ref={cameraControls} /> */}
           <OrbitControls minZoom={0.2} maxZoom={5} />

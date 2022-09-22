@@ -25,3 +25,11 @@ export const stainColors = {
   SS: "purple",
   U: "red",
 };
+
+export const colorMap = {
+  1: 0x00ffff,
+  2: 0xffff00,
+  3: 0xff0000,
+  4: 0x00ff00,
+  5: 0x0000ff,
+};

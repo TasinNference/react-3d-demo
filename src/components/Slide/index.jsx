@@ -58,9 +58,12 @@ const Slide = ({
   };
 
   useTexture(`${window.location.origin}${imgData.url}`, (tex) => {
-    setTexture(tex);
-    width.current = tex.image.width;
-    height.current = tex.image.height;
+    if (!texture) {
+      console.log("texture test");
+      setTexture(tex);
+      width.current = tex.image.width;
+      height.current = tex.image.height;
+    }
   });
 
   useEffect(() => {
@@ -82,61 +85,58 @@ const Slide = ({
 
   useEffect(() => {
     if (!imgData.reference) {
-      console.log("change");
       calcMatrix();
     }
   }, [imgData.comp_tilt, imgData.comp_x_disp, imgData.comp_y_disp]);
 
   return (
-    <Suspense fallback={null}>
-      <group matrixAutoUpdate={false} matrix={mat2}>
-        <group matrixAutoUpdate={false} matrix={mat1}>
-          <mesh ref={mesh} position={[...position, positionZ]}>
-            <planeBufferGeometry
-              attach="geometry"
-              args={[width.current, height.current]}
-            />
-            <meshBasicMaterial
-              attach="material"
-              map={texture}
-              side={THREE.DoubleSide}
-              transparent={true}
-              toneMapped={false}
-              opacity={opacity / 100}
-            />
+    <group matrixAutoUpdate={false} matrix={mat2}>
+      <group matrixAutoUpdate={false} matrix={mat1}>
+        <mesh ref={mesh} position={[...position, positionZ]}>
+          <planeBufferGeometry
+            attach="geometry"
+            args={[width.current, height.current]}
+          />
+          <meshBasicMaterial
+            attach="material"
+            map={texture}
+            side={THREE.DoubleSide}
+            transparent={true}
+            toneMapped={false}
+            opacity={opacity / 100}
+          />
 
-            <Annotation
-              annotations={imgData.annotations}
-              width={width.current}
-              height={height.current}
-              composite={composite}
-              length={length}
-              projectIndex={projectIndex}
-            />
+          <Annotation
+            annotations={imgData.annotations}
+            width={width.current}
+            height={height.current}
+            composite={composite}
+            length={length}
+            projectIndex={projectIndex}
+          />
 
-            {projectIndex === index &&
-              Array(length)
-                .fill()
-                .map((_, i) => {
-                  return (
-                    i !== index && (
-                      <group position={[0, 0, (index - i) * spacing]}>
-                        <Annotation
-                          annotations={imgData.annotations}
-                          width={width.current}
-                          height={height.current}
-                          composite={composite}
-                          length={length}
-                          projectIndex={projectIndex}
-                        />
-                      </group>
-                    )
-                  );
-                })}
-          </mesh>
-        </group>
+          {projectIndex === index &&
+            Array(length)
+              .fill()
+              .map((_, i) => {
+                return (
+                  i !== index && (
+                    <group position={[0, 0, (index - i) * spacing]}>
+                      <Annotation
+                        annotations={imgData.annotations}
+                        width={width.current}
+                        height={height.current}
+                        composite={composite}
+                        length={length}
+                        projectIndex={projectIndex}
+                      />
+                    </group>
+                  )
+                );
+              })}
+        </mesh>
       </group>
-    </Suspense>
+    </group>
   );
 };
 
