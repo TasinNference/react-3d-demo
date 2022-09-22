@@ -181,7 +181,7 @@ const ThreeCanvas = () => {
         setComposite={setComposite}
       />
       <div style={{ height: "100vh" }}>
-        <Canvas>
+        <Canvas linear flat>
           <GizmoHelper alignment="top-right">
             <GizmoViewcube />
           </GizmoHelper>
