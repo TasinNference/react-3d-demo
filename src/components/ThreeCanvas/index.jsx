@@ -39,8 +39,20 @@ const ThreeCanvas = () => {
   const [rotation, setRotation] = useState(0);
   const [spacing, setSpacing] = useState((MIN_SPACING + MAX_SPACING) / 2);
   const [syncOpacity, setSyncOpacity] = useState(true);
+  const projectId = imagesArr.find((object) => object.project)?.slide_id;
   const projectIndex = imagesArr.map((object) => object.project).indexOf(true);
   const [composite, setComposite] = useState(false);
+  const [options, setOptions] = useState([
+    { name: "Normal Epithelial", label_val: 2, checked: true },
+    { name: "Tumor", label_val: 3, checked: true },
+    { name: "Stroma", label_val: 4, checked: true },
+    { name: "Adipose", label_val: 1, checked: true },
+    { name: "Necrosis", label_val: 5, checked: true },
+  ]);
+  const enabledLayers = options
+    .filter((item) => item.checked)
+    .map((item) => item.label_val);
+  const defaultOptions = useRef(options);
 
   // React-dnd
   const handleDragEnd = (result) => {
@@ -69,6 +81,7 @@ const ThreeCanvas = () => {
     setRotation(0);
     setSpacing((MIN_SPACING + MAX_SPACING) / 2);
     setOpacity((MAX_OPACITY + MIN_OPACITY) / 2);
+    setOptions(defaultOptions.current);
   };
 
   const toggleImageProjection = (i, bool) => {
@@ -88,6 +101,16 @@ const ThreeCanvas = () => {
       ...imagesArr.slice(0, index),
       { ...imagesArr[index], hidden: !imagesArr[index].hidden },
       ...imagesArr.slice(index + 1),
+    ]);
+  };
+
+  const toggleOptions = (index) => {
+    if (options[index].checked && enabledLayers.length === 1) return;
+
+    setOptions([
+      ...options.slice(0, index),
+      { ...options[index], checked: !options[index].checked },
+      ...options.slice(index + 1),
     ]);
   };
 
@@ -128,7 +151,12 @@ const ThreeCanvas = () => {
     const fetchImgData = async () => {
       const paramsData = searchParams.get("data");
       const parsedData = JSON.parse(atob(paramsData));
-      const formattedData = await getRegistrationData(parsedData);
+      let formattedData = await getRegistrationData(parsedData);
+      console.log(referenceSlide);
+      formattedData =
+        formattedData[0]?.slide_id === "H-1582-21-H-E_H01FBB59P-7110"
+          ? [{ isTumor: true }, ...formattedData]
+          : formattedData;
       defaultData.current = formattedData;
       setImagesArr(formattedData);
       setReferenceSlide(parsedData.reference_slide_info.slide_id);
@@ -154,6 +182,8 @@ const ThreeCanvas = () => {
           targetImageTiltChange={targetImageTiltChange}
           targetImageXChange={targetImageXChange}
           targetImageYChange={targetImageYChange}
+          options={options}
+          toggleOptions={toggleOptions}
         />
       ) : (
         <CollapsedSidebar
@@ -192,7 +222,8 @@ const ThreeCanvas = () => {
               opacity={opacity}
               rotation={rotation}
               spacing={spacing}
-              projectIndex={projectIndex}
+              projectId={projectId}
+              options={options}
             />
           </Suspense>
           <CameraElement />

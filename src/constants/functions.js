@@ -28,8 +28,6 @@ export const getRegistrationData = async (data) => {
     } catch (error) {
       console.log(error);
     }
-
-    console.log(anns, "anns");
     return [sType, anns];
   };
 

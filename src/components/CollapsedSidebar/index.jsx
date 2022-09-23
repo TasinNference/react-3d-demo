@@ -52,8 +52,26 @@ const DraggableItem = forwardRef(
     },
     ref
   ) => {
-    console.log(img, "test");
-    return (
+    return img.isTumor ? (
+      <CollapsedItem {...draggableProps} {...dragHandleProps} ref={ref}>
+        <div style={{ position: "relative" }}>
+          <CollapsedImg
+            borderColor={stainColors[img.stainType]}
+            src={"/images/tumor.jpg"}
+          />
+          <div
+            style={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+            }}
+          >
+            {img.hidden && <AiOutlineEyeInvisible color="black" size={30} />}
+          </div>
+        </div>
+      </CollapsedItem>
+    ) : (
       <CollapsedItem {...draggableProps} {...dragHandleProps} ref={ref}>
         <HtmlTooltip
           title={
@@ -156,7 +174,6 @@ const CollapsedSidebar = ({
   toggleImageProjection,
   toggleImageVisibility,
 }) => {
-  console.log(data, "collapsed data");
   return (
     <div>
       <div
@@ -185,8 +202,8 @@ const CollapsedSidebar = ({
                   >
                     {data.map((img, index) => (
                       <Draggable
-                        key={img.slide_id}
-                        draggableId={`${img.slide_id}`}
+                        key={img.isTumor ? "tumor" : img.slide_id}
+                        draggableId={img.isTumor ? "tumor" : img.slide_id}
                         index={index}
                       >
                         {(provided) => {

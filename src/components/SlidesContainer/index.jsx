@@ -11,47 +11,57 @@ const SlidesContainer = ({
   composite = false,
   rotation,
   spacing,
-  projectIndex,
+  projectId,
+  options,
 }) => {
-  console.log("slides container");
-
   const [refCenter, setRefCenter] = useState();
   const filteredImages = data.filter((img) => !img.hidden);
 
   return (
     <group rotation={[0, 0, THREE.MathUtils.degToRad(rotation)]}>
-      {filteredImages.map((imgData, index) => (
-        <>
-          <Suspense fallback={null}>
-            <Slide
-              imgData={imgData}
-              positionZ={getPositionFromSpacing(
-                index,
-                filteredImages.length,
-                spacing
-              )}
-              refCenter={refCenter}
-              setRefCenter={setRefCenter}
-              key={imgData.slide_id}
-              opacity={imgData.opacity ? imgData.opacity : opacity}
-              composite={composite}
-              projectIndex={projectIndex}
-              length={filteredImages.length}
-              spacing={spacing}
-              index={index}
-            />
-          </Suspense>
-          {index === 0 && refCenter && (
-            <Projection
-              length={filteredImages.length}
-              index={index}
-              composite={composite}
-              spacing={spacing}
-              refCenter={refCenter}
-            />
-          )}
-        </>
-      ))}
+      {filteredImages.map((imgData, index) =>
+        imgData.isTumor ? (
+          refCenter && (
+            <mesh
+              position={[
+                0,
+                0,
+                getPositionFromSpacing(index, filteredImages.length, spacing),
+              ]}
+            >
+              <Projection
+                length={filteredImages.length}
+                composite={composite}
+                refCenter={refCenter}
+                opacity={imgData.opacity ? imgData.opacity : opacity}
+                options={options}
+              />
+            </mesh>
+          )
+        ) : (
+          <>
+            <Suspense fallback={null}>
+              <Slide
+                imgData={imgData}
+                positionZ={getPositionFromSpacing(
+                  index,
+                  filteredImages.length,
+                  spacing
+                )}
+                refCenter={refCenter}
+                setRefCenter={setRefCenter}
+                key={imgData.slide_id}
+                opacity={imgData.opacity ? imgData.opacity : opacity}
+                composite={composite}
+                length={filteredImages.length}
+                spacing={spacing}
+                index={index}
+                projectId={projectId}
+              />
+            </Suspense>
+          </>
+        )
+      )}
     </group>
   );
 };

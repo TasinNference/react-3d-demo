@@ -1,5 +1,9 @@
 import {
   Card,
+  Checkbox,
+  Collapse,
+  FormControlLabel,
+  FormGroup,
   IconButton,
   Slider,
   styled,
@@ -7,7 +11,9 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import { stainColors } from "../../constants/variables";
+import { AiOutlineMinusSquare, AiOutlinePlusSquare } from "react-icons/ai";
+import Select from "react-select";
+import { stainColors, colorMapString } from "../../constants/variables";
 import React, { forwardRef, useState } from "react";
 import {
   CollapseIcon,
@@ -86,6 +92,128 @@ export const AntSwitch = styled(Switch)(({ theme }) => ({
   },
 }));
 
+const TumorComponent = ({
+  dragHandleProps,
+  img,
+  opacity,
+  syncOpacity,
+  targetImageOpacityChange,
+  index,
+  toggleImageVisibility,
+  options,
+  toggleOptions,
+}) => {
+  const [layerOpen, setLayerOpen] = useState(false);
+
+  return (
+    <>
+      <ItemHeader>
+        <ItemInfo>
+          <ItemName>Tumor Classification</ItemName>
+        </ItemInfo>
+        <ItemIconsContainer>
+          <IconButton size="small" {...dragHandleProps}>
+            <MdDragHandle />
+          </IconButton>
+        </ItemIconsContainer>
+      </ItemHeader>
+      <ItemContent>
+        <ItemImg
+          style={{ border: "1px solid black" }}
+          src={"/images/tumor.jpg"}
+        />
+        <ItemAdjustmentContainer>
+          <table>
+            <tbody>
+              <tr>
+                <td>
+                  <Typography variant="caption">Opacity</Typography>
+                </td>
+                <td>
+                  <CustomSlider
+                    size="small"
+                    value={
+                      syncOpacity
+                        ? roundNum(opacity)
+                        : img.opacity
+                        ? roundNum(img.opacity)
+                        : roundNum(opacity)
+                    }
+                    min={MIN_OPACITY}
+                    max={MAX_OPACITY}
+                    onChange={(e) =>
+                      targetImageOpacityChange(e.target.value, index)
+                    }
+                  />
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <>
+            <ImgItem>
+              <Typography variant="caption">
+                {img.hidden ? "Hidden" : "Visible"}
+              </Typography>
+              <div
+                style={{ cursor: "pointer" }}
+                onClick={() => toggleImageVisibility(index)}
+              >
+                {img.hidden ? <AiOutlineEyeInvisible /> : <AiFillEye />}
+              </div>
+            </ImgItem>
+            <ImgItem>
+              <Typography variant="caption">Layers</Typography>
+              <div
+                style={{ cursor: "pointer" }}
+                onClick={() => setLayerOpen(!layerOpen)}
+              >
+                {layerOpen ? (
+                  <AiOutlineMinusSquare size={20} />
+                ) : (
+                  <AiOutlinePlusSquare size={20} />
+                )}
+              </div>
+            </ImgItem>
+            <ImgItem>
+              <Collapse in={layerOpen}>
+                <div style={{ padding: "5px" }}>
+                  {options.map((item, index) => (
+                    <div style={{ display: "flex", columnGap: "5px" }}>
+                      <input
+                        id={`tumor${item.label_val}`}
+                        type="checkbox"
+                        checked={item.checked}
+                        onChange={() => toggleOptions(index)}
+                      />
+                      <label
+                        htmlFor={`tumor${item.label_val}`}
+                        style={{
+                          display: "flex",
+                          columnGap: "3px",
+                          alignItems: "center",
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: "10px",
+                            height: "10px",
+                            backgroundColor: colorMapString[item.label_val],
+                          }}
+                        ></div>
+                        <Typography variant="caption">{item.name}</Typography>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </Collapse>
+            </ImgItem>
+          </>
+        </ItemAdjustmentContainer>
+      </ItemContent>
+    </>
+  );
+};
+
 const DraggableItem = forwardRef(
   (
     {
@@ -102,10 +230,31 @@ const DraggableItem = forwardRef(
       targetImageTiltChange,
       targetImageXChange,
       targetImageYChange,
+      options,
+      toggleOptions,
     },
     ref
   ) => {
-    return (
+    return img.isTumor ? (
+      <LayersItem
+        borderColor={stainColors[img.stainType]}
+        ref={ref}
+        {...draggableProps}
+        hidden={img.hidden}
+      >
+        <TumorComponent
+          dragHandleProps={dragHandleProps}
+          targetImageOpacityChange={targetImageOpacityChange}
+          img={img}
+          opacity={opacity}
+          syncOpacity={syncOpacity}
+          index={index}
+          toggleImageVisibility={toggleImageVisibility}
+          options={options}
+          toggleOptions={toggleOptions}
+        />
+      </LayersItem>
+    ) : (
       <LayersItem
         borderColor={stainColors[img.stainType]}
         ref={ref}
@@ -255,6 +404,8 @@ const LeftSidebar = ({
   targetImageTiltChange,
   targetImageXChange,
   targetImageYChange,
+  options,
+  toggleOptions,
 }) => {
   return (
     <SidebarContainer open={open}>
@@ -277,8 +428,8 @@ const LeftSidebar = ({
               >
                 {data.map((img, index) => (
                   <Draggable
-                    key={img.slide_id}
-                    draggableId={`${img.slide_id}`}
+                    key={img.isTumor ? "tumor" : img.slide_id}
+                    draggableId={img.isTumor ? "tumor" : img.slide_id}
                     index={index}
                   >
                     {(provided) => {
@@ -299,6 +450,8 @@ const LeftSidebar = ({
                           targetImageTiltChange={targetImageTiltChange}
                           targetImageXChange={targetImageXChange}
                           targetImageYChange={targetImageYChange}
+                          options={options}
+                          toggleOptions={toggleOptions}
                         />
                       );
                     }}

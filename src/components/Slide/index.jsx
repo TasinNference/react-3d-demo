@@ -14,7 +14,7 @@ const Slide = ({
   setRefCenter,
   opacity,
   composite,
-  projectIndex,
+  projectId,
   length,
   spacing,
   index,
@@ -59,7 +59,6 @@ const Slide = ({
 
   useTexture(`${window.location.origin}${imgData.url}`, (tex) => {
     if (!texture) {
-      console.log("texture test");
       setTexture(tex);
       width.current = tex.image.width;
       height.current = tex.image.height;
@@ -111,10 +110,9 @@ const Slide = ({
             height={height.current}
             composite={composite}
             length={length}
-            projectIndex={projectIndex}
           />
 
-          {projectIndex === index &&
+          {projectId === imgData.slide_id &&
             Array(length)
               .fill()
               .map((_, i) => {
@@ -127,7 +125,6 @@ const Slide = ({
                         height={height.current}
                         composite={composite}
                         length={length}
-                        projectIndex={projectIndex}
                       />
                     </group>
                   )

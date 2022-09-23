@@ -26,8 +26,16 @@ export const stainColors = {
   U: "red",
 };
 
+export const colorMapString = {
+  1: "#00cccc",
+  2: "#ffff00",
+  3: "#ff0000",
+  4: "#00ff00",
+  5: "#0000ff",
+};
+
 export const colorMap = {
-  1: 0x00ffff,
+  1: 0x00cccc,
   2: 0xffff00,
   3: 0xff0000,
   4: 0x00ff00,
