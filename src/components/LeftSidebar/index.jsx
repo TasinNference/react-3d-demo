@@ -119,7 +119,7 @@ const TumorComponent = ({
       <ItemContent>
         <ItemImg
           style={{ border: "1px solid black" }}
-          src={"/images/tumor.jpg"}
+          src={"/3d_viewer/images/tumor.jpg"}
         />
         <ItemAdjustmentContainer>
           <table>
