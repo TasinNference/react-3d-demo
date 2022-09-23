@@ -12,7 +12,6 @@ import {
   Typography,
 } from "@mui/material";
 import { AiOutlineMinusSquare, AiOutlinePlusSquare } from "react-icons/ai";
-import Select from "react-select";
 import { stainColors, colorMapString } from "../../constants/variables";
 import React, { forwardRef, useState } from "react";
 import {
