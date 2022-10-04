@@ -57,7 +57,7 @@ const DraggableItem = forwardRef(
         <div style={{ position: "relative" }}>
           <CollapsedImg
             borderColor={stainColors[img.stainType]}
-            src={"/images/tumor.jpg"}
+            src={"/3d_viewer/images/tumor.jpg"}
           />
           <div
             style={{
