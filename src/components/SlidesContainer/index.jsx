@@ -16,6 +16,7 @@ const SlidesContainer = ({
 }) => {
   const [refCenter, setRefCenter] = useState();
   const filteredImages = data.filter((img) => !img.hidden);
+  const hiddenImgs = data.filter((img) => img.hidden);
 
   return (
     <group rotation={[0, 0, THREE.MathUtils.degToRad(rotation)]}>
@@ -61,6 +62,30 @@ const SlidesContainer = ({
             </Suspense>
           </>
         )
+      )}
+      {hiddenImgs.map(
+        (imgData, index) =>
+          !imgData.isTumor && (
+            <Suspense fallback={null}>
+              <Slide
+                imgData={imgData}
+                positionZ={getPositionFromSpacing(
+                  index,
+                  filteredImages.length,
+                  spacing
+                )}
+                refCenter={refCenter}
+                setRefCenter={setRefCenter}
+                key={imgData.slide_id}
+                opacity={imgData.opacity ? imgData.opacity : opacity}
+                composite={composite}
+                length={filteredImages.length}
+                spacing={spacing}
+                index={index}
+                projectId={projectId}
+              />
+            </Suspense>
+          )
       )}
     </group>
   );

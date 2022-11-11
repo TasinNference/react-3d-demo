@@ -92,32 +92,36 @@ const Slide = ({
     <group matrixAutoUpdate={false} matrix={mat2}>
       <group matrixAutoUpdate={false} matrix={mat1}>
         <mesh ref={mesh} position={[...position, positionZ]}>
-          <planeBufferGeometry
-            attach="geometry"
-            args={[width.current, height.current]}
-          />
-          <meshBasicMaterial
-            attach="material"
-            map={texture}
-            side={THREE.DoubleSide}
-            transparent={true}
-            opacity={opacity / 100}
-          />
+          {!imgData.hidden && (
+            <>
+              <planeBufferGeometry
+                attach="geometry"
+                args={[width.current, height.current]}
+              />
+              <meshBasicMaterial
+                attach="material"
+                map={texture}
+                side={THREE.DoubleSide}
+                transparent={true}
+                opacity={opacity / 100}
+              />
 
-          <Annotation
-            annotations={imgData.annotations}
-            width={width.current}
-            height={height.current}
-            composite={composite}
-            length={length}
-          />
+              <Annotation
+                annotations={imgData.annotations}
+                width={width.current}
+                height={height.current}
+                composite={composite}
+                length={length}
+              />
+            </>
+          )}
 
           {projectId === imgData.slide_id &&
             Array(length)
               .fill()
               .map((_, i) => {
                 return (
-                  i !== index && (
+                  (imgData.hidden || i !== index) && (
                     <group position={[0, 0, (index - i) * spacing]}>
                       <Annotation
                         annotations={imgData.annotations}
