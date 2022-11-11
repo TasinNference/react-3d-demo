@@ -7,7 +7,7 @@ const Annotation = ({ annotations, width, height, composite }) => {
     width &&
     height && (
       <mesh position={[0, 0, 1]}>
-        {annotations.map(({ coordinates, annotationColor }) => {
+        {annotations.map(({ coordinates, color }) => {
           const formattedCoords = coordinates.map((coord) => [
             -width / 2 + coord.x / 128,
             height / 2 - coord.y / 128,
@@ -17,7 +17,7 @@ const Annotation = ({ annotations, width, height, composite }) => {
           return (
             <Line
               points={[...formattedCoords, formattedCoords[0]]}
-              color={annotationColor}
+              color={color}
               lineWidth={ANN_WIDTH}
             />
           );
