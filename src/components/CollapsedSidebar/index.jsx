@@ -56,7 +56,7 @@ const DraggableItem = forwardRef(
       <CollapsedItem {...draggableProps} {...dragHandleProps} ref={ref}>
         <div style={{ position: "relative" }}>
           <CollapsedImg
-            borderColor={stainColors[img.stainType]}
+            borderColor={stainColors[typeof img.stainType === "string" ? img.stainType : img.stainType.stainCategoryId]}
             src={"/3d_viewer/images/tumor.jpg"}
           />
           <div
@@ -78,8 +78,8 @@ const DraggableItem = forwardRef(
             <>
               <TooltipHeader>
                 <TooltipName>{img.slide_id.split("_").pop()}</TooltipName>
-                <TooltipStainType color={stainColors[img.stainType]}>
-                  {img.stainType}
+                <TooltipStainType color={stainColors[typeof img.stainType === "string" ? img.stainType : img.stainType.stainCategoryId]}>
+                  {typeof img.stainType === "string" ? img.stainType : img.stainType.stainCategoryId}
                 </TooltipStainType>
               </TooltipHeader>
               <TooltipContent>
@@ -96,8 +96,8 @@ const DraggableItem = forwardRef(
                             syncOpacity
                               ? roundNum(opacity)
                               : img.opacity
-                              ? roundNum(img.opacity)
-                              : roundNum(opacity)
+                                ? roundNum(img.opacity)
+                                : roundNum(opacity)
                           }
                           min={MIN_OPACITY}
                           max={MAX_OPACITY}
@@ -143,7 +143,7 @@ const DraggableItem = forwardRef(
         >
           <div style={{ position: "relative" }}>
             <CollapsedImg
-              borderColor={stainColors[img.stainType]}
+              borderColor={stainColors[typeof img.stainType === "string" ? img.stainType : img.stainType.stainCategoryId]}
               src={img.url}
             />
             <div

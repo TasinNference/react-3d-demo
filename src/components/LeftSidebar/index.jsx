@@ -135,8 +135,8 @@ const TumorComponent = ({
                       syncOpacity
                         ? roundNum(opacity)
                         : img.opacity
-                        ? roundNum(img.opacity)
-                        : roundNum(opacity)
+                          ? roundNum(img.opacity)
+                          : roundNum(opacity)
                     }
                     min={MIN_OPACITY}
                     max={MAX_OPACITY}
@@ -236,7 +236,7 @@ const DraggableItem = forwardRef(
   ) => {
     return img.isTumor ? (
       <LayersItem
-        borderColor={stainColors[img.stainType]}
+        borderColor={stainColors[typeof img.stainType === "string" ? img.stainType : img.stainType.stainCategoryId]}
         ref={ref}
         {...draggableProps}
         hidden={img.hidden}
@@ -255,7 +255,7 @@ const DraggableItem = forwardRef(
       </LayersItem>
     ) : (
       <LayersItem
-        borderColor={stainColors[img.stainType]}
+        borderColor={stainColors[typeof img.stainType === "string" ? img.stainType : img.stainType.stainCategoryId]}
         ref={ref}
         {...draggableProps}
         hidden={img.hidden}
@@ -266,8 +266,8 @@ const DraggableItem = forwardRef(
             <Tooltip title={img.slide_id} placement="top-start">
               <ItemName>{img.slide_id.split("_").pop()}</ItemName>
             </Tooltip>
-            <StainType color={stainColors[img.stainType]}>
-              {img.stainType}
+            <StainType color={stainColors[typeof img.stainType === "string" ? img.stainType : img.stainType.stainCategoryId]}>
+              {typeof img.stainType === "string" ? img.stainType : img.stainType.stainCategoryId}
             </StainType>
           </ItemInfo>
           <ItemIconsContainer>
@@ -292,8 +292,8 @@ const DraggableItem = forwardRef(
                         syncOpacity
                           ? roundNum(opacity)
                           : img.opacity
-                          ? roundNum(img.opacity)
-                          : roundNum(opacity)
+                            ? roundNum(img.opacity)
+                            : roundNum(opacity)
                       }
                       min={MIN_OPACITY}
                       max={MAX_OPACITY}
