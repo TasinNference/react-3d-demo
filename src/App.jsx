@@ -167,15 +167,22 @@ function roundNum(num) {
   return Math.round((num + Number.EPSILON) * 100) / 100;
 }
 
+function getCookie(key) {
+  var b = document.cookie.match("(^|;)\\s*" + key + "\\s*=\\s*([^;]+)");
+  return b ? b.pop() : "";
+}
+
 async function getImgData(data) {
   const reference = data.reference_slide_info;
   const registerResponse = data.register_slide_info;
   const registerArr = [] 
+  const tokenStr = getCookie('token')
+
 
   for(let i = 0; i < registerResponse.length; i++) {
     const itm = registerResponse[i]
-    const {data: {data: {slideId}}} = await axios.get(`/panorama_backend/mergedGrid/viewer?slideName=${itm.slide_id}`)
-    const annotations = (await axios.get(`/panorama_backend/grid-details?imageIds=${slideId}`)).data.data[0].annotations
+    const {data: {data: {slideId}}} = await axios.get(`/panorama_backend/mergedGrid/viewer?slideName=${itm.slide_id}`,{ headers: {"Authorization" : `Bearer ${tokenStr}`} })
+    const annotations = (await axios.get(`/panorama_backend/grid-details?imageIds=${slideId}`), { headers: {"Authorization" : `Bearer ${tokenStr}`} }).data.data[0].annotations
     console.log(annotations, "annotations")
 
     registerArr.push({
@@ -192,8 +199,8 @@ async function getImgData(data) {
     })
   }
   
-  const {data: {data: {slideId}}} = await axios.get(`/panorama_backend/mergedGrid/viewer?slideName=${reference.slide_id}`)
-  const annotations = (await axios.get(`/panorama_backend/grid-details?imageIds=${slideId}`)).data.data[0].annotations
+  const {data: {data: {slideId}}} = await axios.get(`/panorama_backend/mergedGrid/viewer?slideName=${reference.slide_id}`,{ headers: {"Authorization" : `Bearer ${tokenStr}`} })
+  const annotations = (await axios.get(`/panorama_backend/grid-details?imageIds=${slideId}`,{ headers: {"Authorization" : `Bearer ${tokenStr}`} })).data.data[0].annotations
   console.log(annotations, "annotations")
   let arr = [];
   arr.push({
