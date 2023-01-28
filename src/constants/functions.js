@@ -1,10 +1,17 @@
 import axios from "axios";
 
+function getCookie(key) {
+  var b = document.cookie.match("(^|;)\\s*" + key + "\\s*=\\s*([^;]+)");
+  return b ? b.pop() : "";
+}
+
 export const getRegistrationData = async (data) => {
   const reference = data.reference_slide_info;
   const registerResponse = data.register_slide_info;
   const registerArr = [];
   let sType;
+
+  const tokenStr = getCookie('token')
 
   const getAnnotations = async (id) => {
     let anns = [];
@@ -16,12 +23,14 @@ export const getRegistrationData = async (data) => {
         },
       } = await axios.get(
         `/panorama_backend/mergedGrid/viewer?slideName=${id}`
+        ,{ headers: {"Authorization" : `Bearer ${tokenStr}`} }
       );
       const {
         slide: { stainType },
         annotations,
       } = (
         await axios.get(`/panorama_backend/grid-details?imageIds=${slideId}`)
+        ,{ headers: {"Authorization" : `Bearer ${tokenStr}`} }
       ).data.data[0];
       anns = annotations;
       sType = stainType;
