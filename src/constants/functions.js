@@ -5,6 +5,13 @@ function getCookie(key) {
   return b ? b.pop() : "";
 }
 
+function getImageURL(slide_id) {
+  if (window.location.host.includes('hz-preview-pramana')) {
+    return `/wsi_data/acquired_data/${itm.slide_id}/thumbnail.jpeg`
+  }
+  return `/wsi_data/registration_outcome/${itm.slide_id}/${itm.slide_id}_panorama.jpeg`
+}
+
 axios.interceptors.request.use(
   config => {
     const tokenStr = getCookie('token');
@@ -65,14 +72,14 @@ export const getRegistrationData = async (data) => {
       comp_tilt: itm.tilt,
       comp_x_disp: itm.x_disp,
       comp_y_disp: itm.y_disp,
-      url: `/wsi_data/registration_outcome/${itm.slide_id}/${itm.slide_id}_panorama.jpeg`,
+      url: getImageURL(itm.slide_id),
       annotations: annotations[index][1],
       stainType: annotations[index][0],
     });
   });
   const refData = {
     slide_id: reference.slide_id,
-    url: `/wsi_data/registration_outcome/${reference.slide_id}/${reference.slide_id}_panorama.jpeg`,
+    url: getImageURL(reference.slide_id),
     reference: true,
     annotations: annotations[annotations.length - 1][1],
     stainType: annotations[annotations.length - 1][0],

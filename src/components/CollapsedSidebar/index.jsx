@@ -52,6 +52,7 @@ const DraggableItem = forwardRef(
     },
     ref
   ) => {
+//    debugger;
     return img.isTumor ? (
       <CollapsedItem {...draggableProps} {...dragHandleProps} ref={ref}>
         <div style={{ position: "relative" }}>
@@ -174,6 +175,7 @@ const CollapsedSidebar = ({
   toggleImageProjection,
   toggleImageVisibility,
 }) => {
+
   return (
     <div>
       <div
