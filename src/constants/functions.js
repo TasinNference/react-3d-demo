@@ -6,10 +6,6 @@ function getCookie(key) {
 }
 
 function getImageURL(slide_id) {
-  if (window.location.host.includes('hz-preview-pramana')) {
-    console.log('changing path')
-    return `/wsi_data/acquired_data/${slide_id}/thumbnail.jpeg`
-  }
   return `/wsi_data/registration_outcome/${slide_id}/${slide_id}_panorama.jpeg`
 }
 
