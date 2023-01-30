@@ -20,5 +20,11 @@ module.exports = function (app) {
     logLevel: "debug",
   });
 
-  app.use(panorama_backend_proxy);
+  if (window.location.host.includes('hz-preview-pramana')) {
+    console.log('using the proxy')
+    app.use(panorama_backend_proxy);
+  }
+
+  console.log('not using the proxy')
+
 };

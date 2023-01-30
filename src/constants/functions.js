@@ -39,14 +39,14 @@ export const getRegistrationData = async (data) => {
           data: { slideId },
         },
       } = await axios.get(
-        `/panorama_backend/mergedGrid/viewer?slideName=${id}`
+        `/cluster_backend/mergedGrid/viewer?slideName=${id}`
         //,{ headers: {"Authorization" : `Bearer ${tokenStr}`} }
       );
       const {
         slide: { stainType },
         annotations,
       } = (
-        await axios.get(`/panorama_backend/grid-details?imageIds=${slideId}`)
+        await axios.get(`/cluster_backend/grid-details?imageIds=${slideId}`)
         //,{ headers: {"Authorization" : `Bearer ${tokenStr}`} }
       ).data.data[0];
       anns = annotations;
